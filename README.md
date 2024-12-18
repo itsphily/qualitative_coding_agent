@@ -8,6 +8,8 @@ This repository contains a qualitative coding agent project that utilizes variou
 .
 ├── README.md
 ├── requirements.txt
+├── src/
+│   └── (source code files)
 └── storage/
     └── (data folders will be stored here)
 ```
