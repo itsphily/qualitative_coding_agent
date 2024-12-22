@@ -17,7 +17,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import START, END, StateGraph
 import asyncio
-from utils import visualize_graph, save_research_results, save_cleaned_text
+from utils import visualize_graph, save_cleaned_text
 from state import PDFToMarkdownState, PDFToMarkdownInputState, PDFToMarkdownOutputState
 
 
@@ -89,7 +89,7 @@ def boilerplate_remover(state: PDFToMarkdownState):
     print("boilerplate removal -- done")
     
     # Save the cleaned text
-    save_cleaned_text(cleaned_text, "boilerplate_remover")
+    save_cleaned_text(cleaned_text, "boilerplate removal check")
     
     return {"cleaned_text": result.content}
 
@@ -118,8 +118,5 @@ def main():
     # Run the graph with the given input
     result = graph.invoke(research_input)
     
-    # Save the results to a markdown file
-    save_research_results(extracted_text, result["cleaned_text"])
-
 if __name__ == "__main__":
     main()  

@@ -1,6 +1,7 @@
 from langchain_core.runnables.graph import MermaidDrawMethod
 import os
 import datetime
+from prompt import qa_feedback_prompt
 
 def visualize_graph(graph, name):
     """Visualize the graph"""
@@ -16,38 +17,7 @@ def visualize_graph(graph, name):
         print(f"Error saving graph visualization: {e}")
 
 
-def save_research_results(research_topic: str, summary: str):
-    """Save research results to a markdown file.
-    
-    Args:
-        research_topic (str): The topic of the research
-        summary (str): The research summary to save
-        
-    Returns:
-        str: Path to the saved file
-    """
-    # Create outputs directory if it doesn't exist
-    output_dir = "outputs"
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Create filename with timestamp and sanitized topic
-    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    # Sanitize topic for filename (remove special chars, spaces to underscores)
-    safe_topic = "".join(c if c.isalnum() else "_" for c in research_topic).lower()
-    filename = f"{safe_topic}_{timestamp}.md"
-    filepath = os.path.join(output_dir, filename)
-    
-    # Write the content
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(f"# Research: {research_topic}\n\n")
-        f.write(f"*Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
-        f.write(f"{summary}\n")
-    
-    print(f"\nResearch results saved to: {filepath}")
-    return filepath
-
-
-def save_cleaned_text(text: str, step_name: str):
+def save_cleaned_text(text: str, title: str):
     """Save cleaned text to a markdown file.
     
     Args:
@@ -63,15 +33,19 @@ def save_cleaned_text(text: str, step_name: str):
     
     # Create filename with timestamp and step name
     timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"cleaned_text_{step_name}_{timestamp}.md"
+    filename = f"cleaned_text_{title}_{timestamp}.md"
     filepath = os.path.join(output_dir, filename)
     
     # Write the content
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write(f"# Cleaned Text - {step_name}\n\n")
-        f.write(f"*Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*\n\n")
-        f.write("## Content\n\n")
+        f.write(f"{qa_feedback_prompt}\n\n")
+        f.write("<original text extracted from a PDF>")
         f.write(f"{text}\n")
+        f.write("</original text extracted from a PDF>\n\n")
+        f.write("<cleaned Markdown output>")
+        f.write(f"{text}\n")
+        f.write("</ccleaned Markdown output>\n\n")
+
     
     print(f"\nCleaned text saved to: {filepath}")
     return filepath
