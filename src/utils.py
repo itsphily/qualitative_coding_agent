@@ -17,7 +17,7 @@ def visualize_graph(graph, name):
         print(f"Error saving graph visualization: {e}")
 
 
-def save_cleaned_text(text: str, title: str):
+def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str):
     """Save cleaned text to a markdown file.
     
     Args:
@@ -40,11 +40,11 @@ def save_cleaned_text(text: str, title: str):
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(f"{qa_feedback_prompt}\n\n")
         f.write("<original text extracted from a PDF>")
-        f.write(f"{text}\n")
+        f.write(f"{extracted_text}\n")
         f.write("</original text extracted from a PDF>\n\n")
         f.write("<cleaned Markdown output>")
-        f.write(f"{text}\n")
-        f.write("</ccleaned Markdown output>\n\n")
+        f.write(f"{cleaned_text}\n")
+        f.write("</cleaned Markdown output>\n\n")
 
     
     print(f"\nCleaned text saved to: {filepath}")

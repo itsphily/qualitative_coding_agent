@@ -318,7 +318,7 @@ Here is the text to be cleaned:
 
 
 text_cleaner_prompt = """
-You are a text cleaning assistant. Your task is to process text extracted from a PDF.
+You are a detail-oriented text cleaning assistant. Your task is to reconstruct fragmented sentences, remove page labels, and Identify potential boilerplate in the text to be cleaned.
 
 1. Reconstruct fragmented sentences: Merge sentences split by line breaks or page breaks into single coherent lines. Maintain original punctuation, but correct spacing if necessary. If a sentence is incomplete and context is insufficient, use an ellipsis (...) to indicate missing content.
 2. Remove page labels: Remove lines that appear to be page labels (e.g., "=== Page 1 ===" or "Page 1 of 10").
@@ -326,7 +326,8 @@ You are a text cleaning assistant. Your task is to process text extracted from a
 
 {qa_feedback} 
 
-Example Input:
+# Example
+## Example Input:
 === Page 1 ===
 Our mission is to prevent
 and treat neglected
@@ -336,11 +337,9 @@ health programmes.
 
 We've placed functionality cookies on your device to help our website run effectively. By clicking OK, you agree to our use of cookies. See our Privacy Policy for full info.
 
-Example Output:
+##Example Output:
 Our mission is to prevent and treat neglected infectious diseases through strengthening health programmes.
-
 <boilerplate>We've placed functionality cookies on your device to help our website run effectively. By clicking OK, you agree to our use of cookies. See our Privacy Policy for full info.</boilerplate>
-
 """
 
 boilerplate_remover_prompt = """
@@ -371,14 +370,10 @@ Edinburgh House, 170 Kennington Lane, London, SE11 5DP
 
 Example Output:
 Our mission is to prevent and treat neglected infectious diseases through strengthening health programmes.
-
-<original text>
-{original_text}
-</original text>
 """
 
 markdown_formatter_prompt = """
-You are a Markdown formatting assistant. Your task is to convert cleaned text into valid Markdown, preserving the original structure and content.
+You are a Markdown formatting assistant. Your task is to convert the input text into valid Markdown, preserving the original structure and content.
 
 1. Headings: Use # for main titles, ## for subtitles, ### for section titles, and so on, where the original text clearly indicates a heading structure.
 2. Paragraphs: Separate paragraphs with a single blank line.
@@ -418,36 +413,28 @@ A conversation with Alan Fenwick and Najwa Al Abdallah, September 14, 2015
 ## Summary
 
 GiveWell spoke with Professor Alan Fenwick and Najwa Al Abdallah of the Schistosomiasis Control Initiative (SCI) as part of its end-of-year update on SCI.
-
-Input Text:
-{boilerplate_remover_output}
 """
 
 qa_feedback_prompt = """
-You are a meticulous Quality Assurance and Feedback agent for a text cleaning and formatting workflow. Your task is to compare the original text extracted from a PDF against the final cleaned Markdown output produced by the workflow.
+You are a detail-oriented Quality Assurance and Feedback agent. Your task is to compare the original text against the cleaned text.
 
-**Inputs:**
+# Instructions:
 
-- **Original Text:** The raw text extracted from the PDF.
-- **Markdown Output:** The cleaned text in Markdown format.
-
-**Instructions:**
-
-1. **Compare:** Carefully compare the `Original Text` with the `Markdown Output`, paying close attention to the following criteria:
-    - **No Summarization or Paraphrasing:** Ensure that all original sentences from the `Original Text` are present in the `Markdown Output` without being condensed, reworded, or summarized.
-    - **No Commentary:** Verify that the `Markdown Output` contains only the cleaned text and does not include any added explanations, disclaimers, or notes about the cleaning process.
-    - **Boilerplate Removal:** Confirm that all repeated boilerplate text (especially cookie notices), headers, and footers have been completely removed from the `Markdown Output`.
-    - **Single-Occurrence Content:** Ensure that content like contact information or disclaimers that appear only once in the `Original Text` are preserved in the `Markdown Output`, unless they were identified as boilerplate.
-    - **Sentence Reconstruction:** Check that sentences fragmented across multiple lines in the `Original Text` have been correctly merged into single, coherent sentences in the `Markdown Output`. Verify that ellipses (...) are used appropriately to indicate incomplete sentences where the original text is missing.
-    - **Markdown Formatting:** Verify that the `Markdown Output` uses correct Markdown syntax:
+1. Compare: Carefully compare the `Original Text` with the `Markdown Output`, paying close attention to the following criteria:
+    - No Summarization or Paraphrasing:** Ensure that all original sentences from the `Original Text` are present in the `Markdown Output` without being condensed, reworded, or summarized.
+    - No Commentary:** Verify that the `Markdown Output` contains only the cleaned text and does not include any added explanations, disclaimers, or notes about the cleaning process.
+    - Boilerplate Removal:** Confirm that all repeated boilerplate text (especially cookie notices), headers, and footers have been completely removed from the `Markdown Output`.
+    - Single-Occurrence Content:** Ensure that content like contact information or disclaimers that appear only once in the `Original Text` are preserved in the `Markdown Output`, unless they were identified as boilerplate.
+    - Sentence Reconstruction:** Check that sentences fragmented across multiple lines in the `Original Text` have been correctly merged into single, coherent sentences in the `Markdown Output`. Verify that ellipses (...) are used appropriately to indicate incomplete sentences where the original text is missing.
+    - Markdown Formatting:** Verify that the `Markdown Output` uses correct Markdown syntax:
         - Headings (#, ##, ###, etc.) are used appropriately based on the structure of the `Original Text`.
         - Paragraphs are separated by single blank lines.
         - Lists (using - or *) are used only when indicated in the `Original Text`.
-    - **Content Preservation:** Ensure that no meaningful text has been added to or removed from the `Markdown Output`, except for the allowed removals (boilerplate, page labels, etc.).
+    - Content Preservation:** Ensure that no meaningful text has been added to or removed from the `Markdown Output`, except for the allowed removals (boilerplate, page labels, etc.).
 
-2. **Identify Errors:** Meticulously identify any deviations from the above criteria.
+2. Identify Errors: Meticulously identify any deviations from the above criteria.
 
-3. **Provide Feedback:** Generate feedback in the following format:
+3. Provide Feedback:Generate feedback in the following format:
 
     ```
     - Error Type: [Specific error type] - Description: [Brief description of the error] - Location: [Location of the error, referencing the Original Text (e.g., page number, section) and if applicable, the Markdown Output] - (Optional) Suggestion: [Suggestion for how to correct the error]
@@ -455,29 +442,50 @@ You are a meticulous Quality Assurance and Feedback agent for a text cleaning an
     - Recommendation: [Overall recommendation for the next iteration, e.g., "Rerun the Initial Text Cleaner with a focus on sentence reconstruction," or "The output is satisfactory; no further iterations needed."]
     ```
 
-**Examples of Feedback:**
+# Examples of Feedback:
 
-**Example 1:**
+## Example 1:
 
 - Error Type: Incorrect Sentence Reconstruction - Description: The sentence "Our mission is to prevent and treat neglected infectious diseases through strengthening impactful and comprehensive health programmes." is broken across multiple lines in the Markdown Output. - Location: Original Text, Page 1; Markdown Output, Paragraph 1.  
 - Error Type: Boilerplate Not Removed - Description: The cookie notice "We've placed functionality cookies..." is still present in the Markdown Output. - Location: Original Text, Page 1 & Page 5; Markdown Output.  
 - Error Type: Missing Content - Description: The contact information for SCI Foundation is missing from the Markdown Output, but it appears only once in the Original Text and should be preserved. - Location: Original Text, Page 6; Markdown Output.  
 - Recommendation: Rerun the Initial Text Cleaner, paying closer attention to sentence boundaries. Also, rerun the Boilerplate Remover, ensuring it correctly identifies and removes cookie notices and preserves single-occurrence content.
 
-**Example 2:**
+## Example 2:
 
 - Error Type: Incorrect Markdown Formatting - Description: The heading "Participants" should be a level 2 heading (##) instead of a level 1 heading (#). - Location: Markdown Output, Section 2.  
 - Error Type: Extra Spaces - Description: There are extra spaces between some words in the sentence "A conversation with Alan Fenwick...". - Location: Markdown Output, Paragraph 1. Suggestion: Review and adjust spacing during text cleaning or Markdown formatting.  
 - Recommendation: Rerun the Markdown Formatter, focusing on correct heading levels and spacing.
 
-**Example 3:**
+## Example 3:
 
 - Recommendation: The output is satisfactory; no further iterations are needed.
 
-**Output:**
+### Output:
 
 Your output **must** strictly adhere to the feedback format provided above. Be specific and clear in your descriptions and location references. The goal is to provide actionable feedback that can be used to improve the text cleaning and formatting in the next iteration of the workflow. The final output of the cleaning workflow will be the output from the markdown formatter that receives a satisfactory assessment.
 This detailed prompt provides the Quality Assurance agent with clear instructions, examples, and a specific format for delivering feedback. Remember that the effectiveness of this agent will also depend on the quality of the LLM you are using. You might need to experiment and refine the prompt further based on the specific results you get.
 
 """
+
+
+
+qa_feedback_prompt = """
+
+You are a detail-oriented text cleaning assistant. Your task is to reconstruct fragmented sentences, remove page labels, and identify potential boilerplate in the text to be cleaned.
+
+1. Reconstruct fragmented sentences: Merge sentences split by line breaks or page breaks into single coherent lines. Maintain original punctuation, but correct spacing if necessary. If a sentence is incomplete and context is insufficient, use an ellipsis (...) to indicate missing content.
+2. Remove page labels: Remove lines that appear to be page labels (e.g., "=== Page 1 ===" or "Page 1 of 10").
+3. Identify potential boilerplate: Mark sections that appear to be repeated boilerplate text (like cookie notices, headers, footers). Use XML-like tags to denote these: <boilerplate> ... </boilerplate>. You can also use tags like <header> and <footer> to help the next agent identify them correctly. Be conservative; only mark something as boilerplate if it appears multiple times or is obviously a generic notice.
+
+{qa_feedback}
+
+Examples based on GiveDirectly text:
+
+Example 1
+
+Input:
+"""
+
+
 
