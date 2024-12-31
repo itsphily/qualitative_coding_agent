@@ -182,7 +182,7 @@ graph = builder.compile()
 
 def main():
 
-    with open("/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly/01_Summaries/Summary_2018.md", "r", encoding="utf-8") as f:
+    with open("/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/extracted_text/01_GiveDirectly/01_Summaries/Summary_2018.txt", "r", encoding="utf-8") as f:
         extracted_text = f.read()
     research_input = PDFToMarkdownInputState(extracted_text=extracted_text)
     visualize_graph(graph, "pdf_extract_to_md_v1")
