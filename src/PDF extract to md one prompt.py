@@ -54,21 +54,21 @@ llm_json_mode.bind(response_format={"type": "json_object"})
 ### Functions
 #--------------------------------------------------------------------------------------------------
 
-def text_cleaner(state: PDFToMarkdownState):
+def restructure_text(state: PDFToMarkdownState):
     """Clean the text by reconstructing fragmented sentences, removing page labels, and identifying potential boilerplate"""
     print("text cleaning -- in progress")
 
     if state.qa_feedback_list:
-        text_cleaner_prompt_formatted = text_cleaner_prompt.format(qa_feedback=state.qa_feedback_list)
+        restructure_text_prompt_formatted = restructure_text_prompt.format(qa_feedback=state.qa_feedback_list)
     else:
-        text_cleaner_prompt_formatted = text_cleaner_prompt
+        restructure_text_prompt_formatted = restructure_text_prompt
 
     text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
         text_to_be_cleaned=state.extracted_text
     )
 
 
-    result = llm.invoke([SystemMessage(content=text_cleaner_prompt_formatted), 
+    result = llm.invoke([SystemMessage(content=restructure_text_prompt_formatted), 
                                HumanMessage(text_to_reformat_prompt_formatted)])
     
     cleaned_text = result.content
@@ -76,66 +76,6 @@ def text_cleaner(state: PDFToMarkdownState):
     
     # Save the cleaned text
     save_cleaned_text(state.extracted_text, cleaned_text, "text_cleaner")
-    
-    return {"cleaned_text": result.content}
-
-
-
-def boilerplate_remover(state: PDFToMarkdownState):
-    """Remove boilerplate from the text"""
-    print("boilerplate removal -- in progress")
-
-    if state.qa_feedback_list:
-        boilerplate_remover_prompt_formatted = boilerplate_remover_prompt.format(
-            qa_feedback=state.qa_feedback_list, 
-            original_text=state.extracted_text
-        )
-    else:
-        boilerplate_remover_prompt_formatted = boilerplate_remover_prompt.format(
-            qa_feedback="",
-            original_text=state.extracted_text
-        )
-
-    text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
-        text_to_be_cleaned=state.cleaned_text
-    )
-
-    result = llm.invoke([
-        SystemMessage(content=boilerplate_remover_prompt_formatted), 
-        HumanMessage(content=text_to_reformat_prompt_formatted)
-    ])
-    
-    cleaned_text = result.content
-    print("boilerplate removal -- done")
-    
-    # Save the cleaned text
-    save_cleaned_text(state.extracted_text, cleaned_text, "boilerplate removal check")
-    
-    return {"cleaned_text": result.content}
-
-
-def markdown_formatter(state: PDFToMarkdownState):
-    """Format the text into valid Markdown"""
-    print("text cleaning -- in progress")
-
-    if state.qa_feedback_list:
-        markdown_formatter_prompt_formatted = markdown_formatter_prompt.format(qa_feedback=state.qa_feedback_list)
-    else:
-        markdown_formatter_prompt_formatted = markdown_formatter_prompt
-
-    text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
-        text_to_be_cleaned = state.cleaned_text
-    )
-
-
-    result = llm.invoke([SystemMessage(content=markdown_formatter_prompt_formatted), 
-                               HumanMessage(text_to_reformat_prompt_formatted)])
-    
-    cleaned_text = result.content
-    print("text markdown formatting -- done")
-    
-    # Save the cleaned text
-    save_cleaned_text(state.extracted_text, cleaned_text, "markdown_formatter")
     
     return {"cleaned_text": result.content}
 
@@ -166,15 +106,11 @@ def qa_feedback_prompt(state: PDFToMarkdownState):
 
 # Add nodes
 builder = StateGraph(PDFToMarkdownState, input =PDFToMarkdownInputState, output =PDFToMarkdownOutputState)
-builder.add_node('text_cleaner', text_cleaner)
-builder.add_node('markdown_formatter', markdown_formatter)
-builder.add_node('boilerplate_remover', boilerplate_remover)
+builder.add_node('restructure_text', restructure_text)
 
 # Add edges
-builder.add_edge(START, 'text_cleaner')
-builder.add_edge('text_cleaner', 'boilerplate_remover')
-builder.add_edge('boilerplate_remover', 'markdown_formatter')
-builder.add_edge('markdown_formatter', END)
+builder.add_edge(START, 'restructure_text')
+builder.add_edge('restructure_text', END)
 
 # Create the graph
 graph = builder.compile()
