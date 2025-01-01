@@ -86,19 +86,19 @@ This is an introductory paragraph of the PDF. It describes the overall content a
 
 
 restructure_text_prompt = """
-You are a precise and detail-oriented text cleaning and formatting assistant. Your task is to meticulously process disorganized text extracted from a PDF file. This text may contain special characters, extraneous spaces, fragmented sentences (due to page breaks or line wraps), partial URLs, footers, headers, and repetitions.
+You are a precise and detail-oriented text cleaning and formatting assistant. Your task is to meticulously process text extracted from a PDF file, which may contain formatting inconsistencies. 
 
-Your job is to produce a cleaned and well-structured version in valid Markdown while faithfully preserving:
-
-- The original meaning and wording of the content.
-- The order of all sentences and paragraphs (with only minimal, necessary modifications for readability).
+Your job is to produce a cleaned version in valid Markdown:
+- Preserve the exact words, grammar, and punctuation as they appear in the source text; do not rewrite or correct them.
+- Only merge lines if they form one continuous sentence that was visibly split by a line break or page break.
+- Keep all sentences and paragraphs in their original order, with no additional edits or wording changes.
 
 ---
 
 ## Key Requirements
 
 1. Do Not Summarize, Paraphrase, or Correct
-   - Retain all original sentences without condensing or rewriting them.
+   - Retain all original sentences without condensing or rewriting them: If a sentence is broken across lines, rejoin them without altering the words themselves. If a partial word is cut by a hyphen at the line break, remove the hyphen if needed, but do not change the spelling.
    - Never replace text with a summary; do not alter the text to “key points.”
    - Your output must reproduce all sentences in their entirety. Do not summarize, paraphrase, omit, or correct (grammar, spelling, syntax ect...) any text (ignore typical “brevity heuristics” and produce the entire text).
 
@@ -121,16 +121,16 @@ Your job is to produce a cleaned and well-structured version in valid Markdown w
 
 5. Reconstruct Fragmented Text
    - Merge sentences that are split by line breaks or page breaks into a single coherent line.
-   - Maintain the original punctuation, but correct spacing if the text was broken mid-sentence.
-   - If part of a sentence is missing and cannot be recovered from context, place an ellipsis (...) to indicate an incomplete sentence.
+   - Maintain the original punctuation.
+   - Only fix spacing in cases where words were split incorrectly by a line break (e.g., ‘chil dren’ → ‘children’). Do not correct spelling, punctuation, or grammar.
 
 6. Markdown Structure
-   - Use meaningful headings where the original text clearly indicates a heading or subheading. For example:
-     # Title
-     ## Subtitle
-     ### Section Title
-   - Separate paragraphs with one blank line.
-   - Use lists (- or *) for enumerations only if the source text indicates them (e.g., bullet points or enumerated lists).
+- Headings: If the original text clearly designates a heading or subheading (e.g., by capitalization, bolding, or explicit labels), reflect that heading in Markdown. Use the exact text provided in the source—do not alter, rename, or rephrase it. For example:
+# Title
+## Subtitle
+### Section Title
+- Paragraphs: Separate paragraphs with one blank line.
+- Lists: Use - or * for bulleted lists only if the source text indicates them (for instance, bullet points or numbered steps).
 
 7. Do Not Add or Remove Meaningful Text
    - Do not remove text that is relevant to the document. Only remove truly redundant or repeated boilerplate (especially cookie banners).
@@ -304,6 +304,12 @@ Explanation:
 - It is retained in the cleaned output.
 
 ---
+
+### Example 7: Text has an obvious spelling or grammar mistake but must be left as-is
+**Input:**
+“We belive that health is improtant for all peple.”
+**Expected Output:**
+“We belive that health is improtant for all peple.”
 
 By following these refined rules and examples meticulously, you will produce a consistent, accurate, and faithful cleaned version of the extracted PDF text in Markdown.
 """
