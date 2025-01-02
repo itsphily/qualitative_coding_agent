@@ -1,97 +1,101 @@
-# PDF Processing and Text Extraction Tool
+# PDF to Markdown Converter
 
-This tool processes PDF documents using Nougat (a state-of-the-art PDF understanding model) and cleans the extracted text using LLM-based processing. It maintains the directory structure of your documents while processing them.
+A Python-based tool that extracts text from PDF documents and converts it into clean, well-structured Markdown format. The tool uses advanced AI models for text extraction and cleaning, including Nougat for PDF processing and various language models for text restructuring.
 
 ## Features
 
 - PDF text extraction using Nougat model
-- Maintains original document structure and formatting
-- LLM-based text cleaning and restructuring
-- Recursive directory processing
-- Progress tracking and statistics
+- Intelligent text cleaning and restructuring
+- Boilerplate removal
+- Markdown formatting
+- Quality assurance feedback
+- Support for batch processing
+- Maintains directory structure for processed files
 
-## Directory Structure
+## Prerequisites
+
+- Python 3.8+
+- CUDA-compatible GPU (optional, for faster processing)
+- Access to required API keys (OpenAI, Deepseek)
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd <repository-name>
+```
+
+2. Install the required dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Set up environment variables in a `.env` file:
+```
+OPENAI_API_KEY=your_openai_api_key
+DEEPSEEK_API_KEY=your_deepseek_api_key
+```
+
+## Project Structure
 
 ```
 .
 ├── src/
-│   ├── coding_agent.py    # Main processing script
-│   └── prompt.py          # LLM prompts for text processing
+│   ├── PDF extract to md one prompt.py  # Main script with graph-based processing
+│   ├── PDF to Markdown.py               # Alternative implementation
+│   ├── prompt.py                        # LLM prompts
+│   ├── state.py                         # State management
+│   └── utils.py                         # Utility functions
 ├── storage/
-│   ├── case documents/    # Input PDF files
-│   ├── nougat_extracted_text/  # Raw extracted text
-│   └── cleaned_text_v2/   # Cleaned and processed text
+│   ├── case documents/                  # Input PDFs
+│   ├── nougat_extracted_text/           # Extracted text
+│   └── cleaned_text_v2/                 # Cleaned output
+└── cleaned_text_outputs/                # QA outputs
 ```
-
-## Prerequisites
-
-- Python 3.12+
-- Conda environment
-- Poppler (for PDF processing)
-
-## Installation
-
-1. Create and activate a conda environment:
-```bash
-conda create -n coding_agent python=3.12
-conda activate coding_agent
-```
-
-2. Install required Python packages (choose one method):
-
-   Method A: Using requirements.txt (recommended):
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-   Method B: Installing packages manually:
-   ```bash
-   pip install nougat-ocr pdf2image langchain-ollama langchain-core transformers torch torchvision
-   ```
-
-3. Install Poppler (required for PDF processing):
-   - On macOS:
-   ```bash
-   brew install poppler
-   ```
-   - On Linux:
-   ```bash
-   apt-get install poppler-utils
-   ```
-   - On Windows:
-   Download from: http://blog.alivate.com.au/poppler-windows/
 
 ## Usage
 
-1. Place your PDF files in the `storage/case documents` directory, maintaining your desired folder structure.
+### Using the Graph-based Implementation
 
-2. Run the processing script:
-```bash
-python src/coding_agent.py
+```python
+from src.PDF_extract_to_md_one_prompt import main
+
+# Run the processing pipeline
+main()
 ```
 
-The script will:
-1. Process all PDFs using Nougat and save the extracted text in `storage/nougat_extracted_text`
-2. Clean and restructure the extracted text using LLM and save it in `storage/cleaned_text_v2`
+### Using the Batch Processing Implementation
+
+```python
+from src.PDF_to_Markdown import process_all_pdfs, process_extracted_text
+
+# Process PDFs to extract text
+pdf_stats = process_all_pdfs()
+
+# Clean the extracted text
+cleaning_stats = process_extracted_text()
+```
+
+## Processing Pipeline
+
+1. **PDF Text Extraction**: Uses Nougat model to extract text while preserving structure
+2. **Text Cleaning**: Reconstructs fragmented sentences and removes page labels
+3. **Boilerplate Removal**: Identifies and removes repeated headers, footers, and notices
+4. **Markdown Formatting**: Converts the cleaned text into proper Markdown format
+5. **Quality Assurance**: Provides feedback on the cleaning process
 
 ## Output
 
-- **Raw Extracted Text**: Found in `storage/nougat_extracted_text/`, preserving the original directory structure
-- **Cleaned Text**: Found in `storage/cleaned_text_v2/`, with improved formatting and structure
+The processed files maintain the same directory structure as the input:
+- Extracted text: `storage/nougat_extracted_text/<case>/<subfolder>/`
+- Cleaned text: `storage/cleaned_text_v2/<case>/<subfolder>/`
+- QA outputs: `cleaned_text_outputs/`
 
-## Dependencies
+## Contributing
 
-Main dependencies (see requirements.txt for complete list):
-- `nougat-ocr`: For PDF text extraction
-- `pdf2image`: For converting PDFs to images
-- `langchain-ollama`: For LLM integration
-- `transformers`: For the Nougat model
-- `torch`: For neural network operations
-- `Poppler`: For PDF processing
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Notes
+## License
 
-- The script processes PDFs recursively, maintaining the original folder structure
-- Progress and statistics are displayed during processing
-- Errors are logged but won't stop the overall processing
-- Make sure to check requirements.txt for the complete list of dependencies and their versions
+This project is licensed under the MIT License - see the LICENSE file for details.
