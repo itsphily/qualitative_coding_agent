@@ -8,15 +8,12 @@ load_dotenv()
 
 # State
 #------------------------------------------------------------------------------
-@dataclass(kw_only=True)
-class qa_feedback(TypedDict):
-    qa_feedback: str = field(default= None)
 
 @dataclass(kw_only=True)
 class PDFToMarkdownState:
     extracted_text: str = field(default= None)
     cleaned_text: str= field(default= None)
-    qa_feedback_list: Annotated[qa_feedback, operator.add] = field(default_factory= list)
+    qa_feedback: str = field(default= None)
 
 @dataclass(kw_only=True)
 class PDFToMarkdownInputState(TypedDict):

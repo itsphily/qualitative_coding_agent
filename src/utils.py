@@ -25,7 +25,7 @@ def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str):
         step_name (str): Name of the cleaning step (e.g., 'text_cleaner', 'boilerplate_remover')
         
     Returns:
-        str: Path to the saved file
+        tuple[str, str]: Tuple containing (filepath, full_text)
     """
     # Create outputs directory if it doesn't exist
     output_dir = "cleaned_text_outputs"
@@ -36,16 +36,21 @@ def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str):
     filename = f"cleaned_text_{title}_{timestamp}.md"
     filepath = os.path.join(output_dir, filename)
     
+    # Prepare the full text content
+    full_text = (
+        f"{qa_feedback_prompt}\n\n"
+        f"<Original Text>\n"
+        f"{extracted_text}\n"
+        f"</Original Text>\n\n"
+        f"<Restructured Output>\n"
+        f"{cleaned_text}\n"
+        f"</Restructured Output>\n\n"
+    )
+    
     # Write the content
     with open(filepath, "w", encoding="utf-8") as f:
-        f.write(f"{qa_feedback_prompt}\n\n")
-        f.write("<Original Text>")
-        f.write(f"{extracted_text}\n")
-        f.write("</Original Text>\n\n")
-        f.write("<Restructured Output>")
-        f.write(f"{cleaned_text}\n")
-        f.write("</Restructured Output>\n\n")
-
+        f.write(full_text)
     
     print(f"\nCleaned text saved to: {filepath}")
-    return filepath
+    
+    return full_text

@@ -58,59 +58,47 @@ def restructure_text(state: PDFToMarkdownState):
     """Clean the text by reconstructing fragmented sentences, removing page labels, and identifying potential boilerplate"""
     print("text cleaning -- in progress")
 
-    if state.qa_feedback_list:
-        restructure_text_prompt_formatted = restructure_text_prompt.format(qa_feedback=state.qa_feedback_list)
-    else:
-        restructure_text_prompt_formatted = restructure_text_prompt
-
     text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
         text_to_be_cleaned=state.extracted_text
     )
 
-
-    result = llm.invoke([SystemMessage(content=restructure_text_prompt_formatted), 
+    result = llm.invoke([SystemMessage(content=restructure_text_prompt), 
                                HumanMessage(text_to_reformat_prompt_formatted)])
     
     cleaned_text = result.content
     print("text cleaning -- done")
     
     # Save the cleaned text
-    save_cleaned_text(state.extracted_text, cleaned_text, "text_cleaner")
+    full_text = save_cleaned_text(state.extracted_text, cleaned_text, "text_cleaner")
     
-    return {"cleaned_text": result.content}
+    return {"cleaned_text": result.content, "qa_feedback": full_text}
 
 
 def qa_feedback_prompt(state: PDFToMarkdownState):
     """Clean the text by reconstructing fragmented sentences, removing page labels, and identifying potential boilerplate"""
-    print("text cleaning -- in progress")
+    print("QA -- in progress")
 
-    if state.qa_feedback_list:
-        qa_feedback_prompt_formatted = qa_feedback_prompt.format(qa_feedback=state.qa_feedback_list)
-    else:
-        qa_feedback_prompt_formatted = qa_feedback_prompt
+    qa_feedback_prompt = state.qa_feedback
 
-    text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
-        text_to_be_cleaned = state.cleaned_text
-    )
-
-
-    result = llm.invoke([SystemMessage(content=qa_feedback_prompt_formatted), 
-                               HumanMessage(text_to_reformat_prompt_formatted)])
+    result = llm.invoke([HumanMessage(qa_feedback_prompt)])
     
-    cleaned_text = result.content
+    qa_feedback = result.content
     print("QA -- done")
     
-
+    # Save the cleaned text
+    save_cleaned_text('', qa_feedback, "qa_feedback")
     
-    return {"cleaned_text": result.content}
+    return {"qa_feedback": qa_feedback}
 
 # Add nodes
 builder = StateGraph(PDFToMarkdownState, input =PDFToMarkdownInputState, output =PDFToMarkdownOutputState)
 builder.add_node('restructure_text', restructure_text)
+builder.add_node('qa_feedback_prompt', qa_feedback_prompt)
 
 # Add edges
 builder.add_edge(START, 'restructure_text')
-builder.add_edge('restructure_text', END)
+builder.add_edge('restructure_text', 'qa_feedback_prompt')
+builder.add_edge('qa_feedback_prompt', END)
 
 # Create the graph
 graph = builder.compile()
