@@ -39,12 +39,12 @@ def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str):
     # Write the content
     with open(filepath, "w", encoding="utf-8") as f:
         f.write(f"{qa_feedback_prompt}\n\n")
-        f.write("<original text extracted from a PDF>")
+        f.write("<Original Text>")
         f.write(f"{extracted_text}\n")
-        f.write("</original text extracted from a PDF>\n\n")
-        f.write("<cleaned Markdown output>")
+        f.write("</Original Text>\n\n")
+        f.write("<Restructured Output>")
         f.write(f"{cleaned_text}\n")
-        f.write("</cleaned Markdown output>\n\n")
+        f.write("</Restructured Output>\n\n")
 
     
     print(f"\nCleaned text saved to: {filepath}")
