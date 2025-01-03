@@ -47,6 +47,9 @@ def save_cleaned_text(
     # Prepare the full text content
     full_text = ""
     
+    if include_feedback:
+        full_text += qa_feedback_prompt
+    
     full_text += (
         f"<Original Text>\n"
         f"{extracted_text}\n"
@@ -56,7 +59,7 @@ def save_cleaned_text(
         f"</Restructured Output>\n\n"
     )
     
-    if include_feedback and qa_feedback is not None:
+    if qa_feedback is not None:
         full_text += f"<QA Feedback>\n{qa_feedback}\n</QA Feedback>\n\n"
     
     # Write the content

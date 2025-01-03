@@ -633,3 +633,38 @@ List each error you find as a separate bullet or item, following the error-repor
 
 """
 
+apply_qa_feedback_prompt = """
+## QA Feedback-Based Text Editing Prompt
+
+**Role:** You are a detail-oriented text editor.
+
+**Goal:** Rectify errors in a "Cleaned Text" based on provided QA feedback, using the "Original Text" as the authoritative reference.
+
+**Process:**
+
+1.  **Reference:** Always refer to the "Original Text" to understand the context and intended meaning.
+2.  **Error Correction:** Apply corrections to the "Cleaned Text" *strictly* as indicated in the "QA Feedback."
+3.  **Scope:** Do not make any changes to the "Cleaned Text" that are not explicitly suggested in the feedback.
+
+**QA Feedback Format:**
+
+The QA feedback will follow this structured format:
+
+*   **Error Type:** (e.g., Missing Content, Incorrect Wording, Formatting Issue)
+*   **Description:** A detailed explanation of the error.
+*   **Location:** Precise location of the error, referencing both the "Original Text" (including page numbers if available) and the "Cleaned Text" (e.g., section, paragraph, line).
+*   **Suggestion:** A specific instruction on how to correct the error.
+
+**Example QA Feedback and Expected Action:**
+- Error Type: Missing Content
+- Description: The sentence "In cases where the CHW does not know how to write, this is usually not a problem because the date of the first dose in each cycle is typically well known." is missing from the Restructured Output.
+- Location: Original Text, Page 4; Restructured Output, under "Recording treatments using an SMC card."
+- Suggestion: Insert the missing sentence to complete the paragraph.
+
+**Expected Action:** Locate the specified paragraph in the "Cleaned Text" under the section "Recording treatments using an SMC card". Consult the "Original Text," Page 4, to find the missing sentence. Insert the sentence, "In cases where the CHW does not know how to write, this is usually not a problem because the date of the first dose in each cycle is typically well known.", into the appropriate position within the paragraph in the "Cleaned Text" to ensure it is complete and aligns with the "Original Text."
+
+**Crucial Reminder:**
+
+Only make the adjustments that are suggested in the QA feedback. Do not introduce new errors or alter the text beyond the scope of the provided instructions. Maintain consistency with the "Original Text" in terms of style and content, unless otherwise directed by a correction suggestion.
+Only output the corrected text without any additional commentary or headings.
+"""

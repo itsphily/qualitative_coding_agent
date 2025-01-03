@@ -8,7 +8,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from prompt import (restructure_text_prompt, text_to_reformat_prompt, 
                    pdf_extraction_prompt, text_cleaner_prompt, 
                    boilerplate_remover_prompt, markdown_formatter_prompt,
-                   qa_feedback_prompt, qa_feedback_prompt_header)
+                   qa_feedback_prompt, apply_qa_feedback_prompt)
 from transformers import NougatProcessor, VisionEncoderDecoderModel
 import torch
 from pdf2image import convert_from_path
@@ -74,20 +74,20 @@ def restructure_text(state: PDFToMarkdownState):
     return {"cleaned_text": result.content}
 
 
-def qa_feedback_prompt(state: PDFToMarkdownState):
+def get_qa_feedback(state: PDFToMarkdownState):
     """Provide QA feedback comparing the cleaned text to the original text."""
     print("QA feedback generation -- in progress")
 
     # Prepare the human message with the original and restructured texts
     human_message_text = f"""
-Compare the Original Text against the Restructured Output produced.
-<Original Text>
-{state.extracted_text}
-</Original Text>
-<Restructured Output>
-{state.cleaned_text}
-</Restructured Output>
-"""
+    Compare the Original Text against the Restructured Output produced.
+    <Original Text>
+    {state.extracted_text}
+    </Original Text>
+    <Restructured Output>
+    {state.cleaned_text}
+    </Restructured Output>
+    """
 
     # Invoke the LLM with the system and human messages
     result = llm.invoke([
@@ -104,7 +104,7 @@ Compare the Original Text against the Restructured Output produced.
         state.extracted_text,
         state.cleaned_text,
         "qa_feedback",
-        include_feedback=True,
+        include_feedback=False,
         qa_feedback=state.qa_feedback
     )
 
@@ -117,22 +117,21 @@ def apply_qa_feedback(state: PDFToMarkdownState):
 
     # Prepare the human message with QA feedback, cleaned text, and original text
     human_message_text = f"""
-Apply the QA feedback to the cleaned text using the original text as the authoritative reference.
-
-<QA Feedback>
-{state.qa_feedback}
-</QA Feedback>
-<Cleaned Text>
-{state.cleaned_text}
-</Cleaned Text>
-<Original Text>
-{state.extracted_text}
-</Original Text>
-"""
+    Apply the QA feedback to the cleaned text using the original text as the authoritative reference.
+    <QA Feedback>
+    {state.qa_feedback}
+    </QA Feedback>
+    <Cleaned Text>
+    {state.cleaned_text}
+    </Cleaned Text>
+    <Original Text>
+    {state.extracted_text}
+    </Original Text>
+    """
 
     # Invoke the LLM with the system and human messages
     result = llm.invoke([
-        SystemMessage(content=qa_feedback_prompt_header),
+        SystemMessage(content=apply_qa_feedback_prompt),
         HumanMessage(content=human_message_text)
     ])
 
@@ -146,7 +145,7 @@ Apply the QA feedback to the cleaned text using the original text as the authori
         state.cleaned_text,
         "apply_qa_feedback",
         include_feedback=True,
-        qa_feedback=state.qa_feedback
+        qa_feedback=None
     )
 
     return {"cleaned_text": state.cleaned_text}
@@ -154,13 +153,15 @@ Apply the QA feedback to the cleaned text using the original text as the authori
 
 # Add nodes
 builder = StateGraph(PDFToMarkdownState, input =PDFToMarkdownInputState, output =PDFToMarkdownOutputState)
-builder.add_node('restructure_text', restructure_text)
-builder.add_node('qa_feedback_prompt', qa_feedback_prompt)
+builder.add_node('restructure_text_node', restructure_text)
+builder.add_node('qa_feedback_node', get_qa_feedback)
+builder.add_node('apply_qa_feedback_node', apply_qa_feedback)
 
 # Add edges
-builder.add_edge(START, 'restructure_text')
-builder.add_edge('restructure_text', 'qa_feedback_prompt')
-builder.add_edge('qa_feedback_prompt', END)
+builder.add_edge(START, 'restructure_text_node')
+builder.add_edge('restructure_text_node', 'qa_feedback_node')
+builder.add_edge('qa_feedback_node', 'apply_qa_feedback_node')
+builder.add_edge('apply_qa_feedback_node', END)
 
 # Create the graph
 graph = builder.compile()
