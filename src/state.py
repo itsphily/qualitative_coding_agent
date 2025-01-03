@@ -11,9 +11,10 @@ load_dotenv()
 
 @dataclass(kw_only=True)
 class PDFToMarkdownState:
-    extracted_text: str = field(default= None)
-    cleaned_text: str= field(default= None)
-    qa_feedback: str = field(default= None)
+    extracted_text: str = field(default=None)
+    cleaned_text: str = field(default=None)
+    qa_feedback: str = field(default=None)
+    feedback_application_counter: int = field(default=0)
 
 @dataclass(kw_only=True)
 class PDFToMarkdownInputState(TypedDict):

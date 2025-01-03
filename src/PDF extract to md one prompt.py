@@ -111,6 +111,16 @@ def get_qa_feedback(state: PDFToMarkdownState):
     return {"qa_feedback": state.qa_feedback}
 
 
+def continue_qa_feedback_node(state: PDFToMarkdownState):
+    if state.feedback_application_counter >= 2:
+        # If counter is 2 or more, end the process
+        print("Maximum QA feedback iterations reached. Ending process.")
+        return {}
+    else:
+        # If counter is less than 2, continue to apply QA feedback
+        print("Continuing QA feedback loop. Iteration:", state.feedback_application_counter + 1)
+        return {"next_node": "qa_feedback_node"}
+
 def apply_qa_feedback(state: PDFToMarkdownState):
     """Apply the QA feedback to the cleaned text using the original text as reference."""
     print("Applying QA feedback -- in progress")
@@ -137,7 +147,8 @@ def apply_qa_feedback(state: PDFToMarkdownState):
 
     # Update the cleaned text in the state with the applied feedback
     state.cleaned_text = result.content
-    print("Applying QA feedback -- done")
+    state.feedback_application_counter += 1  # Increment the counter
+    print("Applying QA feedback -- iteration:", state.feedback_application_counter)
 
     # Save the updated cleaned text and original text
     save_cleaned_text(
@@ -161,7 +172,14 @@ builder.add_node('apply_qa_feedback_node', apply_qa_feedback)
 builder.add_edge(START, 'restructure_text_node')
 builder.add_edge('restructure_text_node', 'qa_feedback_node')
 builder.add_edge('qa_feedback_node', 'apply_qa_feedback_node')
-builder.add_edge('apply_qa_feedback_node', END)
+builder.add_edge('apply_qa_feedback_node', 'continue_qa_feedback_node')
+
+# Add the conditional node and edges
+builder.add_node('continue_qa_feedback_node', continue_qa_feedback_node)
+builder.add_conditional_edges(
+    'continue_qa_feedback_node',
+    lambda state: 'qa_feedback_node' if state.feedback_application_counter < 2 else END
+)
 
 # Create the graph
 graph = builder.compile()
