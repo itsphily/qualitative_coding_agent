@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Literal
 from pathlib import Path
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
@@ -111,15 +111,15 @@ def get_qa_feedback(state: PDFToMarkdownState):
     return {"qa_feedback": state.qa_feedback}
 
 
-def continue_qa_feedback_node(state: PDFToMarkdownState):
+def continue_qa_feedback_node(state: PDFToMarkdownState) -> Literal["qa_feedback_node", "qa_feedback_node"]:
     if state.feedback_application_counter >= 2:
         # If counter is 2 or more, end the process
         print("Maximum QA feedback iterations reached. Ending process.")
-        return {}
+        return "qa_feedback_node"
     else:
         # If counter is less than 2, continue to apply QA feedback
         print("Continuing QA feedback loop. Iteration:", state.feedback_application_counter + 1)
-        return {"next_node": "qa_feedback_node"}
+        return "qa_feedback_node"
 
 def apply_qa_feedback(state: PDFToMarkdownState):
     """Apply the QA feedback to the cleaned text using the original text as reference."""
@@ -167,19 +167,12 @@ builder = StateGraph(PDFToMarkdownState, input =PDFToMarkdownInputState, output 
 builder.add_node('restructure_text_node', restructure_text)
 builder.add_node('qa_feedback_node', get_qa_feedback)
 builder.add_node('apply_qa_feedback_node', apply_qa_feedback)
-
 # Add edges
 builder.add_edge(START, 'restructure_text_node')
 builder.add_edge('restructure_text_node', 'qa_feedback_node')
 builder.add_edge('qa_feedback_node', 'apply_qa_feedback_node')
-builder.add_edge('apply_qa_feedback_node', 'continue_qa_feedback_node')
+builder.add_conditional_edges('apply_qa_feedback_node', continue_qa_feedback_node)
 
-# Add the conditional node and edges
-builder.add_node('continue_qa_feedback_node', continue_qa_feedback_node)
-builder.add_conditional_edges(
-    'continue_qa_feedback_node',
-    lambda state: 'qa_feedback_node' if state.feedback_application_counter < 2 else END
-)
 
 # Create the graph
 graph = builder.compile()
