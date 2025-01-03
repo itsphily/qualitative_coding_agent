@@ -8,7 +8,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from prompt import (restructure_text_prompt, text_to_reformat_prompt, 
                    pdf_extraction_prompt, text_cleaner_prompt, 
                    boilerplate_remover_prompt, markdown_formatter_prompt,
-                   qa_feedback_prompt)
+                   qa_feedback_prompt, qa_feedback_prompt_header)
 from transformers import NougatProcessor, VisionEncoderDecoderModel
 import torch
 from pdf2image import convert_from_path
