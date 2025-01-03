@@ -17,15 +17,17 @@ def visualize_graph(graph, name):
         print(f"Error saving graph visualization: {e}")
 
 
-def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str):
+def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str, include_feedback: bool = True):
     """Save cleaned text to a markdown file.
     
     Args:
-        text (str): The cleaned text to save
-        step_name (str): Name of the cleaning step (e.g., 'text_cleaner', 'boilerplate_remover')
+        extracted_text (str): The original text before cleaning
+        cleaned_text (str): The cleaned text to save
+        title (str): Name of the cleaning step (e.g., 'text_cleaner', 'boilerplate_remover')
+        include_feedback (bool): Whether to include the QA feedback prompt in the output
         
     Returns:
-        tuple[str, str]: Tuple containing (filepath, full_text)
+        str: The full text content that was written to the file
     """
     # Create outputs directory if it doesn't exist
     output_dir = "cleaned_text_outputs"
@@ -37,8 +39,11 @@ def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str):
     filepath = os.path.join(output_dir, filename)
     
     # Prepare the full text content
-    full_text = (
-        f"{qa_feedback_prompt}\n\n"
+    full_text = ""
+    if include_feedback:
+        full_text += f"{qa_feedback_prompt}\n\n"
+    
+    full_text += (
         f"<Original Text>\n"
         f"{extracted_text}\n"
         f"</Original Text>\n\n"

@@ -65,18 +65,38 @@ def restructure_text(state: PDFToMarkdownState):
     result = llm.invoke([SystemMessage(content=restructure_text_prompt), 
                                HumanMessage(text_to_reformat_prompt_formatted)])
     
-    cleaned_text = result.content
+   
     print("text cleaning -- done")
     
     # Save the cleaned text
-    full_text = save_cleaned_text(state.extracted_text, cleaned_text, "text_cleaner")
+    save_cleaned_text(state.extracted_text, result.content, "text_cleaner", False)
     
-    return {"cleaned_text": result.content, "qa_feedback": full_text}
+    return {"cleaned_text": result.content}
 
 
 def qa_feedback_prompt(state: PDFToMarkdownState):
-    """Clean the text by reconstructing fragmented sentences, removing page labels, and identifying potential boilerplate"""
+    """Give feedback on the restructured text"""
     print("QA -- in progress")
+
+    qa_feedback_prompt = state.qa_feedback
+
+    result = llm.invoke([SystemMessage(content=restructure_text_prompt), 
+                            HumanMessage(text_to_reformat_prompt_formatted)])
+
+    qa_feedback = result.content
+    print("QA -- done")
+    
+    # Save the cleaned text
+    save_cleaned_text('', qa_feedback, "qa_feedback")
+    
+    return {"qa_feedback": qa_feedback}
+
+
+def apply_qa_feedback(state: PDFToMarkdownState):
+    """Apply the feedback to the restructured text"""
+    print("QA -- in progress")
+
+    qa_feedback_human_message_header = 'Apply the QA feedback to the cleaned text'
 
     qa_feedback_prompt = state.qa_feedback
 
@@ -89,6 +109,7 @@ def qa_feedback_prompt(state: PDFToMarkdownState):
     save_cleaned_text('', qa_feedback, "qa_feedback")
     
     return {"qa_feedback": qa_feedback}
+
 
 # Add nodes
 builder = StateGraph(PDFToMarkdownState, input =PDFToMarkdownInputState, output =PDFToMarkdownOutputState)
@@ -106,7 +127,7 @@ graph = builder.compile()
 
 def main():
 
-    with open("/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/02_Deworm_the_World/05_Charity website/Deworm the World - Evidence Action 2020.md", "r", encoding="utf-8") as f:
+    with open("/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/04_Malaria_Consortium/02_Interview notes/2016-11-09 Interview Notes.md", "r", encoding="utf-8") as f:
         extracted_text = f.read()
     research_input = PDFToMarkdownInputState(extracted_text=extracted_text)
     visualize_graph(graph, "pdf_extract_to_md_v1")
