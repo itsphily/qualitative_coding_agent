@@ -36,7 +36,7 @@ def save_cleaned_text(
         str: The full text content that was written to the file
     """
     # Create outputs directory if it doesn't exist
-    output_dir = "cleaned_text_outputs"
+    output_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/outputs"
     os.makedirs(output_dir, exist_ok=True)
     
     # Create filename with timestamp and step name
