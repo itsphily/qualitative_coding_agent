@@ -3,6 +3,27 @@ import os
 import datetime
 from prompt import qa_feedback_prompt
 
+def save_final_markdown(filepath: str, cleaned_text: str):
+    """Save the cleaned text to the appropriate folder."""
+    # Assuming 'nougat_extracted_text' is in the filepath
+    nougat_path = 'storage/nougat_extracted_text'
+    index = filepath.find(nougat_path)
+    if index == -1:
+        print("Error: 'nougat_extracted_text' not found in filepath.")
+        return
+    # Get the relative path starting from 'nougat_extracted_text'
+    relative_path = filepath[index + len(nougat_path) + 1:]
+    # Construct the output directory path
+    output_dir = os.path.join('final_markdown_files', os.path.dirname(relative_path))
+    # Create directories if they do not exist
+    os.makedirs(output_dir, exist_ok=True)
+    # Construct the output file path
+    output_file = os.path.join(output_dir, os.path.basename(filepath))
+    # Save the cleaned text
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(cleaned_text)
+    print(f"Final markdown saved to: {output_file}")
+
 def visualize_graph(graph, name):
     """Visualize the graph"""
     # visualize the graph
