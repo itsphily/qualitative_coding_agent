@@ -14,12 +14,11 @@ import torch
 from pdf2image import convert_from_path
 from dotenv import load_dotenv
 import json
-import argparse
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.graph import START, END, StateGraph
 import asyncio
-from utils import visualize_graph, save_cleaned_text, save_final_markdown
+from utils import visualize_graph, save_cleaned_text
 from state import PDFToMarkdownState, PDFToMarkdownInputState, PDFToMarkdownOutputState
 from langchain_google_vertexai import VertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -112,15 +111,15 @@ def get_qa_feedback(state: PDFToMarkdownState):
     return {"qa_feedback": state.qa_feedback}
 
 
-def continue_qa_feedback_node(state: PDFToMarkdownState) -> Literal["qa_feedback_node", "save_final_markdown_node"]:
-    if state.feedback_application_counter < 2:
+def continue_qa_feedback_node(state: PDFToMarkdownState) -> Literal["qa_feedback_node", "qa_feedback_node"]:
+    if state.feedback_application_counter >= 2:
+        # If counter is 2 or more, end the process
+        print("Maximum QA feedback iterations reached. Ending process.")
+        return "qa_feedback_node"
+    else:
         # If counter is less than 2, continue to apply QA feedback
         print("Continuing QA feedback loop. Iteration:", state.feedback_application_counter + 1)
         return "qa_feedback_node"
-    else:
-        # If counter is 2 or more, proceed to save final markdown
-        print("Maximum QA feedback iterations reached. Saving final markdown.")
-        return "save_final_markdown_node"
 
 def apply_qa_feedback(state: PDFToMarkdownState):
     """Apply the QA feedback to the cleaned text using the original text as reference."""
@@ -163,23 +162,16 @@ def apply_qa_feedback(state: PDFToMarkdownState):
     return {"cleaned_text": state.cleaned_text}
 
 
-def save_final_markdown_node(state: PDFToMarkdownState):
-    """Save the cleaned text to the appropriate folder."""
-    print("Saving final markdown file.")
-    save_final_markdown(state.filepath, state.cleaned_text)
-
 # Add nodes
 builder = StateGraph(PDFToMarkdownState, input =PDFToMarkdownInputState, output =PDFToMarkdownOutputState)
 builder.add_node('restructure_text_node', restructure_text)
 builder.add_node('qa_feedback_node', get_qa_feedback)
 builder.add_node('apply_qa_feedback_node', apply_qa_feedback)
-builder.add_node('save_final_markdown_node', save_final_markdown_node)
 # Add edges
 builder.add_edge(START, 'restructure_text_node')
 builder.add_edge('restructure_text_node', 'qa_feedback_node')
 builder.add_edge('qa_feedback_node', 'apply_qa_feedback_node')
 builder.add_conditional_edges('apply_qa_feedback_node', continue_qa_feedback_node)
-builder.add_edge('save_final_markdown_node', END)
 
 
 # Create the graph
@@ -187,16 +179,10 @@ graph = builder.compile()
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Process PDF to Markdown.')
-    parser.add_argument('--filepath', type=str, required=True, help='Path to the extracted text file.')
-    args = parser.parse_args()
-
-    filepath = args.filepath
-
+    filepath = '/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/04_Malaria_Consortium/02_Interview notes/2016-11-09 Interview Notes.md'
     with open(filepath, "r", encoding="utf-8") as f:
         extracted_text = f.read()
-
-    research_input = PDFToMarkdownInputState(extracted_text=extracted_text, filepath=filepath)
+    research_input = PDFToMarkdownInputState(extracted_text=extracted_text)
     visualize_graph(graph, "pdf_extract_to_md_v1")
     # Run the graph with the given input
     result = graph.invoke(research_input)
