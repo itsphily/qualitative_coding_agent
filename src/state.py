@@ -11,6 +11,7 @@ load_dotenv()
 
 @dataclass(kw_only=True)
 class PDFToMarkdownState:
+    filepath: str = field(default=None)
     extracted_text: str = field(default=None)
     cleaned_text: str = field(default=None)
     qa_feedback: str = field(default=None)
@@ -18,7 +19,8 @@ class PDFToMarkdownState:
 
 @dataclass(kw_only=True)
 class PDFToMarkdownInputState(TypedDict):
-    extracted_text: str = field(default = None) # Report topic
+    filepath: str = field(default=None)
+    extracted_text: str = field(default=None)
 
 @dataclass(kw_only=True)
 class PDFToMarkdownOutputState(TypedDict):
