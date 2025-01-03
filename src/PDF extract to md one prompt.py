@@ -75,40 +75,81 @@ def restructure_text(state: PDFToMarkdownState):
 
 
 def qa_feedback_prompt(state: PDFToMarkdownState):
-    """Give feedback on the restructured text"""
-    print("QA -- in progress")
+    """Provide QA feedback comparing the cleaned text to the original text."""
+    print("QA feedback generation -- in progress")
 
-    qa_feedback_prompt = state.qa_feedback
+    # Prepare the human message with the original and restructured texts
+    human_message_text = f"""
+Compare the Original Text against the Restructured Output produced.
+<Original Text>
+{state.extracted_text}
+</Original Text>
+<Restructured Output>
+{state.cleaned_text}
+</Restructured Output>
+"""
 
-    result = llm.invoke([SystemMessage(content=restructure_text_prompt), 
-                            HumanMessage(text_to_reformat_prompt_formatted)])
+    # Invoke the LLM with the system and human messages
+    result = llm.invoke([
+        SystemMessage(content=qa_feedback_prompt),
+        HumanMessage(content=human_message_text)
+    ])
 
-    qa_feedback = result.content
-    print("QA -- done")
-    
-    # Save the cleaned text
-    save_cleaned_text('', qa_feedback, "qa_feedback")
-    
-    return {"qa_feedback": qa_feedback}
+    # Store the QA feedback in the state
+    state.qa_feedback = result.content
+    print("QA feedback generation -- done")
+
+    # Save the texts using save_cleaned_text
+    save_cleaned_text(
+        state.extracted_text,
+        state.cleaned_text,
+        "qa_feedback",
+        include_feedback=True,
+        qa_feedback=state.qa_feedback
+    )
+
+    return {"qa_feedback": state.qa_feedback}
 
 
 def apply_qa_feedback(state: PDFToMarkdownState):
-    """Apply the feedback to the restructured text"""
-    print("QA -- in progress")
+    """Apply the QA feedback to the cleaned text using the original text as reference."""
+    print("Applying QA feedback -- in progress")
 
-    qa_feedback_human_message_header = 'Apply the QA feedback to the cleaned text'
+    # Prepare the human message with QA feedback, cleaned text, and original text
+    human_message_text = f"""
+Apply the QA feedback to the cleaned text using the original text as the authoritative reference.
 
-    qa_feedback_prompt = state.qa_feedback
+<QA Feedback>
+{state.qa_feedback}
+</QA Feedback>
+<Cleaned Text>
+{state.cleaned_text}
+</Cleaned Text>
+<Original Text>
+{state.extracted_text}
+</Original Text>
+"""
 
-    result = llm.invoke([HumanMessage(qa_feedback_prompt)])
-    
-    qa_feedback = result.content
-    print("QA -- done")
-    
-    # Save the cleaned text
-    save_cleaned_text('', qa_feedback, "qa_feedback")
-    
-    return {"qa_feedback": qa_feedback}
+    # Invoke the LLM with the system and human messages
+    result = llm.invoke([
+        SystemMessage(content=qa_feedback_prompt_header),
+        HumanMessage(content=human_message_text)
+    ])
+
+    # Update the cleaned text in the state with the applied feedback
+    state.cleaned_text = result.content
+    print("Applying QA feedback -- done")
+
+    # Save the updated cleaned text and original text
+    save_cleaned_text(
+        state.extracted_text,
+        state.cleaned_text,
+        "apply_qa_feedback",
+        include_feedback=True,
+        qa_feedback=state.qa_feedback
+    )
+
+    return {"cleaned_text": state.cleaned_text}
 
 
 # Add nodes

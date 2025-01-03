@@ -17,7 +17,13 @@ def visualize_graph(graph, name):
         print(f"Error saving graph visualization: {e}")
 
 
-def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str, include_feedback: bool = True):
+def save_cleaned_text(
+    extracted_text: str,
+    cleaned_text: str,
+    title: str,
+    include_feedback: bool = True,
+    qa_feedback: str = None
+):
     """Save cleaned text to a markdown file.
     
     Args:
@@ -40,8 +46,6 @@ def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str, includ
     
     # Prepare the full text content
     full_text = ""
-    if include_feedback:
-        full_text += f"{qa_feedback_prompt}\n\n"
     
     full_text += (
         f"<Original Text>\n"
@@ -51,6 +55,9 @@ def save_cleaned_text(extracted_text: str, cleaned_text: str, title: str, includ
         f"{cleaned_text}\n"
         f"</Restructured Output>\n\n"
     )
+    
+    if include_feedback and qa_feedback is not None:
+        full_text += f"<QA Feedback>\n{qa_feedback}\n</QA Feedback>\n\n"
     
     # Write the content
     with open(filepath, "w", encoding="utf-8") as f:
