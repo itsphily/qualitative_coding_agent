@@ -48,3 +48,5 @@ Thumbs.db
 # Project specific
 storage/
 .aider*
+outputs/
+src/final_markdown_files/
