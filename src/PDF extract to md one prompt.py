@@ -160,7 +160,10 @@ def apply_qa_feedback(state: PDFToMarkdownState):
         qa_feedback=None
     )
 
-    return {"cleaned_text": state.cleaned_text}
+    return {
+        "cleaned_text": state.cleaned_text,
+        "feedback_application_counter": state.feedback_application_counter
+    }
 
 
 def save_final_markdown_node(state: PDFToMarkdownState):
