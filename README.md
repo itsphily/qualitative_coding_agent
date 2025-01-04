@@ -31,11 +31,20 @@ cd <repository-name>
 pip install -r requirements.txt
 ```
 
-3. Set up environment variables in a `.env` file:
-```
-OPENAI_API_KEY=your_openai_api_key
-DEEPSEEK_API_KEY=your_deepseek_api_key
-```
+3. Set up environment variables:
+   - Copy the sample environment file:
+     ```bash
+     cp .env.sample .env
+     ```
+   - Open the `.env` file and replace the placeholder values with your actual API keys:
+     ```
+     OPENAI_API_KEY=your_openai_api_key_here
+     DEEPSEEK_API_KEY=your_deepseek_api_key_here
+     # Optional APIs
+     TAVILY_API_KEY=your_tavily_api_key_here
+     GOOGLE_API_KEY=your_google_api_key_here
+     LANGCHAIN_API_KEY=your_langchain_api_key_here
+     ```
 
 ## Project Structure
 
