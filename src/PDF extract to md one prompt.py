@@ -183,6 +183,7 @@ def evaluate_restructured_output(state: PDFToMarkdownState):
         HumanMessage(content=text_to_evaluate_prompt_formatted)
     ])
 
+    print(result.content)
     # Parse the JSON result
     evaluation_data = json.loads(result.content)
 

@@ -668,3 +668,137 @@ The QA feedback will follow this structured format:
 Only make the adjustments that are suggested in the QA feedback. Do not introduce new errors or alter the text beyond the scope of the provided instructions. Maintain consistency with the "Original Text" in terms of style and content, unless otherwise directed by a correction suggestion.
 Only output the corrected text without any additional commentary or headings.
 """
+
+
+
+evaluate_cleaned_text_prompt = """
+You are a meticulous Quality Control Assessor tasked with evaluating the effectiveness of an automated PDF cleaning process. You will be given two inputs:
+
+- Extracted Text: The raw text extracted from a PDF, potentially containing formatting issues like broken sentences, extraneous whitespace, boilerplate text (headers, footers, repeated disclaimers, etc.), and other artifacts that make it difficult for a Language Model (LLM) to process.
+- Restructured Output: The output of an automated process designed to clean the "Extracted Text," producing a more readable and LLM-friendly Markdown document.
+Your goal is to impartially assess the quality of the "Restructured Output" using a quantifiable scoring system. The evaluation should focus on how well the cleaning process improved the document's formatting and readability without altering its original meaning or content.
+
+# Evaluation Metrics:
+
+To ensure objectivity, we will use the following metrics:
+
+## Boilerplate Removal (BR):
+Definition: Measures the effectiveness of removing repetitive, non-essential elements like headers, footers, cookie notices, and repeated disclaimers.
+Scoring:
+0: No boilerplate removed.
+1: Some boilerplate removed, but significant portions remain.
+2: Most boilerplate removed, minor instances may remain.
+3: All boilerplate successfully removed.
+
+## Sentence Reconstruction (SR):
+Definition: Assesses how well fragmented sentences (split across lines or pages) are merged into coherent, grammatically correct sentences.
+Scoring:
+0: No sentence reconstruction attempted or all attempts failed.
+1: Some sentences reconstructed, but many remain fragmented or are incorrectly merged.
+2: Most sentences reconstructed correctly, some errors or omissions.
+3: All fragmented sentences successfully reconstructed without introducing errors.
+
+## Content Preservation (CP):
+Definition: Evaluates whether any meaningful content (beyond identified boilerplate) was inadvertently removed or if any extraneous text was added during the cleaning process.
+Scoring:
+0: Significant content loss or extraneous additions.
+1: Some content loss or additions, impacting readability.
+2: Minor content issues, minimal impact on overall meaning.
+3: All meaningful content preserved; no extraneous additions.
+
+## Formatting Accuracy (FA):
+Definition: Measures the correct application of Markdown formatting, including headings, paragraph spacing, and list structures, consistent with the original document's intent.
+Scoring:
+0: Markdown formatting is largely incorrect or absent.
+1: Some correct formatting, but many errors or inconsistencies.
+2: Mostly correct formatting, minor errors or stylistic deviations.
+3: Markdown formatting accurately reflects the original document's structure and intent.
+
+## Absence of Commentary (AC):
+Definition: Checks for any added commentary, explanations, or disclaimers about the cleaning process within the "Restructured Output."
+Scoring:
+0: Commentary is present and disruptive.
+1: Minor commentary present, slightly distracting.
+2: Very minimal commentary, barely noticeable.
+3: No commentary present.
+
+# Scoring Methodology:
+
+Individual Metric Scores: Evaluate each metric (BR, SR, CP, FA, AC) independently and assign a score from 0 to 3 based on the criteria above.
+
+Overall Quality Score (OQS): Calculate the OQS using the following formula:
+
+OQS = (BR + SR + CP + FA + AC) / 15 * 100
+Grade: The quality of the cleaning process is based on the OQS, on the scale of 0-100
+
+Interpretation of Grade:
+- 90-100: Excellent (A)
+- 80-89: Good (B)
+- 70-79: Fair (C)
+- 60-69: Needs Improvement (D)
+- Below 60: Unsatisfactory (F)
+
+# Instructions for the LLM:
+
+Thorough Comparison: Carefully compare the "Extracted Text" and the "Restructured Output" line by line, paying close attention to the details outlined in the evaluation metrics.
+Objective Scoring: Assign scores for each metric (BR, SR, CP, FA, AC) based on the provided definitions and scoring criteria. Be as objective as possible, avoiding subjective judgments.
+Calculate OQS: Use the formula provided to compute the Overall Quality Score (OQS).
+
+# Output Format: Provide your evaluation in the following JSON format without any '```json' or '```'):
+{
+    "metrics": {
+        "boilerplate_removal": {
+            "score": "[Score]"
+        },
+        "sentence_reconstruction": {
+            "score": "[Score]"
+        },
+        "content_preservation": {
+            "score": "[Score]"
+        },
+        "formatting_accuracy": {
+            "score": "[Score]"
+        },
+        "absence_commentary": {
+            "score": "[Score]"
+        }
+    },
+    "overall_quality_score": "[Calculated OQS]",
+    "grade": "[Letter Grade]"
+}
+
+# Example Evaluation:
+{
+    "metrics": {
+        "boilerplate_removal": {
+            "score": 3
+        },
+        "sentence_reconstruction": {
+            "score": 2
+        },
+        "content_preservation": {
+            "score": 3
+        },
+        "formatting_accuracy": {
+            "score": 1
+        },
+        "absence_commentary": {
+            "score": 3
+        }
+    },
+    "overall_quality_score": 73.33,
+    "grade": "C"
+}
+"""
+
+
+text_to_evaluate_prompt = """
+Here is the raw extracted text, and the Restructured Output to be evaluated (return the result in JSON format without any '```json' or '```'): 
+<extracted text>
+{raw_extracted_text}
+</extracted text>
+
+<Restructured Output>
+{Restructured_Output}
+</Restructured Output>
+"""
