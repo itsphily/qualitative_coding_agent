@@ -9,7 +9,8 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from prompt import (restructure_text_prompt, text_to_reformat_prompt, 
                    pdf_extraction_prompt, text_cleaner_prompt, 
                    boilerplate_remover_prompt, markdown_formatter_prompt,
-                   qa_feedback_prompt, apply_qa_feedback_prompt)
+                   qa_feedback_prompt, apply_qa_feedback_prompt,
+                   evaluate_cleaned_text_prompt, text_to_evaluate_prompt)
 from transformers import NougatProcessor, VisionEncoderDecoderModel
 import torch
 from pdf2image import convert_from_path
@@ -166,6 +167,38 @@ def apply_qa_feedback(state: PDFToMarkdownState):
     }
 
 
+def evaluate_restructured_output(state: PDFToMarkdownState):
+    """Evaluate the restructured output and return the EvaluationResult"""
+    print("Evaluating restructured output -- in progress")
+
+    # Prepare the human message
+    text_to_evaluate_prompt_formatted = text_to_evaluate_prompt.format(
+        raw_extracted_text=state.extracted_text,
+        Restructured_Output=state.cleaned_text
+    )
+
+    # Invoke the LLM in JSON mode
+    result = llm_json_mode.invoke([
+        SystemMessage(content=evaluate_cleaned_text_prompt),
+        HumanMessage(content=text_to_evaluate_prompt_formatted)
+    ])
+
+    # Parse the JSON result
+    evaluation_data = json.loads(result.content)
+
+    # Create the EvaluationResult
+    evaluation_result = EvaluationResult(
+        metrics=evaluation_data.get('metrics', {}),
+        overall_quality_score=evaluation_data.get('overall_quality_score'),
+        grade=evaluation_data.get('grade')
+    )
+
+    # Update the state
+    state.evaluation_result = evaluation_result
+    print("Evaluating restructured output -- done")
+
+    return {"evaluation_result": evaluation_result}
+
 def save_final_markdown_node(state: PDFToMarkdownState):
     """Save the cleaned text to the appropriate folder."""
     print("Saving final markdown...")
@@ -176,13 +209,15 @@ builder = StateGraph(PDFToMarkdownState, input =PDFToMarkdownInputState, output 
 builder.add_node('restructure_text_node', restructure_text)
 builder.add_node('qa_feedback_node', get_qa_feedback)
 builder.add_node('apply_qa_feedback_node', apply_qa_feedback)
+builder.add_node('evaluate_restructured_output_node', evaluate_restructured_output)
 builder.add_node('save_final_markdown_node', save_final_markdown_node)
 
 # Add edges
 builder.add_edge(START, 'restructure_text_node')
 builder.add_edge('restructure_text_node', 'qa_feedback_node')
 builder.add_edge('qa_feedback_node', 'apply_qa_feedback_node')
-builder.add_conditional_edges('apply_qa_feedback_node', continue_qa_feedback_node)
+builder.add_edge('apply_qa_feedback_node', 'evaluate_restructured_output_node')
+builder.add_conditional_edges('evaluate_restructured_output_node', continue_qa_feedback_node)
 builder.add_edge('save_final_markdown_node', END)
 
 
@@ -202,6 +237,13 @@ def main():
     visualize_graph(graph, "pdf_extract_to_md_v1")
     # Run the graph with the given input
     result = graph.invoke(research_input)
+
+    # Print the EvaluationResult
+    if 'evaluation_result' in result:
+        print("\nEvaluation Result:")
+        print(f"Metrics: {result['evaluation_result'].metrics}")
+        print(f"Overall Quality Score: {result['evaluation_result'].overall_quality_score}")
+        print(f"Grade: {result['evaluation_result'].grade}")
     
 if __name__ == "__main__":
     main()  
