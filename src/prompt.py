@@ -503,7 +503,7 @@ Carefully compare the Original Text and the Restructured (Markdown) Output accor
 - Confirm that the Restructured Output contains only the cleaned text and no added notes, explanations, disclaimers, or references to the cleaning process.
 
 ### Boilerplate Removal
-- Check that any repeated boilerplate text (e.g., cookie notices, repeated disclaimers, footers, headers) has been removed in the Restructured Output. Use the examples below as a guide; remove any similar repeated text blocks that do not contribute to the main content. 
+- Check that any repeated boilerplate text (e.g., cookie notices, repeated disclaimers, footers, headers) has been removed in the Restructured Output. Use the boilerplate examples below as a guide; remove any similar repeated text blocks that do not contribute to the main content. 
 - If boilerplate or repeated text was supposed to be removed but still appears, flag it as an error.
 
 ### Sentence Reconstruction
@@ -634,17 +634,35 @@ List each error you find as a separate bullet or item, following the error-repor
 """
 
 apply_qa_feedback_prompt = """
-## QA Feedback-Based Text Editing Prompt
+## Enhanced QA Feedback-Based Text Editing Prompt
 
-**Role:** You are a detail-oriented text editor.
+**Role:** You are a comprehensive text restorer and editor.
 
-**Goal:** Rectify errors in a "Cleaned Text" based on provided QA feedback, using the "Original Text" as the authoritative reference.
+**Goal:** Reconstruct and rectify errors in a "Cleaned Text" based on provided QA feedback, using the "Original Text" as the authoritative reference. Your primary objective is to ensure the "Cleaned Text" accurately reflects the content and intent of the "Original Text," with a particular focus on addressing major content omissions before attending to minor formatting issues.
 
 **Process:**
-
-1.  **Reference:** Always refer to the "Original Text" to understand the context and intended meaning.
-2.  **Error Correction:** Apply corrections to the "Cleaned Text" *strictly* as indicated in the "QA Feedback."
-3.  **Scope:** Do not make any changes to the "Cleaned Text" that are not explicitly suggested in the feedback.
+1.  **Prioritization:** Address errors based on the following priority:
+    1.  **Critical:** Missing Content, Incorrect Information
+    2.  **Important:** Structural Issues, Incorrect Table Values, Logical Flow Problems
+    3.  **Minor:** Formatting Issues, Stylistic Inconsistencies
+2.  **Missing Content Reconstruction:**
+    *   For each "Missing Content" error, locate the corresponding section in the "Original Text."
+    *   Iteratively add back missing sections, using the "Original Text" as a guide. Do not simply add section headings without content.
+    *   Summarize or paraphrase the content from the "Original Text" to fill the gaps, ensuring the reconstructed text flows logically and maintains a consistent style with the existing "Cleaned Text." If sections are too large, consider the feasibility of breaking them down further, adding each subsection individually if necessary.
+    *   Pay close attention to the context of the missing content to ensure it integrates seamlessly with the surrounding text.
+3. **Table Value Correction:**
+    * For each table identified in the feedback, carefully compare the values in the "Cleaned Text" table with those in the corresponding section of the "Original Text."
+    * Correct any discrepancies in the table values to accurately reflect the "Original Text."
+    * Adjust column widths and alignments as needed, ensuring the table is readable and well-structured in markdown format, while adhering to a simple and clear structure.
+4.  **Intelligent Interpretation:**
+    *   Use your understanding of the text and the feedback to make reasonable inferences when filling gaps.
+    *   Paraphrase or summarize as needed to maintain style consistency, unless verbatim insertion is specifically requested.
+5.  **Conflict Resolution:**
+    *   If feedback instructions conflict, prioritize "Missing Content" and "Incorrect Information" corrections over others.
+    *   If conflicts are too complex, flag them in your output. For instance, you can insert a comment like `` within the text where the conflict occurs.
+6.  **Reference:** Always refer to the "Original Text" to understand the context and intended meaning.
+7.  **Error Correction:** Apply corrections to the "Cleaned Text" as indicated in the "QA Feedback," but use your judgment to ensure the final text is coherent and complete.
+8.  **Proactive Error Detection:** If you identify potential errors not explicitly mentioned in the feedback but evident from comparing the "Cleaned Text" to the "Original Text," flag them in your output using a comment like ``.
 
 **QA Feedback Format:**
 
@@ -662,143 +680,193 @@ The QA feedback will follow this structured format:
 - Suggestion: Insert the missing sentence to complete the paragraph.
 
 **Expected Action:** Locate the specified paragraph in the "Cleaned Text" under the section "Recording treatments using an SMC card". Consult the "Original Text," Page 4, to find the missing sentence. Insert the sentence, "In cases where the CHW does not know how to write, this is usually not a problem because the date of the first dose in each cycle is typically well known.", into the appropriate position within the paragraph in the "Cleaned Text" to ensure it is complete and aligns with the "Original Text."
+**Example QA Feedback and Expected Action:**
+- Error Type: Missing Content
+- Description: The Restructured Output is missing the detailed content from the Original Text starting from "Does GiveDirectly have an effective process for getting cash to recipients?" onwards, including sections on mobile money providers, staff fraud, and other issues.
+- Location: Original Text, Page 27 onwards; Restructured Output, after "Does it work?" section.
+- Suggestion: Add the missing sections to the Restructured Output to ensure all content is preserved.
+**Expected Action:**
+Go to the "Does it work?" section of the "Restructured Output". Then go to page 27 of the "Original Text", and locate the section "Does GiveDirectly have an effective process for getting cash to recipients?". Using the content in this section and subsequent sections (on mobile money providers, staff fraud, and other issues), add a new section titled "Does GiveDirectly have an effective process for getting cash to recipients?" to the "Restructured Output". Paraphrase and summarize the content from the Original Text to accurately reflect the information in the missing sections, ensuring logical flow and consistency with the existing text in the "Restructured Output". If this section is large, consider breaking it down into smaller subsections based on the content in the Original Text (e.g., "Mobile Money Providers," "Staff Fraud," "Other Issues").
 
-**Crucial Reminder:**
+**Crucial Reminders:**
 
-Only make the adjustments that are suggested in the QA feedback. Do not introduce new errors or alter the text beyond the scope of the provided instructions. Maintain consistency with the "Original Text" in terms of style and content, unless otherwise directed by a correction suggestion.
-Only output the corrected text without any additional commentary or headings.
+*   Your primary goal is to produce a "Cleaned Text" that is faithful to the "Original Text," especially regarding content completeness.
+*   Address major content omissions before minor formatting issues.
+*   Use your judgment to interpret the feedback and reconstruct the text intelligently.
+*   Only output the corrected text without any additional commentary or headings, unless you need to flag a conflict or potential error as described above.
 """
 
 
 
 evaluate_cleaned_text_prompt = """
-You are a meticulous Quality Control Assessor tasked with evaluating the effectiveness of an automated PDF cleaning process. You will be given two inputs:
+You are a detail-oriented Quality Control agent. Your task is to evaluate the effectiveness of a PDF cleaning process. The "Original Text" will be cleaned by an LLM, resulting in the "Restructured Output".
 
-- Extracted Text: The raw text extracted from a PDF, potentially containing formatting issues like broken sentences, extraneous whitespace, boilerplate text (headers, footers, repeated disclaimers, etc.), and other artifacts that make it difficult for a Language Model (LLM) to process.
-- Restructured Output: The output of an automated process designed to clean the "Extracted Text," producing a more readable and LLM-friendly Markdown document.
-Your goal is to impartially assess the quality of the "Restructured Output" using a quantifiable scoring system. The evaluation should focus on how well the cleaning process improved the document's formatting and readability without altering its original meaning or content.
+The cleaning process is strictly defined as: reconstructing fragmented sentences, removing page labels, and removing boilerplate text. The Restructured Output must reproduce all sentences in their entirety and must not summarize, paraphrase, omit, or correct any text (ignore typical "brevity heuristics" and produce the entire text). You have been provided with examples of boilerplate text and the cleaning process to guide you.
 
-# Evaluation Metrics:
+# Instructions:
 
-To ensure objectivity, we will use the following metrics:
+## Thorough Comparison
+- Carefully compare the "Original Text" and the "Restructured Output" line by line.
+- Identify Boilerplate: Identify and exclude any boilerplate text from your calculations (see Boilerplate Examples below).
 
-## Boilerplate Removal (BR):
-Definition: Measures the effectiveness of removing repetitive, non-essential elements like headers, footers, cookie notices, and repeated disclaimers.
-Scoring:
-0: No boilerplate removed.
-1: Some boilerplate removed, but significant portions remain.
-2: Most boilerplate removed, minor instances may remain.
-3: All boilerplate successfully removed.
+## Calculate Content Preservation Percentage
+- Determine the total amount of meaningful content in the "Original Text", excluding boilerplate text.
+- Determine how much of this content is present in the "Restructured Output".
+- Calculate the approximate percentage of preserved content by dividing the amount of preserved meaningful content by the total amount of meaningful content in the "Original Text", then multiply by 100.
 
-## Sentence Reconstruction (SR):
-Definition: Assesses how well fragmented sentences (split across lines or pages) are merged into coherent, grammatically correct sentences.
-Scoring:
-0: No sentence reconstruction attempted or all attempts failed.
-1: Some sentences reconstructed, but many remain fragmented or are incorrectly merged.
-2: Most sentences reconstructed correctly, some errors or omissions.
-3: All fragmented sentences successfully reconstructed without introducing errors.
+- **Approximation**: Provide an approximate numerical value, acknowledging that exact matching may not be feasible.
 
-## Content Preservation (CP):
-Definition: Evaluates whether any meaningful content (beyond identified boilerplate) was inadvertently removed or if any extraneous text was added during the cleaning process.
-Scoring:
-0: Significant content loss or extraneous additions.
-1: Some content loss or additions, impacting readability.
-2: Minor content issues, minimal impact on overall meaning.
-3: All meaningful content preserved; no extraneous additions.
+# Output Format:
+- Do not include any analysis, explanations, or additional commentary in your output.
+- Ensure accuracy in your calculation based on the provided instructions.
+- The JSON output must not include any '```json' or '```'
 
-## Formatting Accuracy (FA):
-Definition: Measures the correct application of Markdown formatting, including headings, paragraph spacing, and list structures, consistent with the original document's intent.
-Scoring:
-0: Markdown formatting is largely incorrect or absent.
-1: Some correct formatting, but many errors or inconsistencies.
-2: Mostly correct formatting, minor errors or stylistic deviations.
-3: Markdown formatting accurately reflects the original document's structure and intent.
-
-## Absence of Commentary (AC):
-Definition: Checks for any added commentary, explanations, or disclaimers about the cleaning process within the "Restructured Output."
-Scoring:
-0: Commentary is present and disruptive.
-1: Minor commentary present, slightly distracting.
-2: Very minimal commentary, barely noticeable.
-3: No commentary present.
-
-# Scoring Methodology:
-
-Individual Metric Scores: Evaluate each metric (BR, SR, CP, FA, AC) independently and assign a score from 0 to 3 based on the criteria above.
-
-Overall Quality Score (OQS): Calculate the OQS using the following formula:
-
-OQS = (BR + SR + CP + FA + AC) / 15 * 100
-Grade: The quality of the cleaning process is based on the OQS, on the scale of 0-100
-
-Interpretation of Grade:
-- 90-100: Excellent (A)
-- 80-89: Good (B)
-- 70-79: Fair (C)
-- 60-69: Needs Improvement (D)
-- Below 60: Unsatisfactory (F)
-
-# Instructions for the LLM:
-
-Thorough Comparison: Carefully compare the "Extracted Text" and the "Restructured Output" line by line, paying close attention to the details outlined in the evaluation metrics.
-Objective Scoring: Assign scores for each metric (BR, SR, CP, FA, AC) based on the provided definitions and scoring criteria. Be as objective as possible, avoiding subjective judgments.
-Calculate OQS: Use the formula provided to compute the Overall Quality Score (OQS).
-
-# Output Format: Provide your evaluation in the following JSON format without any '```json' or '```'):
 {
-    "metrics": {
-        "boilerplate_removal": {
-            "score": "[Score]"
-        },
-        "sentence_reconstruction": {
-            "score": "[Score]"
-        },
-        "content_preservation": {
-            "score": "[Score]"
-        },
-        "formatting_accuracy": {
-            "score": "[Score]"
-        },
-        "absence_commentary": {
-            "score": "[Score]"
-        }
-    },
-    "overall_quality_score": "[Calculated OQS]",
-    "grade": "[Letter Grade]"
+  "content_preservation_percentage": 98.75
 }
 
-# Example Evaluation:
-{
-    "metrics": {
-        "boilerplate_removal": {
-            "score": 3
-        },
-        "sentence_reconstruction": {
-            "score": 2
-        },
-        "content_preservation": {
-            "score": 3
-        },
-        "formatting_accuracy": {
-            "score": 1
-        },
-        "absence_commentary": {
-            "score": 3
-        }
-    },
-    "overall_quality_score": 73.33,
-    "grade": "C"
-}
+# Boilerplate Examples:
+
+## Example 1: Repeated Page Labels
+- **Text Snippet**: `=== Page X ===`
+- **Why It’s Boilerplate**: Page labels like `=== Page 1 ===` appear throughout the document but add no substantive meaning to the main text.
+
+## Example 2: Repeated Cookie Notice
+- **Text Snippet**: "We've placed functionality cookies on your device to help our website run effectively. By clicking OK, you agree to our use of cookies..."
+- **Why It’s Boilerplate**: It’s a generic website cookie banner repeated on multiple pages.
+
+## Example 3: Final Footer/Disclaimer Block
+- **Text Snippet**: "GiveWell, aka The Clear Fund (a tax-exempt 501(c)(3) public charity), was founded in 2007... This work is licensed under a Creative Commons Attribution-Noncommercial-Share alike 3.0 United States License."
+- **Why It’s Boilerplate**: It’s a repeated, end-of-document notice about the organization’s licensing and donor base that appears as a closing footer.
+
+## Example 4: Navigation Menu / Website Header
+- **Generic Example**: "Giving Effectively | HOW we work | top charities | RESEARCH | OUR MISTAKES | ABOUT | UPDATES | HOME"
+- **Why It’s Boilerplate**: Navigation links are typically repeated on every page but are not part of the main content.
+
+## Example 5: “Subscribe / Mailing List” Banner
+- **Generic Example**: "SIGN UP TO OUR MAILING LIST — Follow us: Contact us"
+- **Why It’s Boilerplate**: Repeated calls to subscribe or sign up that appear on multiple pages add no unique substantive information to the body text.
+
+## Example 6: URL in References Section
+- **Text Snippet**: "Source: https://www.givewell.org/charities/give-directly"
+- **Why It’s Boilerplate**: This URL appears as a generic reference link repeatedly in the source listings and adds no unique content to the main text.
+
+## Example 7: URL in Footer Subscription Prompt
+- **Text Snippet**: "https://www.givewell.org/charities/give-directly/supplementary-information"
+- **Why It’s Boilerplate**: This link appears as part of a repetitive “Follow Us / Subscribe” footer block and is not integral to the main body of the document.
+
+## Example 8: Repeated “(archive)” Links
+- **Text Snippet**: "Center for Global Development blog post, April 2018 (archive)"
+- **Why It’s Boilerplate**: The `(archive)` references are repeated generic URL placeholders for archived web pages, functioning as navigational notes rather than substantive text.
+
+# Examples of the Cleaning Process:
+
+### Example 1: Page Label Removal
+
+**Input:**
+```
+=== Page 1 ===
+
+We've placed functionality cookies on your device to help our website run effectively. By clicking OK, you agree to our use of cookies. See our Privacy Policy for full info.
+```
+
+**Expected Output:**
+```
+We've placed functionality cookies on your device to help our website run effectively. By clicking OK, you agree to our use of cookies. See our Privacy Policy for full info.
+```
+
+**Explanation:**
+- The “=== Page 1 ===” label is removed.
+- Cookie notices are removed entirely if they appear multiple times or are recognized as a generic banner repeated throughout the text.
+- All else is preserved.
+
+### Example 2: Paragraph Separation and Reconstructed Sentences
+
+**Input:**
+```
+=== Page 2 ===
+
+Our mission is to prevent
+and treat neglected
+infectious diseases
+through strengthening
+impactful and comprehensive
+health programmes.
+
+We've achieved a lot
+since our foundation
+in 2002.
+We've helped establish
+programmes against
+parasitic worm infections
+in countries where
+none previously existed.
+```
+
+**Expected Output:**
+```
+Our mission is to prevent and treat neglected infectious diseases through strengthening impactful and comprehensive health programmes.
+
+We've achieved a lot since our foundation in 2002.
+We've helped establish programmes against parasitic worm infections in countries where none previously existed.
+```
+
+**Explanation:**
+- The text broken across several lines is reconstructed into coherent sentences.
+- A blank line separates paragraphs.
+
+### Example 3: Avoiding Summaries or Commentary
+
+**Input:**
+```
+=== Page 3 ===
+A conversation with Alan Fenwick and Najwa Al Abdallah, September 14, 2015
+
+## Participants
+
+* Alan Fenwick
+* Najwa Al Abdallah
+* Natalie Crispin
+* Tyler Heishman
+
+**Note**: These notes were compiled by GiveWell.
+
+## Summary
+
+GiveWell spoke with Professor Alan Fenwick and Najwa Al Abdallah of the Schistosomiasis Control Initiative (SCI) as part of its end-of-year update on SCI.
+```
+
+**Correct Output (Full Preservation):**
+```
+A conversation with Alan Fenwick and Najwa Al Abdallah, September 14, 2015
+
+## Participants
+
+* Alan Fenwick
+* Najwa Al Abdallah
+* Natalie Crispin
+* Tyler Heishman
+
+**Note**: These notes were compiled by GiveWell.
+
+## Summary
+
+GiveWell spoke with Professor Alan Fenwick and Najwa Al Abdallah of the Schistosomiasis Control Initiative (SCI) as part of its end-of-year update on SCI.
+```
+
+**Explanation:**
+- No summarization or paraphrasing.
+- Original structure, headings, and bullet points are preserved.
 """
 
 
 text_to_evaluate_prompt = """
-Here is the raw extracted text, and the Restructured Output to be evaluated (return the result in JSON format without any '```json' or '```'): 
+Here is the raw extracted text, and the Restructured Output to be evaluated (You mustreturn the result in JSON format without any '```json' or '```'): 
 <extracted text>
 {raw_extracted_text}
 </extracted text>
 
-<Restructured Output>
+<Original Text>
 {Restructured_Output}
-</Restructured Output>
+</Original Text>
 """

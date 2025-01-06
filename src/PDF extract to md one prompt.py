@@ -24,7 +24,7 @@ from utils import visualize_graph, save_cleaned_text, save_final_markdown
 from state import PDFToMarkdownState, PDFToMarkdownInputState, PDFToMarkdownOutputState, EvaluationResult
 from langchain_google_vertexai import VertexAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-
+from datetime import datetime
 
 load_dotenv()
 ### LLM
@@ -70,9 +70,6 @@ def restructure_text(state: PDFToMarkdownState):
    
     print("text cleaning -- done")
     
-    # Save the cleaned text
-    save_cleaned_text(state.extracted_text, result.content, "text_cleaner", False)
-    
     return {"cleaned_text": result.content}
 
 
@@ -105,8 +102,8 @@ def get_qa_feedback(state: PDFToMarkdownState):
     save_cleaned_text(
         state.extracted_text,
         state.cleaned_text,
-        "qa_feedback",
-        include_feedback=False,
+        f"qa_feedback_pass#{state.feedback_application_counter}",
+        include_feedback=True,
         qa_feedback=state.qa_feedback
     )
 
@@ -114,7 +111,7 @@ def get_qa_feedback(state: PDFToMarkdownState):
 
 
 def continue_qa_feedback_node(state: PDFToMarkdownState) -> Literal['qa_feedback_node', 'save_final_markdown_node']:
-    if state.feedback_application_counter <= 2:
+    if state.feedback_application_counter < 5:
         # Continue QA feedback loop
         print("Continuing QA feedback loop. Iteration:", state.feedback_application_counter + 1)
         return 'qa_feedback_node'
@@ -152,15 +149,6 @@ def apply_qa_feedback(state: PDFToMarkdownState):
     state.feedback_application_counter += 1  # Increment the counter
     print("Applying QA feedback -- iteration:", state.feedback_application_counter)
 
-    # Save the updated cleaned text and original text
-    save_cleaned_text(
-        state.extracted_text,
-        state.cleaned_text,
-        "apply_qa_feedback",
-        include_feedback=True,
-        qa_feedback=None
-    )
-
     return {
         "cleaned_text": state.cleaned_text,
         "feedback_application_counter": state.feedback_application_counter
@@ -177,6 +165,15 @@ def evaluate_restructured_output(state: PDFToMarkdownState):
         Restructured_Output=state.cleaned_text
     )
 
+    # Save system and human messages to file
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_path = f"outputs/evaluation_{timestamp}.md"
+    with open(output_path, "w") as f:
+        f.write("## System Message\n\n")
+        f.write(evaluate_cleaned_text_prompt)
+        f.write("\n\n## Human Message\n\n") 
+        f.write(text_to_evaluate_prompt_formatted)
+
     # Invoke the LLM in JSON mode
     result = llm_json_mode.invoke([
         SystemMessage(content=evaluate_cleaned_text_prompt),
@@ -189,9 +186,7 @@ def evaluate_restructured_output(state: PDFToMarkdownState):
 
     # Create the EvaluationResult
     evaluation_result = EvaluationResult(
-        metrics=evaluation_data.get('metrics', {}),
-        overall_quality_score=evaluation_data.get('overall_quality_score'),
-        grade=evaluation_data.get('grade')
+        overall_quality_score=evaluation_data.get('content_preservation_percentage'),
     )
 
     # Update the state
