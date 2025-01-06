@@ -1,13 +1,14 @@
 import requests
 import json
+from dotenv import load_dotenv
+import os
 
-# 1. Your API key or Personal Access Token
-#    If using an API key, prefix with 'Bearer ' + api_key
-#    If using a PAT, do the same.
-AIRTABLE_API_KEY = "pat6Ip0yNXBnkTMtO.f0c610b8235924a52f259e3820b87bef6476fe13278eeb16357586b477088d6d"
+# Load environment variables from .env file
+load_dotenv()
 
-# 2. Your base ID (from the API docs or base settings)
-base_id = "appnPdkx0AZdemg7M"
+# Get environment variables
+AIRTABLE_API_KEY = os.getenv("AIRTABLE_API_KEY")
+base_id = os.getenv("AIRTABLE_BASE_ID")
 
 # 3. Your table name exactly as it appears in Airtable (e.g. 'Metrics')
 table_name = "Metrics"
