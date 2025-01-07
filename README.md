@@ -31,7 +31,13 @@ cd <repository-name>
 pip install -r requirements.txt
 ```
 
-3. Set up environment variables:
+3. Download required NLTK data:
+```bash
+# Download both required NLTK packages
+python -c "import nltk; nltk.download('punkt'); nltk.download('punkt_tab')"
+```
+
+4. Set up environment variables:
    - Copy the sample environment file:
      ```bash
      cp .env.sample .env

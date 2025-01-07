@@ -49,3 +49,11 @@ What file do you want to CREATE or UPDATE?
 What function do you want to CREATE or UPDATE?
 What are details you want to add to drive the code changes?
 ```
+## Mid-Level Objective
+
+
+
+- In src/chunk_to_md.py, CREATE a graph (the cleaning subgraph) that will take the chunks dict and return a cleaned chunk dictionary. The state of the graph will be ChunktoMarkdownState, with the input state being ChunktoMarkdownInputState, and the output state being ChunktoMarkdownOutputState. This subgraph will be similar to the one in src/PDF extract to md one prompt.py. MODIFY the graph in src/PDF extract to md one prompt.py to use the following nodes only: restructure_chunk_node, qa_feedback_node, apply_qa_feedback_node, save_to_cleaned_chunks_dict_node.
+
+
+- MODIFY the save_final_markdown_node to save the cleaned chunks to a dict (the cleaned chunks is the value, and the chunk number is the key)

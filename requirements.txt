@@ -13,3 +13,5 @@ python-dotenv
 nougat-ocr
 Pillow
 typing-extensions
+# NLTK (requires additional downloads: punkt and punkt_tab)
+nltk

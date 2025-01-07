@@ -2,7 +2,8 @@ import os
 import argparse
 from typing import List, Dict, Literal
 from langchain_core.messages import HumanMessage, SystemMessage
-from langgraph.graph import START, END, StateGraph, Send
+from langgraph.graph import START, END, StateGraph
+from langgraph.constants import Send
 import asyncio
 from chunk_utils import chunk_file
 from chunk_state import (
@@ -13,6 +14,7 @@ from prompt import (
     restructure_text_prompt, text_to_reformat_prompt, 
     qa_feedback_prompt, apply_qa_feedback_prompt
 )
+from chunk_utils import save_final_markdown as save_md
 
 # LLM initialization
 from langchain_openai import ChatOpenAI
@@ -46,6 +48,11 @@ def restructure_chunk_node(state: ChunktoMarkdownState):
         SystemMessage(content=restructure_text_prompt),
         HumanMessage(content=text_to_reformat_prompt_formatted)
     ])
+    # Print chunk number and word count
+    word_count = len(state.chunk_text.split())
+    print(f"Chunk {state.chunk_number} word count: {word_count}")
+    
+    
     state.cleaned_chunk_text = result.content
     print(f"Cleaning chunk {state.chunk_number} -- done")
     return {"cleaned_chunk_text": state.cleaned_chunk_text}
@@ -129,16 +136,37 @@ chunk_cleaner.add_edge('save_to_cleaned_chunks_dict_node', END)
 def chunk_file_node(state: PDFToMarkdownState):
     """Chunk the extracted text into a dictionary of chunks."""
     print("Chunking file -- in progress")
+    # Get total word count of file
+
+
     state.chunks_dict = chunk_file(state.filepath)
     print("Chunking file -- done")
     return {"chunks_dict": state.chunks_dict}
 
 def send_to_clean_node(state: PDFToMarkdownState):
     """Send each chunk to the chunk cleaner subgraph."""
-    return [Send(
+    print("Sending chunks to cleaner -- in progress")
+    
+    total_words = 0
+    for chunk_number, chunk_text in state.chunks_dict.items():
+        word_count = len(chunk_text.split())
+        total_words += word_count
+        print(f"Chunk {chunk_number}: {word_count} words")
+    print(f"Total words across all chunks: {total_words}")
+    with open(state.filepath, 'r', encoding='utf-8') as f:
+        text = f.read()
+        word_count = len(text.split())
+    print(f"Total words in file: {word_count}")
+    
+    print("Sending chunks to cleaner -- done")
+    
+    sends = [Send(
         "clean_text", 
-        {"chunk_number": chunk_number, "chunk_text": chunk_text, "qa_loop_limit": state.qa_loop_limit}
+        {"chunk_number": chunk_number, "chunk_text": chunk_text}
     ) for chunk_number, chunk_text in state.chunks_dict.items()]
+    
+    # Return a dictionary with the 'next' key containing the Send objects
+    return {"next": sends}
 
 def compile_clean_text(state: PDFToMarkdownState):
     """Combine cleaned chunks into the final cleaned text."""
@@ -149,7 +177,7 @@ def compile_clean_text(state: PDFToMarkdownState):
 def save_final_markdown(state: PDFToMarkdownState):
     """Save the cleaned text to the appropriate folder."""
     print("Saving final markdown...")
-    from chunk_utils import save_final_markdown as save_md
+    
     save_md(state.filepath, state.cleaned_text)
     print("Final markdown saved.")
 
@@ -167,6 +195,8 @@ main_graph.add_edge('send_to_clean_node', 'clean_text')
 main_graph.add_edge('clean_text', 'compile_clean_text')
 main_graph.add_edge('compile_clean_text', 'save_final_markdown')
 main_graph.add_edge('save_final_markdown', END)
+
+main_graph = main_graph.compile()
 
 def main():
     parser = argparse.ArgumentParser(description='Process PDF to Markdown with chunking.')
