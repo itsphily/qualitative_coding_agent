@@ -1,4 +1,5 @@
 import os
+from typing import Dict
 
 def chunk_file(filepath: str, chunk_size: int = 2000) -> Dict[int, str]:
     """
