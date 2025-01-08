@@ -111,7 +111,7 @@ def get_qa_feedback(state: PDFToMarkdownState):
 
 
 def continue_qa_feedback_node(state: PDFToMarkdownState) -> Literal['qa_feedback_node', 'save_final_markdown_node']:
-    if state.feedback_application_counter < 5:
+    if state.feedback_application_counter < 2:
         # Continue QA feedback loop
         print("Continuing QA feedback loop. Iteration:", state.feedback_application_counter + 1)
         return 'qa_feedback_node'
@@ -215,7 +215,6 @@ builder.add_edge('qa_feedback_node', 'apply_qa_feedback_node')
 builder.add_edge('apply_qa_feedback_node', 'evaluate_restructured_output_node')
 builder.add_conditional_edges('evaluate_restructured_output_node', continue_qa_feedback_node)
 builder.add_edge('save_final_markdown_node', END)
-
 
 # Create the graph
 graph = builder.compile()
