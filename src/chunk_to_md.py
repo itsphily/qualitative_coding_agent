@@ -142,7 +142,7 @@ def chunk_file_node(state: PDFToMarkdownState):
     print("Chunking file -- done")
     return {"chunks_dict": state.chunks_dict}
 
-def send_to_clean_node(state: PDFToMarkdownState):
+async def send_to_clean_node(state: PDFToMarkdownState):
     """Send each chunk to the chunk cleaner subgraph."""
     print("Sending chunks to cleaner -- in progress")
 
@@ -151,16 +151,17 @@ def send_to_clean_node(state: PDFToMarkdownState):
         word_count = len(chunk_text.split())
         total_words += word_count
         print(f"Chunk {chunk_number}: {word_count} words")
-    print(f"Total words across all chunks: {total_words}")
 
-    return [Send("clean_text",{
-                "chunk_number": k,
-                "chunk_text": v,
+        yield Send(
+            "clean_text",
+            {
+                "chunk_number": chunk_number,
+                "chunk_text": chunk_text,
                 "qa_loop_limit": state.qa_loop_limit
             }
         )
-        for k, v in state.chunks_dict.items()
-    ]
+
+    print(f"Total words across all chunks: {total_words}")
 
 
 def compile_clean_text(state: PDFToMarkdownState):
