@@ -38,8 +38,9 @@ llm_json_mode.bind(response_format={"type": "json_object"})
 
 # Define functions for the chunk cleaner subgraph
 
-def restructure_chunk_node(state: ChunktoMarkdownState):
+def restructure_chunk_node(state: ChunktoMarkdownInputState):
     """Clean the chunk by reconstructing fragmented sentences, removing page labels, and identifying potential boilerplate."""
+    
     print(f"Cleaning chunk {state.chunk_number} -- in progress")
     text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
         text_to_be_cleaned=state.chunk_text
@@ -51,7 +52,6 @@ def restructure_chunk_node(state: ChunktoMarkdownState):
     # Print chunk number and word count
     word_count = len(state.chunk_text.split())
     print(f"Chunk {state.chunk_number} word count: {word_count}")
-    
     
     state.cleaned_chunk_text = result.content
     print(f"Cleaning chunk {state.chunk_number} -- done")
@@ -138,7 +138,6 @@ def chunk_file_node(state: PDFToMarkdownState):
     print("Chunking file -- in progress")
     # Get total word count of file
 
-
     state.chunks_dict = chunk_file(state.filepath)
     print("Chunking file -- done")
     return {"chunks_dict": state.chunks_dict}
@@ -146,27 +145,23 @@ def chunk_file_node(state: PDFToMarkdownState):
 def send_to_clean_node(state: PDFToMarkdownState):
     """Send each chunk to the chunk cleaner subgraph."""
     print("Sending chunks to cleaner -- in progress")
-    
+
     total_words = 0
     for chunk_number, chunk_text in state.chunks_dict.items():
         word_count = len(chunk_text.split())
         total_words += word_count
         print(f"Chunk {chunk_number}: {word_count} words")
     print(f"Total words across all chunks: {total_words}")
-    with open(state.filepath, 'r', encoding='utf-8') as f:
-        text = f.read()
-        word_count = len(text.split())
-    print(f"Total words in file: {word_count}")
-    
-    print("Sending chunks to cleaner -- done")
-    
-    sends = [Send(
-        "clean_text", 
-        {"chunk_number": chunk_number, "chunk_text": chunk_text}
-    ) for chunk_number, chunk_text in state.chunks_dict.items()]
-    
-    # Return a dictionary with the 'next' key containing the Send objects
-    return {"next": sends}
+
+    return [Send("clean_text",{
+                "chunk_number": k,
+                "chunk_text": v,
+                "qa_loop_limit": state.qa_loop_limit
+            }
+        )
+        for k, v in state.chunks_dict.items()
+    ]
+
 
 def compile_clean_text(state: PDFToMarkdownState):
     """Combine cleaned chunks into the final cleaned text."""
