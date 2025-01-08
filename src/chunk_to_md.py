@@ -151,18 +151,19 @@ def send_to_clean_node(state: PDFToMarkdownState):
         word_count = len(chunk_text.split())
         total_words += word_count
         print(f"Chunk {chunk_number}: {word_count} words")
-
-        yield Send(
-            "clean_text",
-            {
-                "chunk_number": chunk_number,
-                "chunk_text": chunk_text,
-                "qa_loop_limit": state.qa_loop_limit
-            }
-        )
-
     print(f"Total words across all chunks: {total_words}")
 
+    return [
+        Send(
+            "clean_text",
+            {
+                "chunk_number": k,
+                "chunk_text": v,
+                "qa_loop_limit": state.qa_loop_limit,
+            }
+        )
+        for k, v in state.chunks_dict.items()
+    ]
 
 def compile_clean_text(state: PDFToMarkdownState):
     """Combine cleaned chunks into the final cleaned text."""
@@ -180,14 +181,12 @@ def save_final_markdown(state: PDFToMarkdownState):
 # Build the main graph
 main_graph = StateGraph(PDFToMarkdownState, input=PDFToMarkdownInputState, output=PDFToMarkdownOutputState)
 main_graph.add_node('chunk_file_node', chunk_file_node)
-main_graph.add_node('send_to_clean_node', send_to_clean_node)
 main_graph.add_node('clean_text', chunk_cleaner.compile())
 main_graph.add_node('compile_clean_text', compile_clean_text)
 main_graph.add_node('save_final_markdown', save_final_markdown)
 
 main_graph.add_edge(START, 'chunk_file_node')
-main_graph.add_edge('chunk_file_node', 'send_to_clean_node')
-main_graph.add_edge('send_to_clean_node', 'clean_text')
+main_graph.add_conditional_edges('chunk_file_node',send_to_clean_node, ['clean_text'])
 main_graph.add_edge('clean_text', 'compile_clean_text')
 main_graph.add_edge('compile_clean_text', 'save_final_markdown')
 main_graph.add_edge('save_final_markdown', END)
@@ -212,7 +211,7 @@ def main():
         qa_loop_limit=qa_loop_limit
     )
 
-    visualize_graph(main_graph, "Chunk_to_md")
+    visualize_graph(main_graph, "Chunk_to_md_v1")
     # Run the main graph with the given input
     main_graph.invoke(pdf_state)
     
