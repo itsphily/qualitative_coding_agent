@@ -1,5 +1,6 @@
 import os
 from typing import Dict
+from langchain_core.runnables.graph import MermaidDrawMethod
 
 def chunk_file(filepath: str, chunk_size: int = 2000) -> Dict[int, str]:
     """
@@ -58,3 +59,16 @@ def save_final_markdown(filepath: str, cleaned_text: str):
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(cleaned_text)
     print(f"Final markdown saved to: {output_file}")
+
+def visualize_graph(graph, name):
+    """Visualize the graph"""
+    # visualize the graph
+    try:
+        png_data = graph.get_graph(xray = 1).draw_mermaid_png(
+            draw_method=MermaidDrawMethod.API,
+        )
+        with open(f'{name}.png', 'wb') as f:
+            f.write(png_data)
+        print(f"Graph visualization saved to '{name}.png'")
+    except Exception as e:
+        print(f"Error saving graph visualization: {e}")

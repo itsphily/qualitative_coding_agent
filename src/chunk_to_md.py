@@ -14,7 +14,7 @@ from prompt import (
     restructure_text_prompt, text_to_reformat_prompt, 
     qa_feedback_prompt, apply_qa_feedback_prompt
 )
-from chunk_utils import save_final_markdown as save_md
+from chunk_utils import save_final_markdown as save_md, visualize_graph
 
 # LLM initialization
 from langchain_openai import ChatOpenAI
@@ -142,7 +142,7 @@ def chunk_file_node(state: PDFToMarkdownState):
     print("Chunking file -- done")
     return {"chunks_dict": state.chunks_dict}
 
-async def send_to_clean_node(state: PDFToMarkdownState):
+def send_to_clean_node(state: PDFToMarkdownState):
     """Send each chunk to the chunk cleaner subgraph."""
     print("Sending chunks to cleaner -- in progress")
 
@@ -212,8 +212,10 @@ def main():
         qa_loop_limit=qa_loop_limit
     )
 
+    visualize_graph(main_graph, "Chunk_to_md")
     # Run the main graph with the given input
-    result = main_graph.invoke(pdf_state)
+    main_graph.invoke(pdf_state)
+    
 
     print("Processing completed.")
 

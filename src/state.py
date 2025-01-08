@@ -9,9 +9,7 @@ load_dotenv()
 
 @dataclass(kw_only=True)
 class EvaluationResult:
-    metrics: Dict[str, Dict[str, float]] = field(default_factory=dict)
-    overall_quality_score: float = field(default=None)
-    grade: str = field(default=None)
+    content_preservation_percentage: float = field(default=None)
 
 # State
 #------------------------------------------------------------------------------
@@ -34,3 +32,4 @@ class PDFToMarkdownInputState(TypedDict):
 class PDFToMarkdownOutputState(TypedDict):
     cleaned_text: str = field(default=None) # Final report
     evaluation_result: EvaluationResult = field(default=None)
+
