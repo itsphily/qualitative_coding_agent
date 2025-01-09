@@ -72,3 +72,14 @@ def visualize_graph(graph, name):
         print(f"Graph visualization saved to '{name}.png'")
     except Exception as e:
         print(f"Error saving graph visualization: {e}")
+
+
+# Custom reducer to merge dicts
+def merge_dicts(dict_a: dict, dict_b: dict) -> dict:
+    """
+    Merge dict_b into dict_a. 
+    Returns a new dict, leaving the original dicts unchanged.
+    """
+    merged = dict_a.copy()
+    merged.update(dict_b)
+    return merged
