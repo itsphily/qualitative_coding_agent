@@ -7,9 +7,11 @@
 
 ## Mid-Level Objective
 
-- [List of mid-level objectives - what are the steps to achieve the high-level objective?]
-- [Each objective should be concrete and measurable]
-- [But not too detailed - save details for implementation notes]
+- Configure environment variables and set up LLM initialization
+- Populate the generic prompt with charity and research information
+- Retrieve and parse .md documents for each code in the code list
+- Invoke the LLM for each document per code, then aggregate outputs
+- Save the final result to a .md file and optionally visualize the flow
 
 ## Implementation Notes
 - See below for an example of how to use the send API. In that example, the send API is used to send each subject contained in the state["subjects"] list to the generate_joke node.
