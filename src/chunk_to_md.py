@@ -225,7 +225,7 @@ def main():
         qa_loop_limit=qa_loop_limit
     )
 
-    visualize_graph(main_graph, "Chunk_to_md_v1")
+    visualize_graph(main_graph, "Chunk_to_md")
     # Run the main graph with the given input
     main_graph.invoke(pdf_state)
     
