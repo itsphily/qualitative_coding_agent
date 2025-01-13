@@ -33,32 +33,6 @@ llm_json_mode = ChatOpenAI(
 )
 llm_json_mode.bind(response_format={"type": "json_object"})
 
-# Graph for per code per document processing
-graph_per_code_per_doc = StateGraph(input=AgentRunState, output=AgentRunOutputState)
-graph_per_code_per_doc.add_node('invoke_one_code_prompt_per_doc_node', invoke_one_code_prompt_per_doc)
-graph_per_code_per_doc.add_edge(START, 'invoke_one_code_prompt_per_doc_node')
-graph_per_code_per_doc.add_edge('invoke_one_code_prompt_per_doc_node', END)
-
-# Graph for per code processing
-graph_per_code = StateGraph(input=AgentPerCodeInputState, output=AgentPerCodeOutputState)
-graph_per_code.add_node('get_doc_text_node', get_doc_text)
-graph_per_code.add_node('graph_per_code_per_doc_node', graph_per_code_per_doc.compile())
-graph_per_code.add_node('aggregate_all_results_per_doc_node', aggregate_all_results_per_doc)
-graph_per_code.add_edge(START, 'get_doc_text_node')
-graph_per_code.add_conditional_edge('get_doc_text_node', continue_invoke_code_prompt, 'graph_per_code_per_doc_node')
-graph_per_code.add_edge('graph_per_code_per_doc_node', 'aggregate_all_results_per_doc_node')
-graph_per_code.add_edge('aggregate_all_results_per_doc_node', END)
-
-# Main graph
-main_graph = StateGraph(input=CodingAgentInputState, output=CodingAgentOutputState)
-main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
-main_graph.add_node('graph_per_code_node', graph_per_code.compile())
-main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
-main_graph.add_edge(START, 'fill_info_prompt_node')
-main_graph.add_conditional_edge('fill_info_prompt_node', continue_to_invoke_prompt, 'graph_per_code_node')
-main_graph.add_edge('graph_per_code_node', 'aggregate_all_results_node')
-main_graph.add_edge('aggregate_all_results_node', END)
-
 def fill_info_prompt(state: CodingAgentInputState) -> CodingAgentState:
     """
     This function takes the generic prompt and fills it with the charity and research specific information.
@@ -144,6 +118,32 @@ def aggregate_all_results(state: CodingAgentState) -> CodingAgentOutputState:
     """
     output = ''.join(state['output_per_code'])
     return {"output": output}
+
+# Graph for per code per document processing
+graph_per_code_per_doc = StateGraph(input=AgentRunState, output=AgentRunOutputState)
+graph_per_code_per_doc.add_node('invoke_one_code_prompt_per_doc_node', invoke_one_code_prompt_per_doc)
+graph_per_code_per_doc.add_edge(START, 'invoke_one_code_prompt_per_doc_node')
+graph_per_code_per_doc.add_edge('invoke_one_code_prompt_per_doc_node', END)
+
+# Graph for per code processing
+graph_per_code = StateGraph(input=AgentPerCodeInputState, output=AgentPerCodeOutputState)
+graph_per_code.add_node('get_doc_text_node', get_doc_text)
+graph_per_code.add_node('graph_per_code_per_doc_node', graph_per_code_per_doc.compile())
+graph_per_code.add_node('aggregate_all_results_per_doc_node', aggregate_all_results_per_doc)
+graph_per_code.add_edge(START, 'get_doc_text_node')
+graph_per_code.add_conditional_edge('get_doc_text_node', continue_invoke_code_prompt, 'graph_per_code_per_doc_node')
+graph_per_code.add_edge('graph_per_code_per_doc_node', 'aggregate_all_results_per_doc_node')
+graph_per_code.add_edge('aggregate_all_results_per_doc_node', END)
+
+# Main graph
+main_graph = StateGraph(input=CodingAgentInputState, output=CodingAgentOutputState)
+main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
+main_graph.add_node('graph_per_code_node', graph_per_code.compile())
+main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
+main_graph.add_edge(START, 'fill_info_prompt_node')
+main_graph.add_conditional_edge('fill_info_prompt_node', continue_to_invoke_prompt, 'graph_per_code_node')
+main_graph.add_edge('graph_per_code_node', 'aggregate_all_results_node')
+main_graph.add_edge('aggregate_all_results_node', END)
 
 def main():
     # Hardcode the CodingAgentInputState
