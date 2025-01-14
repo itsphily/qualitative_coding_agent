@@ -1,4 +1,5 @@
 import os
+from dotenv import load_dotenv
 from typing import List
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
@@ -16,6 +17,9 @@ from coding_state import (
 )
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import coding_agent_prompt, text_to_code_prompt
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize LLMs
 llm = ChatOpenAI(
@@ -40,7 +44,8 @@ def fill_info_prompt(state: CodingAgentInputState) -> CodingAgentState:
     prompt_with_charity_research_information = coding_agent_prompt.format(
         project_description=state['project_description'],
         charity_overview=f"{state['charity_id']}: {state['charity_overview']}",
-        research_question=state['research_question']
+        research_question=state['research_question'], 
+        charity_id=state['charity_id']
     )
     return {"prompt_for_project": prompt_with_charity_research_information}
 
@@ -53,7 +58,7 @@ def continue_to_invoke_prompt(state: CodingAgentState):
         Send(
             "invoke_code_prompt_node",
             {
-                "prompt_per_code": prompt_with_charity_research_information.format(code=c),
+                "prompt_per_code": prompt_with_charity_research_information.replace("$$code$$", c),
                 "charity_directory": state['charity_directory']
             }
         )
@@ -98,7 +103,7 @@ def invoke_one_code_prompt_per_doc(state: AgentRunState):
     This function takes in the full prompt and invokes the LLM for each document.
     """
     system_message = SystemMessage(content=state['prompt_per_code'])
-    human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
+    human_message = HumanMessage(content=text_to_code_prompt.replace("$$text$$", state['doc_text']))
 
     result = llm.invoke([system_message, human_message])
 
@@ -109,14 +114,14 @@ def aggregate_all_results_per_doc(state: AgentPerCodeState) -> AgentPerCodeOutpu
     This function takes in the list of results from invoking the LLM with one code for each doc,
     and aggregates all the results per code.
     """
-    output_per_code = ''.join(state['output_per_code_per_doc'])
+    output_per_code = ''.join(state['list_output_per_code_per_doc'])
     return {"output_per_code": output_per_code}
 
 def aggregate_all_results(state: CodingAgentState) -> CodingAgentOutputState:
     """
     This function takes in the list of results for each code, and aggregates all the results for a final output.
     """
-    output = ''.join(state['output_per_code'])
+    output = ''.join(state['list_output_per_code'])
     return {"output": output}
 
 # Graph for per code per document processing
@@ -131,7 +136,7 @@ graph_per_code.add_node('get_doc_text_node', get_doc_text)
 graph_per_code.add_node('graph_per_code_per_doc_node', graph_per_code_per_doc.compile())
 graph_per_code.add_node('aggregate_all_results_per_doc_node', aggregate_all_results_per_doc)
 graph_per_code.add_edge(START, 'get_doc_text_node')
-graph_per_code.add_conditional_edge('get_doc_text_node', continue_invoke_code_prompt, 'graph_per_code_per_doc_node')
+graph_per_code.add_conditional_edges('get_doc_text_node', continue_invoke_code_prompt, 'graph_per_code_per_doc_node')
 graph_per_code.add_edge('graph_per_code_per_doc_node', 'aggregate_all_results_per_doc_node')
 graph_per_code.add_edge('aggregate_all_results_per_doc_node', END)
 
@@ -141,10 +146,11 @@ main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('graph_per_code_node', graph_per_code.compile())
 main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
 main_graph.add_edge(START, 'fill_info_prompt_node')
-main_graph.add_conditional_edge('fill_info_prompt_node', continue_to_invoke_prompt, 'graph_per_code_node')
+main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_invoke_prompt, 'graph_per_code_node')
 main_graph.add_edge('graph_per_code_node', 'aggregate_all_results_node')
 main_graph.add_edge('aggregate_all_results_node', END)
 
+main_graph = main_graph.compile()
 def main():
     # Hardcode the CodingAgentInputState
     charity_id = 'GiveDirectly'
@@ -170,11 +176,12 @@ def main():
     }
 
     # Run the main graph
-    result = main_graph.run(input_state)
+    
+    main_graph.invoke(input_state)
 
     # Save the output to a markdown file
-    output_filepath = os.path.join('output_directory', 'final_output.md')  # Replace 'output_directory' with the desired path
-    save_final_markdown(output_filepath, result['output'])
+    # output_filepath = os.path.join('output_directory', 'final_output.md')  # Replace 'output_directory' with the desired path
+    # save_final_markdown(output_filepath, result['output'])
 
     # Visualize the graph
     visualize_graph(main_graph, "coding_graph")

@@ -1,8 +1,6 @@
 ```markdown
 # Malaria Consortium - Seasonal Malaria Chemoprevention
 
-Donate
-
 Malaria Consortium's seasonal malaria chemoprevention program is one of our top-rated charities and we believe that it offers donors an outstanding opportunity to accomplish good with their donations. More information: What is our evaluation process? Published: November 2020
 
 ## Summary
@@ -17,33 +15,20 @@ What do they do? Malaria Consortium (malariaconsortium.org) works on preventing,
 
 **Malaria Consortium's seasonal malaria chemoprevention program is recommended because:**
 
-SMC is a program with a strong evidence base and strong cost-effectiveness. (**More**)
-
-Track record - Malaria Consortium has experience with supporting large-scale SMC programs in seven countries and has demonstrated success at reaching a large portion of targeted children. (**More**)
-
-Room for more funding - we believe that Malaria Consortium could productively use more funding than it expects to receive to scale up its SMC activities. (**More**)
+- SMC is a program with a strong evidence base and strong cost-effectiveness. (**More**)
+- Track record - Malaria Consortium has experience with supporting large-scale SMC programs in seven countries and has demonstrated success at reaching a large portion of targeted children. (**More**)
+- Room for more funding - we believe that Malaria Consortium could productively use more funding than it expects to receive to scale up its SMC activities. (**More**)
 
 ## Table of Contents
 
-Summary
-
-Our review process
-
-What do they do?
-
-Implementation of SMC programs
-
-What are SMC programs?
-
-Malaria Consortium SMC implementation methods
-
-Malaria Consortium-supported SMC programs
-
-Malaria Consortium's spending on SMC programs
-
-Malaria Consortium's role in SMC programs
-
-Does it work? Is SMC an effective intervention? Are Malaria Consortium's SMC programs targeted at areas where they are likely to be effective? Are targeted children reached with SMC? Comprehensiveness Methodology Results Have malaria rates decreased in targeted populations? Are there any negative or offsetting impacts? What do you get for your dollar? Cost per child covered Cost-effectiveness Is there room for more funding? Our approach Available funding Expected funding Spending opportunities Availability of unrestricted funding Global funding landscape Malaria Consortium as an organization Sources
+- Summary
+- Our review process
+- What do they do? Implementation of SMC programs
+- What are SMC programs? Malaria Consortium SMC implementation methods
+- Malaria Consortium-supported SMC programs
+- Malaria Consortium's spending on SMC programs
+- Malaria Consortium's role in SMC programs
+- Does it work? Is SMC an effective intervention? Are Malaria Consortium's SMC programs targeted at areas where they are likely to be effective? Are targeted children reached with SMC? Comprehensiveness Methodology Results Have malaria rates decreased in targeted populations? Are there any negative or offsetting impacts? What do you get for your dollar? Cost per child covered Cost-effectiveness Is there room for more funding? Our approach Available funding Expected funding Spending opportunities Availability of unrestricted funding Global funding landscape Malaria Consortium as an organization Sources
 
 5/25/2021
 
@@ -51,11 +36,9 @@ Does it work? Is SMC an effective intervention? Are Malaria Consortium's SMC pro
 
 We began speaking to Malaria Consortium about the possibility of reviewing one of its programs in January 2016. Over the next several months we tried to determine which of Malaria Consortium's programs we should prioritize evaluating for a possible recommendation, and we ultimately settled on seasonal malaria chemoprevention (SMC). The other programs that we investigated included: bed nets, dengue control, injectable artesunate for severe malaria, integrated community case management (ICCM), micronutrient powders, malnutrition management, neglected tropical diseases morbidity management, integration of nutrition with SMC, prevention of malaria in pregnancy, point of care diagnosis of malaria, and diagnosis of pneumonia. Our review process has consisted of:
 
-Extensive conversations with Malaria Consortium staff since 2016.1
-
-A conversation with a researcher at the London School of Hygiene and Tropical Medicine who has led the work on evaluating the ACCESS-SMC project, a large-scale SMC project led by Malaria Consortium.2
-
-Reviewing documents that Malaria Consortium shared with us.
+- Extensive conversations with Malaria Consortium staff since 2016.1
+- A conversation with a researcher at the London School of Hygiene and Tropical Medicine who has led the work on evaluating the ACCESS-SMC project, a large-scale SMC project led by Malaria Consortium.2
+- Reviewing documents that Malaria Consortium shared with us.
 
 ## What do they do? Malaria Consortium works on preventing, controlling, treating, and eliminating malaria and other communicable diseases.3 It was established in 2003 and currently works in twelve countries across Africa and Southeast Asia.4
 
@@ -65,17 +48,14 @@ This page focuses exclusively on its seasonal malaria chemoprevention (SMC) prog
 
 The remainder of this section provides more detail on:
 
-Implementation of SMC programs
+- Implementation of SMC programs
+- Malaria Consortium-supported SMC programs
+- Spending on SMC programs
+- Malaria Consortium's role in SMC programs
 
-Malaria Consortium-supported SMC programs
+### Implementation of SMC programs
 
-Spending on SMC programs
-
-Malaria Consortium's role in SMC programs
-
-Implementation of SMC programs
-
-What are SMC programs?
+#### What are SMC programs?
 
 As we wrote in our **intervention report on SMC**, seasonal malaria chemoprevention is the monthly administration of full preventive courses of antimalarial medicines to children during the malaria season in areas of highly seasonal malaria transmission.7 According to WHO policy recommendation, it "consists of administering a maximum of four treatment courses of SP [sulfadoxine-pyrimethamine] + AQ [amodiaquine] at monthly intervals to children aged 3-59 months in areas of highly seasonal malaria transmission [during the high malaria transmission period]. "8 SMC was "formerly known as 'intermittent preventive treatment of malaria in children [IPTc]. "9
 
@@ -83,19 +63,17 @@ According to the World Health Organization (WHO):
 
 The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria. SMC is recommended for deployment in areas:
 
-where more than 60% of the annual incidence of malaria occurs within 4 months;
-
-where there are measures of disease burden consistent with a high burden of malaria in children (incidence >= 10 cases of malaria among every 100 children during the transmission season);
-
-where SP and AQ retain their antimalarial efficacy.10
+- where more than 60% of the annual incidence of malaria occurs within 4 months;
+- where there are measures of disease burden consistent with a high burden of malaria in children (incidence >= 10 cases of malaria among every 100 children during the transmission season);
+- where SP and AQ retain their antimalarial efficacy.10
 
 According to the WHO, "SMC provides protection for up to [28 days] after each complete (3-day) course... [Community distributors] should give the dose of SP and the first dose of AQ to the children under their direct observation and should advise the children's caregivers on how to give the second and third [daily] doses of AQ to the child at home [one dissolved tablet per day, for two days]. "11
 
-## Malaria Consortium SMC implementation methods
+### Malaria Consortium SMC implementation methods
 
-### Malaria Consortium supports training of health facility workers and community distributors (CDs) to deliver SMC primarily by going door-to-door.12 Malaria Consortium told us that many CDs are community health workers (CHWs), who are people in the community who work year-round to support basic delivery of health interventions such as vaccines; malaria diagnosis, referral and treatment; nutrition programs, etc. Some CDs are recruited and trained to only deliver SMC and do not provide any other community health services.13 Malaria Consortium told us that CDs are typically paid about $5 to $7 per day for programs such as SMC, though this amount varies by country.14 Malaria Consortium also supports training for supervisors for the program.15
+#### Malaria Consortium supports training of health facility workers and community distributors (CDs) to deliver SMC primarily by going door-to-door.12 Malaria Consortium told us that many CDs are community health workers (CHWs), who are people in the community who work year-round to support basic delivery of health interventions such as vaccines; malaria diagnosis, referral and treatment; nutrition programs, etc. Some CDs are recruited and trained to only deliver SMC and do not provide any other community health services.13 Malaria Consortium told us that CDs are typically paid about $5 to $7 per day for programs such as SMC, though this amount varies by country.14 Malaria Consortium also supports training for supervisors for the program.15
 
-### Malaria Consortium typically supports four SMC "cycles." Each cycle includes a four-day distribution period and lasts 28 days, at which point a new cycle starts.16 For each cycle, Malaria Consortium instructs CDs to:17
+#### Malaria Consortium typically supports four SMC "cycles." Each cycle includes a four-day distribution period and lasts 28 days, at which point a new cycle starts.16 For each cycle, Malaria Consortium instructs CDs to:17
 
 1. determine whether the child is eligible for SMC and give the age appropriate dose.18
 2. refer all acutely sick children and children with fever to the health facility for evaluation and testing for malaria.19
@@ -135,17 +113,29 @@ Malaria Consortium told us that the above programs represent the bulk of Malaria
 
 ## Malaria Consortium's spending on SMC programs
 
-Between January and December 2019, Malaria Consortium spent about $22.2 million in GiveWell-directed funds.46 $8.1 million (37%) on SMC drugs, along with freight and procurement costs. $8.5 million (38%) on SMC implementation (including planning for SMC campaigns, training of supervisors and CDs, administration of SMC drugs, community engagement, and monitoring and evaluation, including coverage surveys). $2.7 million (12%) on staff and travel costs. $0.2 million (1%) on research,47 communications, and advocacy.48 $2.6 million (12%) on overhead costs.
+Between January and December 2019, Malaria Consortium spent about $22.2 million in GiveWell-directed funds.46
+
+$8.1 million (37%) on SMC drugs, along with freight and procurement costs
+
+$8.5 million (38%) on SMC implementation (including planning for SMC campaigns, training of supervisors and CDs, administration of SMC drugs, community engagement, and monitoring and evaluation, including coverage surveys)
+
+$2.7 million (12%) on staff and travel costs
+
+$0.2 million (1%) on research,47 communications, and advocacy48
+
+$2.6 million (12%) on overhead costs
 
 Of this $22.2 million, Malaria Consortium spent $11 million (50%) in Nigeria, $5.4 million (24%) in Burkina Faso, and $4.4 million (20%) in Chad--or 53%, 26%, and 21% respectively, with above-country spending allocated proportionally across countries.49
 
 For prior work, we have also seen spending data from the pilot and scale-up of SMC in northern Nigeria,50 from 2016 for the ACCESS-SMC program,51 and from 2017 and 2018 for programs supported by GiveWell-directed funds.52
 
-We also provide some information on the estimated cost per child covered of Malaria Consortium-supported SMC programs below.
+We also provide some information on the estimated cost per child covered of Malaria Consortium-supported SMC programs **below**.
 
 # Malaria Consortium's role in SMC programs
 
-Malaria Consortium's SMC work varies by country, but in general includes the following activities.53 Determining the quantity of drugs needed, procurement of drugs, and international shipping.54 Procurement and distribution of other SMC commodities.55 Funding distributions, including in-country storage and transportation of drugs and payments to front-line distributors to compensate them for the time they spend on the program. Technical assistance and logistical support for training SMC implementers, targeted supervision, community engagement and social and behavior change, drug safety, and review of prior implementation and revisions to procedures. Financial management and oversight, including disbursing funds to local organizations, Ministries of Health, and/or CDs, collecting and validating receipts, and preparing financial reports. Developing training and supervision materials and training staff at various levels.56 Monitoring and evaluation, including direct observation of program activities by Malaria Consortium staff, funding and coordinating with research firms and academic institutions to conduct coverage surveys and to track changes in malaria incidence and death, and monitoring of drug resistance. Advocacy and fundraising with governments, international, multinational, and bilateral organizations, donors, SMC working groups, researchers, and civil society. Conducting research that addresses knowledge gaps relating to SMC delivery, quality, and impact, writing and disseminating lessons learned and publications in peer-reviewed journals, and presenting at international global health conferences. See this spreadsheet for a list of Malaria Consortium's SMC operational research projects in 2019.57 Malaria Consortium notes that in 2020, it continued to implement SMC during the COVID-19 pandemic, reaching approximately 12 million children. Malaria Consortium established enhanced safety and infection prevention guidance for program delivery, which included providing guidance for SMC delivery by community distributors, procuring items such as face masks and hand sanitizer, and revising training and supervision documents and job aids.58
+Malaria Consortium's SMC work varies by country, but in general includes the following activities.53 Determining the quantity of drugs needed, procurement of drugs, and international shipping54 Procurement and distribution of other SMC commodities55 Funding distributions, including in-country storage and transportation of drugs and payments to front-line distributors to compensate them for the time they spend on the program Technical assistance and logistical support for training SMC implementers, targeted supervision, community engagement and social and behavior change, drug safety, and review of prior implementation and revisions to procedures Financial management and oversight, including disbursing funds to local organizations, Ministries of Health, and/or CDs, collecting and validating receipts, and preparing financial reports Developing training and supervision materials and training staff at various levels56 Monitoring and evaluation, including direct observation of program activities by Malaria Consortium staff, funding and coordinating with research firms and academic institutions to conduct coverage surveys and to track changes in malaria incidence and death, and monitoring of drug resistance.57
+
+Advocacy and fundraising with governments, international, multinational, and bilateral organizations, donors, SMC working groups, researchers, and civil society. Conducting research that addresses knowledge gaps relating to SMC delivery, quality, and impact, writing and disseminating lessons learned and publications in peer-reviewed journals, and presenting at international global health conferences. See this spreadsheet for a list of Malaria Consortium's SMC operational research projects in 2019. Malaria Consortium notes that in 2020, it continued to implement SMC during the COVID-19 pandemic, reaching approximately 12 million children. Malaria Consortium established enhanced safety and infection prevention guidance for program delivery, which included providing guidance for SMC delivery by community distributors, procuring items such as face masks and hand sanitizer, and revising training and supervision documents and job aids.58
 
 ## Does it work?
 
@@ -164,23 +154,23 @@ Seven randomized controlled trials (RCTs) provide strong evidence that SMC subst
 
 Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.60 We have not reviewed this evidence in detail, but it seems highly likely to us that Malaria Consortium is working in areas that are suitable for SMC because it is working in countries with high malaria burdens and where it seems that malaria is seasonal.61 More information on our estimates of malaria burden in the countries where Malaria Consortium is working is available in our cost-effectiveness model.62
 
-### Are targeted children reached with SMC?
+## Are targeted children reached with SMC?
 
 Malaria Consortium conducts coverage surveys to determine what proportion of the target population (children aged 3-59 months) was reached with SMC in the previous round or cycle. We use results from past SMC rounds to understand the impact we should expect future rounds to have. Specifically, we use coverage survey results about the proportion of targeted children reached, along with data on program spending, to estimate the **cost of delivering SMC to a child**. Our interpretation of these coverage survey results is informed by their comprehensiveness and the methodology used to collect them.
 
 ## Comprehensiveness
 
-See this spreadsheet for all coverage survey results we have seen from Malaria Consortium's SMC programs.63 In short, we have seen results from 2015-16 in the seven countries that Malaria Consortium supported through the ACCESS-SMC project and from 2017-19 in the three countries that Malaria Consortium currently supports through its general SMC program (Burkina Faso, Chad, and Nigeria).64 We thus believe that we have seen a thorough picture of the impact of Malaria Consortium's SMC program; we incorporate this assessment into our cost-effectiveness model.65
+See this spreadsheet for all coverage survey results we have seen from Malaria Consortium's SMC programs. In short, we have seen results from 2015-16 in the seven countries that Malaria Consortium supported through the ACCESS-SMC project and from 2017-19 in the three countries that Malaria Consortium currently supports through its general SMC program (Burkina Faso, Chad, and Nigeria).63 We thus believe that we have seen a thorough picture of the impact of Malaria Consortium's SMC program; we incorporate this assessment into our cost-effectiveness model.64
 
 We focus our review on results from 2017 onward from Burkina Faso, Chad, and Nigeria, as we believe they are more likely to be indicative of what we can expect from future SMC rounds in those countries.
 
 ## Methodology
 
-Since 2017, Malaria Consortium has conducted two types of coverage surveys. After each of the first three cycles in the SMC round, it conducts a post-cycle coverage survey to measure coverage in the previous cycle only.66 After the fourth and final cycle in the SMC round, it conducts a post-round coverage survey to measure coverage across the full round.67 Both post-cycle and post-round surveys involve household interviews with caregivers of SMC-eligible children. Full details of the methodology used in the surveys we have reviewed are in this spreadsheet. Below, we summarize Malaria Consortium's general post-cycle and post-round coverage survey methodology and discuss methodological strengths and weaknesses.
+Since 2017, Malaria Consortium has conducted two types of coverage surveys. After each of the first three cycles in the SMC round, it conducts a post-cycle coverage survey to measure coverage in the previous cycle only.65 After the fourth and final cycle in the SMC round, it conducts a post-round coverage survey to measure coverage across the full round.66 Both post-cycle and post-round surveys involve household interviews with caregivers of SMC-eligible children. Full details of the methodology used in the surveys we have reviewed are in this spreadsheet. Below, we summarize Malaria Consortium's general post-cycle and post-round coverage survey methodology and discuss methodological strengths and weaknesses.
 
-Overall, we believe that both types of surveys are designed to measure key indicators of the success of SMC campaigns and to achieve samples that are generally representative of target populations. However, we are concerned that the self-reported nature of responses and data collectors' involvement in the later stages of respondent selection may produce bias in results. We are also uncertain about the quality of survey implementation due to the lack of a procedure to audit data collectors' work. We incorporate our assessment of the quality of Malaria Consortium's coverage survey methodology into our cost-effectiveness model68 and into our qualitative assessment of Malaria Consortium's organizational strength.
+Overall, we believe that both types of surveys are designed to measure key indicators of the success of SMC campaigns and to achieve samples that are generally representative of target populations. However, we are concerned that the self-reported nature of responses and data collectors' involvement in the later stages of respondent selection may produce bias in results. We are also uncertain about the quality of survey implementation due to the lack of a procedure to audit data collectors' work. We incorporate our assessment of the quality of Malaria Consortium's coverage survey methodology into our cost-effectiveness model67 and into our qualitative assessment of Malaria Consortium's organizational strength.
 
-**Respondent selection:** Post-cycle surveys employ lot quality assurance sampling69 in which the program area is subdivided into smaller units, generally of approximately equal population size, and a small number of households is randomly selected from each unit.70 This approach is designed to assess whether each unit met a target coverage level; data from all units can be aggregated to calculate coverage across the program area. Because all units are sampled and are of approximately equal population size, we expect this selection protocol to result in a sample that is generally representative of the target population.71 Post-round surveys employ multi-stage cluster sampling of households in the program area, with sampling units above the household level generally selected randomly with probability proportional to size.72 We expect this selection protocol to result in a sample that is generally representative of the target population. For both types of surveys, data collectors are instructed to randomly select households and children to survey. In each community, data collectors are instructed to spin a bottle at a central point to choose a direction along which they then select a predetermined number of households at a predetermined interval.73 This method may lead households closer to the center of a community to be overrepresented in the sample.
+**Respondent selection:** Post-cycle surveys employ lot quality assurance sampling68 in which the program area is subdivided into smaller units, generally of approximately equal population size, and a small number of households is randomly selected from each unit.69 This approach is designed to assess whether each unit met a target coverage level; data from all units can be aggregated to calculate coverage across the program area. Because all units are sampled and are of approximately equal population size, we expect this selection protocol to result in a sample that is generally representative of the target population.70 Post-round surveys employ multi-stage cluster sampling of households in the program area, with sampling units above the household level generally selected randomly with probability proportional to size.71 We expect this selection protocol to result in a sample that is generally representative of the target population. For both types of surveys, data collectors are instructed to randomly select households and children to survey. In each community, data collectors are instructed to spin a bottle at a central point to choose a direction along which they then select a predetermined number of households at a predetermined interval.72 This method may lead households closer to the center of a community to be overrepresented in the sample.73
 ```
 
 ```markdown
@@ -188,7 +178,9 @@ We are unsure of how this might bias results, though it seems plausible that hou
 
 We see data collectors' involvement in the later stages of respondent selection as a concern. Data collectors may apply selection procedures incorrectly, either unintentionally or intentionally. If, for example, they purposefully select households that are easier to reach, this would be a potential source of upward bias, as households that are easier to reach may also have been more likely to be reached by SMC. We note that we have seen no evidence that data collectors intentionally applied selection procedures incorrectly and note it only as a possibility. If a selected household is unavailable or refuses to participate in the survey, data collectors are instructed to move to the next household according to the sampling procedure. In the 2019 post-round surveys, 98% or higher of the targeted number of households were interviewed.73 This could mean that non-response rates (i.e. households randomly selected to be interviewed not being interviewed) were low. However, because we do not know how often replacement households were used, it is also possible that a high proportion of interviewed households were replacement households, so these survey completion rates only slightly increase our confidence in the accuracy of results from these surveys. We have not seen survey completion rates from 2019 post-cycle surveys and have not reviewed these rates from prior years.
 
-**Survey design:** Malaria Consortium has developed post-cycle and post-round questionnaires,74 which are adapted for use in each country and translated from English into French in Burkina Faso and Chad.75 These questionnaires instruct data collectors to ask caregivers questions about whether their child received SPAQ during the previous cycle (in the case of post-cycle surveys) or during all four cycles of the round (in the case of post-round surveys). Both questionnaires ask about SPAQ provided by a CD on the first day of each cycle and about AQ provided by the caregiver on the second and third days of each cycle. They also ask questions about the quality of program delivery. Data collectors translate questions from English or French into local languages during household interviews,76 which may lead to inconsistencies in translation and reduce the accuracy of results. A potential source of bias in Malaria Consortium's coverage surveys is their heavy reliance on self-reported responses. Post-round responses are at high risk of recall bias, as they report on up to twelve doses,77 the first of which would have occurred at least three months prior.78 Post-cycle responses are at lower risk of recall bias, as they ask only about three doses and are conducted within a month of those doses. Self-reported responses are also at risk of social desirability bias that could lead caregivers to overreport SMC administration, if they believe that this is the preferred response of data collectors. We expect responses about caregivers' own administration on the second and third days of each cycle to be at greater risk of this type of bias, as they may feel pressure to overreport their own adherence to program guidance. Because the coverage estimates we use are based on responses about CDs' administration on the first day of each cycle,79 about which we believe caregivers may feel less pressure to report positively, this is a smaller concern. We would have more confidence in a survey that tested the reliability of self-reported responses against some objective measure. In order to verify caregiver responses, data collectors are instructed to review children's SMC record cards and medicine blister packs, if available.80 However, retention of these items has generally been low, leading Malaria Consortium to place low weight on them as indicators of coverage.81
+**Survey design:** Malaria Consortium has developed post-cycle and post-round questionnaires,74 which are adapted for use in each country and translated from English into French in Burkina Faso and Chad.75 These questionnaires instruct data collectors to ask caregivers questions about whether their child received SPAQ during the previous cycle (in the case of post-cycle surveys) or during all four cycles of the round (in the case of post-round surveys). Both questionnaires ask about SPAQ provided by a CD on the first day of each cycle and about AQ provided by the caregiver on the second and third days of each cycle. They also ask questions about the quality of program delivery. Data collectors translate questions from English or French into local languages during household interviews,76 which may lead to inconsistencies in translation and reduce the accuracy of results.
+
+A potential source of bias in Malaria Consortium's coverage surveys is their heavy reliance on self-reported responses. Post-round responses are at high risk of recall bias, as they report on up to twelve doses,77 the first of which would have occurred at least three months prior.78 Post-cycle responses are at lower risk of recall bias, as they ask only about three doses and are conducted within a month of those doses. Self-reported responses are also at risk of social desirability bias that could lead caregivers to overreport SMC administration, if they believe that this is the preferred response of data collectors. We expect responses about caregivers' own administration on the second and third days of each cycle to be at greater risk of this type of bias, as they may feel pressure to overreport their own adherence to program guidance. Because the coverage estimates we use are based on responses about CDs' administration on the first day of each cycle,79 about which we believe caregivers may feel less pressure to report positively, this is a smaller concern. We would have more confidence in a survey that tested the reliability of self-reported responses against some objective measure. In order to verify caregiver responses, data collectors are instructed to review children's SMC record cards and medicine blister packs, if available.80 However, retention of these items has generally been low, leading Malaria Consortium to place low weight on them as indicators of coverage.81
 
 **Survey implementation:** Malaria Consortium contracts with local research organizations that recruit data collectors and oversee survey implementation.82 Individuals involved in the surveys generally were not involved in SMC delivery, which suggests that they are unlikely to have a personal interest in survey outcomes.83 Malaria Consortium reports that in Chad, the 2018 post-cycle surveys and the first 2019 post-cycle survey conducted by local research organizations were of low quality.84 This may have impacted the accuracy of results, but we are uncertain about the magnitude or direction of this impact. Malaria Consortium's coverage surveys do not systematically incorporate an auditing procedure to assess the accuracy of data collectors' work.85 We see this as a methodological weakness, both because such a procedure may encourage accurate data collection and because it would provide a check on the accuracy of results.
 
@@ -208,7 +200,7 @@ The evidence we have discussed to this point forms the basis of our expectation 
 
 ### Sentinel surveillance site data (2013-2016)
 
-We have seen sentinel surveillance site data from Chad, Mali, and Niger for 2013 to 2016 and from Burkina Faso and Nigeria for 2015 to 2016.92 We have received only headline figures for the reduction in malaria cases in children under 5 years old; we have not seen additional information on the sources for or analysis of this data.93 We have therefore not vetted the results (described in the footnote).94 Malaria Consortium told us that the data collected in other ACCESS-SMC countries was of a low quality.92
+We have seen sentinel surveillance site data from Chad, Mali, and Niger for 2013 to 2016 and from Burkina Faso and Nigeria for 2015 to 2016.92 We have received only headline figures for the reduction in malaria cases in children under 5 years old; we have not seen additional information on the sources for or analysis of this data.93 We have therefore not vetted the results (described in the footnote).94 Malaria Consortium told us that the data collected in other ACCESS-SMC countries was of a low quality.
 
 ### Health Management Information System (HMIS) data
 
@@ -220,12 +212,44 @@ Non-randomized comparisons between areas in which SMC is implemented and not imp
 
 #### Case-control studies
 
-Malaria Consortium also shared case-control studies designed to measure the efficacy of SMC from five ACCESS-SMC countries: Burkina Faso, Chad, The Gambia, Mali, and Nigeria. We have not yet vetted the methodology (some details in the footnote),99 and the dataset from Nigeria did not pass quality control.99 Malaria Consortium's conclusion from these studies is, "These results confirm that SMC treatments are providing a very high degree of personal protection from malaria for a period of 28 days after each treatment. Protection then declines rapidly emphasizing the importance of repeating treatments at monthly intervals."100 More details on those results in this footnote.101
+Malaria Consortium also shared case-control studies designed to measure the efficacy of SMC from five ACCESS-SMC countries: Burkina Faso, Chad, The Gambia, Mali, and Nigeria. We have not yet vetted the methodology (some details in the footnote), and the dataset from Nigeria did not pass quality control.99 Malaria Consortium's conclusion from these studies is, "These results confirm that SMC treatments are providing a very high degree of personal protection from malaria for a period of 28 days after each treatment. Protection then declines rapidly emphasizing the importance of repeating treatments at monthly intervals."100 More details on those results in this footnote.101
 
 #### Northern Nigeria (2012-2014)
 
-We have seen three types of analyses of the impact of Malaria Consortium's northern Nigeria program on malaria indicators. These results seem to be consistent with the impacts of SMC found in randomized controlled trials of the program, but due to our remaining questions about the studies we do not yet see them as strong _additional_ evidence for the impact of SMC programs. See our **previous review of Malaria Consortium** for more details on this study.102103104105106107108109110111112113114115116117118119120
+We have seen three types of analyses of the impact of Malaria Consortium's northern Nigeria program on malaria indicators. These results seem to be consistent with the impacts of SMC found in randomized controlled trials of the program, but due to our remaining questions about the studies we do not yet see them as strong _additional_ evidence for the impact of SMC programs. See our **previous review of Malaria Consortium** for more details on this study.
 ```
+
+**Footnotes:**
+72. Footnote text for reference 72.
+73. Footnote text for reference 73.
+74. Footnote text for reference 74.
+75. Footnote text for reference 75.
+76. Footnote text for reference 76.
+77. Footnote text for reference 77.
+78. Footnote text for reference 78.
+79. Footnote text for reference 79.
+80. Footnote text for reference 80.
+81. Footnote text for reference 81.
+82. Footnote text for reference 82.
+83. Footnote text for reference 83.
+84. Footnote text for reference 84.
+85. Footnote text for reference 85.
+86. Footnote text for reference 86.
+87. Footnote text for reference 87.
+88. Footnote text for reference 88.
+89. Footnote text for reference 89.
+90. Footnote text for reference 90.
+91. Footnote text for reference 91.
+92. Footnote text for reference 92.
+93. Footnote text for reference 93.
+94. Footnote text for reference 94.
+95. Footnote text for reference 95.
+96. Footnote text for reference 96.
+97. Footnote text for reference 97.
+98. Footnote text for reference 98.
+99. Footnote text for reference 99.
+100. Footnote text for reference 100.
+101. Footnote text for reference 101.
 
 ```markdown
 ## Are there any negative or offsetting impacts?
@@ -234,11 +258,11 @@ In this section, we consider factors that are not accounted for in the above evi
 
 ### Drug resistance
 
-Mass delivery of SMC medicines could contribute to increased drug resistance of SP and/or AQ.102 In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.103 A follow-up survey was conducted in 2017, following two rounds of SMC.104 We have lightly reviewed a preliminary report from this survey, which reported that between baseline and follow-up, the prevalence of mutations associated with AQ resistance did not increase and that the prevalence of mutations associated with SP resistance did increase.105 It also reported that no samples were collected that contained both mutations associated with AQ resistance and mutations associated with SP resistance.106 We have received the final report from this survey but have not yet reviewed it in depth. In our cost-effectiveness model, we make a small downward adjustment in our estimate of SMC's impact to account for the possibility of development of drug resistance.107
+Mass delivery of SMC medicines could contribute to increased drug resistance of SP and/or AQ.102 In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.103 A follow-up survey was conducted in 2017, following two rounds of SMC.104 We have lightly reviewed a preliminary report from this survey, which reported that between baseline and follow-up, the prevalence of mutations associated with AQ resistance did not increase and that the prevalence of mutations associated with SP resistance did increase.105 It also reported that no samples were collected that contained both mutations associated with AQ resistance and mutations associated with SP resistance.106 We have received the final report from this survey but have not yet reviewed it in depth.107 In our cost-effectiveness model, we make a small downward adjustment in our estimate of SMC's impact to account for the possibility of development of drug resistance.
 
-**Possible "rebound" effects**: There is a potential concern that SMC could reduce the natural development of immunity to malaria. After children turn five years old and are no longer eligible to receive SMC or if SMC programs are interrupted by lack of funding or other problems, children could lack immunity and be more susceptible to malaria, especially if other prevention methods, such as long-lasting insecticide-treated nets (LLINs), are not used. We have not yet investigated this concern in-depth. In our cost-effectiveness model, we make a small downward adjustment in our estimate of SMC's impact to account for the possibility of rebound effects.108
+**Possible "rebound" effects**: There is a potential concern that SMC could reduce the natural development of immunity to malaria. After children turn five years old and are no longer eligible to receive SMC or if SMC programs are interrupted by lack of funding or other problems, children could lack immunity and be more susceptible to malaria, especially if other prevention methods, such as long-lasting insecticide-treated nets (LLINs), are not used. We have not yet investigated this concern in-depth.108 In our cost-effectiveness model, we make a small downward adjustment in our estimate of SMC's impact to account for the possibility of rebound effects.
 
-**Side effects of SMC drugs**: Our impression is that the most common reaction seen with SMC drugs in earlier programs was vomiting (AQ is bitter and hard to swallow if not crushed into a powder and mixed with water); more recently, AQ has been available as an orange-flavored dispersible.109 Malaria Consortium told us that the incidence of vomiting has decreased with the new dispersible formulation.100 If the child expels the drugs within 30 minutes, they are supposed to be redosed once; we are unsure whether caregivers typically request extra tablets of AQ from CDs when this happens at home to ensure their child gets a full course of SPAQ.11 Our impression is that other side effects from these drugs are rare and include diarrhea, itching, headache, mild abdominal pain, and rash.122 Severe adverse effects associated with SPAQ are rare. A study in Nigeria that followed up with 10,000 SMC recipients one week after receiving SMC resulted in only five reports of severe adverse events, though Malaria Consortium believes there may have been reluctance to report issues.133 Malaria Consortium shared three resources that report very low severe adverse event rates from SMC drugs (available in the following footnote).114 We have lightly reviewed resources on severe adverse event rates from SMC drugs here. In our cost-effectiveness model, we make a small downward adjustment in our estimate of SMC's impact to account for the possibility of severe adverse effects.115
+**Side effects of SMC drugs**: Our impression is that the most common reaction seen with SMC drugs in earlier programs was vomiting (AQ is bitter and hard to swallow if not crushed into a powder and mixed with water); more recently, AQ has been available as an orange-flavored dispersible.109 Malaria Consortium told us that the incidence of vomiting has decreased with the new dispersible formulation.100 If the child expels the drugs within 30 minutes, they are supposed to be redosed once; we are unsure whether caregivers typically request extra tablets of AQ from CDs when this happens at home to ensure their child gets a full course of SPAQ.11 Our impression is that other side effects from these drugs are rare and include diarrhea, itching, headache, mild abdominal pain, and rash.122 Severe adverse effects associated with SPAQ are rare. A study in Nigeria that followed up with 10,000 SMC recipients one week after receiving SMC resulted in only five reports of severe adverse events, though Malaria Consortium believes there may have been reluctance to report issues.133 Malaria Consortium shared three resources that report very low severe adverse event rates from SMC drugs (available in the following footnote).114 We have lightly reviewed resources on severe adverse event rates from SMC drugs here.115 In our cost-effectiveness model, we make a small downward adjustment in our estimate of SMC's impact to account for the possibility of severe adverse effects.
 
 **Drug quality and dosage**: Malaria Consortium told us that its policy is to only procure products from suppliers that meet WHO guidelines for pre-qualification quality assurance standards,116 and that these products are approved and quality-assured by the governments of countries where Malaria Consortium works.117 We have not yet asked Malaria Consortium for the details of these processes. If there were issues with drug quality or dosage, it could reduce the effectiveness of the intervention and lead to more rapid development of drug resistance.
 
@@ -250,7 +274,7 @@ In order to make program costs comparable across all of our top charities, we ai
 
 ## Cost-effectiveness
 
-SMC programs appear to be in the range of cost-effectiveness of our other priority programs. See our most recent cost-effectiveness model for estimates of the cost per life saved through Malaria Consortium-supported SMC programs and how our model compares this outcome with outcomes of other programs. Note that our cost-effectiveness analyses are simplified models that do not take into account a number of factors. For example, our model does not include the short-term impact of non-fatal cases of malaria prevented. It also does not include possible offsetting impacts or other harms.18
+SMC programs appear to be in the range of cost-effectiveness of our other priority programs. See our most recent cost-effectiveness model for estimates of the cost per life saved through Malaria Consortium-supported SMC programs and how our model compares this outcome with outcomes of other programs.18 Note that our cost-effectiveness analyses are simplified models that do not take into account a number of factors. For example, our model does not include the short-term impact of non-fatal cases of malaria prevented. It also does not include possible offsetting impacts or other harms.
 
 There are limitations to this kind of cost-effectiveness analysis, and we believe that cost-effectiveness estimates such as these should not be taken literally, due to the significant uncertainty around them. We provide these estimates (a) for comparative purposes and (b) because working on them helps us ensure that we are thinking through as many of the relevant issues as possible.
 
@@ -258,9 +282,9 @@ There are limitations to this kind of cost-effectiveness analysis, and we believ
 
 We believe that Malaria Consortium could use more funding than it expects to receive to support its SMC work in its current countries of operation (Burkina Faso, Chad, Nigeria, and Togo) in 2022-23. In short:
 
-**Available funding:** As of March 2020, Malaria Consortium held $53.5 million in funding available to support its work.19  
+**Available funding:** As of March 2020, Malaria Consortium held $53.5 million in funding available to support its work.  
 **Expected funding:** We project that Malaria Consortium will receive an additional $43 million to support its work over the next three years.  
-**Spending opportunities:** Malaria Consortium has identified opportunities to spend up to $141.2 million over the next three years. In sum, we estimate that Malaria Consortium could use up to an additional $44.7 million to support its work in its current countries of operation (Burkina Faso, Chad, Nigeria, and Togo) in 2022-23.
+**Spending opportunities:** Malaria Consortium has identified opportunities to spend up to $141.2 million over the next three years.19 In sum, we estimate that Malaria Consortium could use up to an additional $44.7 million to support its work in its current countries of operation (Burkina Faso, Chad, Nigeria, and Togo) in 2022-23.
 
 More details and calculations in this spreadsheet. Below, we discuss our approach to assessing Malaria Consortium's room for more funding.
 
@@ -278,10 +302,10 @@ We project that Malaria Consortium will receive an additional $43 million to sup
 
 We include the following sources of funding in our projection:
 
-- _Funding currently held by GiveWell to be granted to Malaria Consortium._ We include this amount in our projection of funding available for the next year.  
-- _Funding granted from GiveWell's Maximum Impact Fund._ In late 2020, we granted $3.8 million from our **Maximum Impact Fund** to Malaria Consortium. We include this amount in our projection of funding available for the next year.  
-- _Funding recommended by GiveWell to be granted by Open Philanthropy._123 In November 2020, we recommended that Open Philanthropy grant $27 million to Malaria Consortium to fully support extending its funding runway for its current programs in Burkina Faso, Chad, Nigeria, and Togo through 2022, fully support expanding to newly-eligible locations in Nigeria in 2022 and maintaining work in those new areas in 2023, and partially support extending its funding runway for its current programs through 2023. We include this amount in our projection of funding available for the next year.  
-- _Projected funding due to being a GiveWell top charity._ GiveWell maintains a list of all charities that meet our criteria, along with a recommendation for which charity or charities to give to in order to maximize the impact of additional donations. Some donors give based on our top charity list but do not follow our recommendation for marginal funding. We estimate the amount that Malaria Consortium will receive from these donors in the next year and include this amount in our projection of funding available for that year only.124
+- **Funding currently held by GiveWell to be granted to Malaria Consortium.** We include this amount in our projection of funding available for the next year.  
+- **Funding granted from GiveWell's Maximum Impact Fund.** In late 2020, we granted $3.8 million from our **Maximum Impact Fund** to Malaria Consortium. We include this amount in our projection of funding available for the next year.  
+- **Funding recommended by GiveWell to be granted by Open Philanthropy.**123 In November 2020, we recommended that Open Philanthropy grant $27 million to Malaria Consortium to fully support extending its funding runway for its current programs in Burkina Faso, Chad, Nigeria, and Togo through 2022, fully support expanding to newly-eligible locations in Nigeria in 2022 and maintaining work in those new areas in 2023, and partially support extending its funding runway for its current programs through 2023. We include this amount in our projection of funding available for the next year.  
+- **Projected funding due to being a GiveWell top charity.** GiveWell maintains a list of all charities that meet our criteria, along with a recommendation for which charity or charities to give to in order to maximize the impact of additional donations. Some donors give based on our top charity list but do not follow our recommendation for marginal funding. We estimate the amount that Malaria Consortium will receive from these donors in the next year and include this amount in our projection of funding available for that year only.124
 
 ## Spending opportunities
 
@@ -301,6 +325,7 @@ Since Malaria Consortium works on a variety of programs, it is possible that rec
 Malaria Consortium's estimate of its room for more funding for SMC makes certain assumptions about what funding will be available globally for SMC from other major institutional funders.
 ```
 
+```markdown
 Historically, major funders of SMC have included the Global Fund to Fight AIDS, Tuberculosis, and Malaria, PMI, the UK government's Department for International Development, and the World Bank.^28^ Malaria Consortium expects the Global Fund and PMI to continue funding SMC in 2021-23 in the countries where it works (the Global Fund in Burkina Faso, Chad, Nigeria, and Togo; PMI in Burkina Faso and Nigeria). Our understanding is that the World Bank will not fund SMC in these countries in the future. We are unsure how much funding for SMC will be available from the UK government.^129^
 
 Malaria Consortium shared the information it had, as of June 2020, about the expected size of funding gaps in 2020 in each of the countries that contain areas eligible for SMC. In short:^130^
@@ -373,8 +398,8 @@ We use qualitative assessments of our top charities to inform our funding recomm
 | Malaria Consortium training, daily evaluation | Source |
 | Malaria Consortium training, Final evaluation | Source |
 | Malaria Consortium training, pre- and post- test scores | Source |
-| Malaria Consortium website, "Seasonal Malaria Chemoprevention" | Source |
-| Malaria Consortium website, "Who We Are" | Source (archive) |
+| Malaria Consortium website, "Seasonal Malaria Chemoprevention" | Source (archive) |
+| Malaria Consortium website, "Who We Are" | Source |
 | Malaria Consortium, "Seasonal Malaria Chemoprevention Programme Start-Up Guide, Nigeria" | Source |
 | Malaria Consortium, "Support Scale up of Seasonal Malaria Chemoprevention (SMC)" | Source |
 | Malaria Consortium, 2013 operational data | Source |
@@ -395,13 +420,17 @@ We use qualitative assessments of our top charities to inform our funding recomm
 | Malaria Consortium, 2019 SMC narrative report | Source |
 | Malaria Consortium, 2019 trustees' report and financial Statements | Source |
 | Malaria Consortium, ACCESS-SMC announcement, May 8, 2014 | Source (archive) |
-| Malaria Consortium, ACCESS-SMC page | Source |
-| Malaria Consortium, Annex II, 2017 Coverage Summary | Source |
-| Malaria Consortium, Annex III: ACCESS-SMC | Source |
-| Malaria Consortium, Annex III: evaluation of seasonal malaria chemoprevention | Source |
-| Malaria Consortium, Annual Reviews | Source |
+| Malaria Consortium, ACCESS-SMC page | Statements |
+| Malaria Consortium, Annex II, 2017 Coverage Summary | Statements |
+| Malaria Consortium, Annex III: ACCESS-SMC | Statements |
+| Malaria Consortium, Annex III: evaluation of seasonal | Statements |
+| Malaria Consortium, Annual Reviews | Statements |
+| Malaria Consortium, Coverage survey summary 2016 | Statements |
 | Malaria Consortium, Coverage survey summary 2016, Guinea | Source |
+| Malaria Consortium, Coverage survey summary 2016 | Source |
 | Malaria Consortium, Coverage survey summary 2016, Niger | Source |
+| Malaria Consortium, Coverage survey summary 2016 | Source |
+| Malaria Consortium, Coverage survey summary 2016 | Source |
 | Malaria Consortium, Coverage survey summary 2016, The Gambia | Source |
 | Malaria Consortium, Donor landscape 2019 | Unpublished |
 | Malaria Consortium, drug resistance Katsina study | Source |
@@ -441,3 +470,17 @@ We use qualitative assessments of our top charities to inform our funding recomm
 | World Health Organization, "Seasonal Malaria Chemoprevention" | Source |
 
 EXPAND FOOTNOTES +
+
+^28^ Footnote 28 content.
+^129^ Footnote 129 content.
+^130^ Footnote 130 content.
+^131^ Footnote 131 content.
+^132^ Footnote 132 content.
+^133^ Footnote 133 content.
+^134^ Footnote 134 content.
+^135^ Footnote 135 content.
+^136^ Footnote 136 content.
+^137^ Footnote 137 content.
+^138^ Footnote 138 content.
+^139^ Footnote 139 content.
+```

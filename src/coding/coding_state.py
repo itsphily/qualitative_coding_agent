@@ -10,10 +10,10 @@ class CodingAgentState(TypedDict):
     project_description: str
     prompt_for_project: str
     code_list: List[str]
-    output_per_code: Annotated[List[str], operator.add]
+    list_output_per_code: Annotated[List[str], operator.add]
 
 class CodingAgentOutputState(TypedDict):
-    output_per_code: Annotated[List[str], operator.add]
+    list_output_per_code: Annotated[List[str], operator.add]
 
 class CodingAgentInputState(TypedDict):
     charity_id: str
@@ -28,8 +28,8 @@ class AgentPerCodeState(TypedDict):
     prompt_per_code: str
     charity_directory: str
     doc_text_list: List[str]
-    output_per_code: Annotated[List[str], operator.add]
-    output_per_code_per_doc: Annotated[List[str], operator.add]
+    list_output_per_code: Annotated[List[str], operator.add]
+    list_output_per_code_per_doc: Annotated[List[str], operator.add]
 
 class AgentPerCodeInputState(TypedDict):
     prompt_per_code: str
