@@ -12,7 +12,7 @@ def path_to_text(path):
 def visualize_graph(graph, name):
     """Visualize the graph."""
     try:
-        png_data = graph.get_graph(xray=1).draw_mermaid_png(
+        png_data = graph.get_graph(xray=2).draw_mermaid_png(
             draw_method=MermaidDrawMethod.API,
         )
         with open(f'{name}.png', 'wb') as f:

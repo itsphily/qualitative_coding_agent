@@ -68,10 +68,6 @@ Coding as an interative process, so let's think step by step.
 Identify all qualitative codes (one or more) present in the text provided below, according to the coding scheme above. For each code identified also provide CharityID, a relevant quote, and the reasoning.
 <\Question>
 
-<Text to code> 
-$$text$$
-</Text to code>
-
 <Charity ID>
 {charity_id}
 </Charity ID>

@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from typing import List
-from langchain.chat_models import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from langgraph.graph import START, END, StateGraph
 from langgraph.constants import Send
@@ -21,18 +21,16 @@ from coding_prompt import coding_agent_prompt, text_to_code_prompt
 # Load environment variables from .env file
 load_dotenv()
 
-# Initialize LLMs
 llm = ChatOpenAI(
     model="deepseek-chat",
-    openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
-    openai_api_base="https://api.deepseek.com/v1/chat/completions",
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url="https://api.deepseek.com/v1",
     temperature=0.0
 )
-
 llm_json_mode = ChatOpenAI(
     model="deepseek-chat",
-    openai_api_key=os.getenv("DEEPSEEK_API_KEY"),
-    openai_api_base="https://api.deepseek.com/v1/chat/completions",
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url="https://api.deepseek.com/v1",
     temperature=0.0
 )
 llm_json_mode.bind(response_format={"type": "json_object"})
@@ -56,7 +54,7 @@ def continue_to_invoke_prompt(state: CodingAgentState):
     prompt_with_charity_research_information = state['prompt_for_project']
     return [
         Send(
-            "invoke_code_prompt_node",
+            "graph_per_code_node",
             {
                 "prompt_per_code": prompt_with_charity_research_information.replace("$$code$$", c),
                 "charity_directory": state['charity_directory']
@@ -74,6 +72,7 @@ def get_doc_text(state: AgentPerCodeInputState) -> AgentPerCodeState:
 
     for root, dirs, files in os.walk(state['charity_directory']):
         for file in files:
+            print(file)
             if file.endswith('.md'):
                 doc_path = os.path.join(root, file)
                 doc_path_list.append(doc_path)
@@ -89,7 +88,7 @@ def continue_invoke_code_prompt(state: AgentPerCodeState):
     """
     return [
         Send(
-            "invoke_one_code_prompt_per_doc_node",
+            "graph_per_code_per_doc_node",
             {
                 "prompt_per_code": state["prompt_per_code"],
                 "doc_text": d
@@ -103,7 +102,7 @@ def invoke_one_code_prompt_per_doc(state: AgentRunState):
     This function takes in the full prompt and invokes the LLM for each document.
     """
     system_message = SystemMessage(content=state['prompt_per_code'])
-    human_message = HumanMessage(content=text_to_code_prompt.replace("$$text$$", state['doc_text']))
+    human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
 
     result = llm.invoke([system_message, human_message])
 
@@ -127,6 +126,7 @@ def aggregate_all_results(state: CodingAgentState) -> CodingAgentOutputState:
 # Graph for per code per document processing
 graph_per_code_per_doc = StateGraph(input=AgentRunState, output=AgentRunOutputState)
 graph_per_code_per_doc.add_node('invoke_one_code_prompt_per_doc_node', invoke_one_code_prompt_per_doc)
+# add the edge for the graph per code per doc
 graph_per_code_per_doc.add_edge(START, 'invoke_one_code_prompt_per_doc_node')
 graph_per_code_per_doc.add_edge('invoke_one_code_prompt_per_doc_node', END)
 
@@ -135,8 +135,10 @@ graph_per_code = StateGraph(input=AgentPerCodeInputState, output=AgentPerCodeOut
 graph_per_code.add_node('get_doc_text_node', get_doc_text)
 graph_per_code.add_node('graph_per_code_per_doc_node', graph_per_code_per_doc.compile())
 graph_per_code.add_node('aggregate_all_results_per_doc_node', aggregate_all_results_per_doc)
+# add the edge for the graph per code per doc
 graph_per_code.add_edge(START, 'get_doc_text_node')
-graph_per_code.add_conditional_edges('get_doc_text_node', continue_invoke_code_prompt, 'graph_per_code_per_doc_node')
+graph_per_code.add_conditional_edges('get_doc_text_node', continue_invoke_code_prompt, ['graph_per_code_per_doc_node'])
+
 graph_per_code.add_edge('graph_per_code_per_doc_node', 'aggregate_all_results_per_doc_node')
 graph_per_code.add_edge('aggregate_all_results_per_doc_node', END)
 
@@ -145,8 +147,9 @@ main_graph = StateGraph(input=CodingAgentInputState, output=CodingAgentOutputSta
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('graph_per_code_node', graph_per_code.compile())
 main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
+# add the edge for the main graph
 main_graph.add_edge(START, 'fill_info_prompt_node')
-main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_invoke_prompt, 'graph_per_code_node')
+main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_invoke_prompt, ['graph_per_code_node'])
 main_graph.add_edge('graph_per_code_node', 'aggregate_all_results_node')
 main_graph.add_edge('aggregate_all_results_node', END)
 
