@@ -129,7 +129,7 @@ def continue_qa_feedback_node(state: ChunktoMarkdownState) -> Literal['qa_feedba
 
 def save_to_cleaned_chunks_dict(state: ChunktoMarkdownState):
     """Save the cleaned chunk text to the cleaned_chunks_dict."""
-    return {"cleaned_chunk_dict": state['cleaned_chunk_dict']}
+    return {"£": state['cleaned_chunk_dict']}
 
 # Build the chunk cleaner subgraph
 chunk_cleaner = StateGraph(ChunktoMarkdownState, input=ChunktoMarkdownInputState, output=ChunktoMarkdownOutputState)

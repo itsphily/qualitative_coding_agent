@@ -5,16 +5,12 @@ from langchain_community.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from langgraph.graph import START, END, StateGraph
 from langgraph.constants import Send
-from coding_state import (
+from test_coding_state import (
     CodingAgentState,
     CodingAgentOutputState,
-    CodingAgentInputState,
-    AgentPerCodeState,
-    AgentPerCodeInputState,
-    AgentRunState,
-    AgentRunOutputState,
-    AgentPerCodeOutputState
+    AgentPerCodeState
 )
+
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import coding_agent_prompt, text_to_code_prompt
 
@@ -35,7 +31,7 @@ llm_json_mode = ChatOpenAI(
 )
 llm_json_mode.bind(response_format={"type": "json_object"})
 
-def fill_info_prompt(state: CodingAgentInputState) -> CodingAgentState:
+def fill_info_prompt(state: CodingAgentState):
     """
     This function takes the generic prompt and fills it with the charity and research specific information.
     """
@@ -52,52 +48,33 @@ def continue_to_invoke_prompt(state: CodingAgentState):
     This function sends the generically filled prompt to the subgraph to invoke the prompt per code per doc.
     """
     prompt_with_charity_research_information = state['prompt_for_project']
-    return [
-        Send(
-            "graph_per_code_node",
-            {
-                "prompt_per_code": prompt_with_charity_research_information.replace("$$code$$", c),
-                "charity_directory": state['charity_directory']
-            }
-        )
-        for c in state['code_list']
-    ]
 
-def get_doc_text(state: AgentPerCodeInputState) -> AgentPerCodeState:
-    """
-    This function reads each text from the files in the directory and appends them to a list.
-    """
+
     doc_path_list = []
     doc_text_list = []
 
     for root, dirs, files in os.walk(state['charity_directory']):
         for file in files:
-            print(file)
             if file.endswith('.md'):
                 doc_path = os.path.join(root, file)
                 doc_path_list.append(doc_path)
                 doc_text = path_to_text(doc_path)
                 doc_text_list.append(doc_text)
 
-    return {'doc_text_list': doc_text_list}
-
-def continue_invoke_code_prompt(state: AgentPerCodeState):
-    """
-    This function takes in the prompt filled with the charity and research specific information,
-    iterates over the texts in `doc_text_list`, and uses Send to invoke one prompt per code per document.
-    """
     return [
         Send(
-            "graph_per_code_per_doc_node",
+            "invoke_prompt",
             {
-                "prompt_per_code": state["prompt_per_code"],
+                "prompt_per_code": prompt_with_charity_research_information.replace("$$code$$", c),
+                "charity_directory": state['charity_directory'],
                 "doc_text": d
             }
         )
-        for d in state['doc_text_list']
+        for c in state['code_list']
+        for d in doc_text_list
     ]
 
-def invoke_one_code_prompt_per_doc(state: AgentRunState):
+def invoke_prompt(state: AgentPerCodeState):
     """
     This function takes in the full prompt and invokes the LLM for each document.
     """
@@ -106,9 +83,9 @@ def invoke_one_code_prompt_per_doc(state: AgentRunState):
 
     result = llm.invoke([system_message, human_message])
 
-    return {"output_per_code_per_doc": result}
+    return {"list_output_per_code_per_doc": [result.content]}
 
-def aggregate_all_results_per_doc(state: AgentPerCodeState) -> AgentPerCodeOutputState:
+def aggregate_all_results(state: CodingAgentState) -> CodingAgentOutputState:
     """
     This function takes in the list of results from invoking the LLM with one code for each doc,
     and aggregates all the results per code.
@@ -116,44 +93,22 @@ def aggregate_all_results_per_doc(state: AgentPerCodeState) -> AgentPerCodeOutpu
     output_per_code = ''.join(state['list_output_per_code_per_doc'])
     return {"output_per_code": output_per_code}
 
-def aggregate_all_results(state: CodingAgentState) -> CodingAgentOutputState:
-    """
-    This function takes in the list of results for each code, and aggregates all the results for a final output.
-    """
-    output = ''.join(state['list_output_per_code'])
-    return {"output": output}
 
-# Graph for per code per document processing
-graph_per_code_per_doc = StateGraph(input=AgentRunState, output=AgentRunOutputState)
-graph_per_code_per_doc.add_node('invoke_one_code_prompt_per_doc_node', invoke_one_code_prompt_per_doc)
-# add the edge for the graph per code per doc
-graph_per_code_per_doc.add_edge(START, 'invoke_one_code_prompt_per_doc_node')
-graph_per_code_per_doc.add_edge('invoke_one_code_prompt_per_doc_node', END)
 
-# Graph for per code processing
-graph_per_code = StateGraph(input=AgentPerCodeInputState, output=AgentPerCodeOutputState)
-graph_per_code.add_node('get_doc_text_node', get_doc_text)
-graph_per_code.add_node('graph_per_code_per_doc_node', graph_per_code_per_doc.compile())
-graph_per_code.add_node('aggregate_all_results_per_doc_node', aggregate_all_results_per_doc)
-# add the edge for the graph per code per doc
-graph_per_code.add_edge(START, 'get_doc_text_node')
-graph_per_code.add_conditional_edges('get_doc_text_node', continue_invoke_code_prompt, ['graph_per_code_per_doc_node'])
-
-graph_per_code.add_edge('graph_per_code_per_doc_node', 'aggregate_all_results_per_doc_node')
-graph_per_code.add_edge('aggregate_all_results_per_doc_node', END)
-
-# Main graph
-main_graph = StateGraph(input=CodingAgentInputState, output=CodingAgentOutputState)
+main_graph = StateGraph(input=CodingAgentState, output=CodingAgentOutputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
-main_graph.add_node('graph_per_code_node', graph_per_code.compile())
+main_graph.add_node('invoke_prompt',invoke_prompt)
 main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
+
 # add the edge for the main graph
 main_graph.add_edge(START, 'fill_info_prompt_node')
-main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_invoke_prompt, ['graph_per_code_node'])
-main_graph.add_edge('graph_per_code_node', 'aggregate_all_results_node')
+main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_invoke_prompt, ['invoke_prompt'])
+main_graph.add_edge('invoke_prompt', 'aggregate_all_results_node')
 main_graph.add_edge('aggregate_all_results_node', END)
 
+
 main_graph = main_graph.compile()
+
 def main():
     # Hardcode the CodingAgentInputState
     charity_id = 'GiveDirectly'
@@ -167,6 +122,9 @@ def main():
         "webpages from a charity website and other data sources.\n\n"
         "Each charity is seeking to address a social cause and it does so by implementing its intervention(s)."
     )
+    code_list = [
+        "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location."
+    ]
 
     input_state = {
         'charity_id': charity_id,
@@ -175,7 +133,7 @@ def main():
         'research_question': research_question,
         'project_description': project_description,
         'prompt_for_project': '',  # Will be populated later
-        'code_list': ['Code1', 'Code2']  # Replace with actual code list
+        'code_list': code_list  # Replace with actual code list
     }
 
     # Run the main graph
