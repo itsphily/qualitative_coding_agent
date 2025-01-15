@@ -114,3 +114,16 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Using coding_exec.py
+
+The file coding_exec.py runs an AI agent that looks through all the documents in a specified directory to identify “codes,” plus the relevant quotes and reasoning behind each assignment. Specifically, the script does the following:
+
+1. Reads all markdown files from the given directory.  
+2. Invokes an LLM-based agent for each file.  
+3. Extracts codes, quotes, and the reasoning for associating that quote with the code.  
+
+To force the LLM to return structured output, we chose the approach of binding the output as an additional tool in the agent node. This ensures our tool-calling agent can produce consistent, structured responses.
+
+For more information on structured output with a ReAct-style agent, see the LangGraph documentation:
+@https://langchain-ai.github.io/langgraph/how-tos/react-agent-structured-output/?h=structured
