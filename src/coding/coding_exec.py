@@ -88,7 +88,7 @@ def continue_to_invoke_prompt(state: CodingAgentState):
             "invoke_prompt",
             {
                 "prompt_per_code": prompt_with_charity_research_information
-                                    + coding_agent_prompt_codes.replace("$$code$$", c)
+                                    + coding_agent_prompt_codes.format(code=c)
                                     + coding_agent_prompt_footer,
                 "charity_directory": state['charity_directory'],
                 "doc_text": d

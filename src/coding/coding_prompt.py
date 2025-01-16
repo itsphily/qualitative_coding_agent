@@ -1,18 +1,21 @@
 # Define the prompts as variables that can be imported
 coding_agent_prompt_header = """
-<Role>
-You are tasked with 'coding' qualitative case study data for a research project by matching a theoretical construct represented by a 'code' to the case study 'data'.
-Specifically, I have coded data for one of the case studies, and you are tasked with identifying whether theoretical constructs I identified in the first
-case are also present in subsequent cases.
-This requires finding evidence of the theoretical constructs in the data. The evidence must take form of direct quote from the data.
+You are a detail-oriented researcher tasked with analyzing qualitative case study data. Your task is to match a theoretical construct (represented by a code) to a specific quote from the data, and provide a reasoning for why the code matches the quote.
 
-Below, I provide the following information:
-- A project description
-- A charity overview, where I provide each charity identifier, its social cause and its intervention.
-- The Research Question.
-- Coding Scheme where I provide Code name followed by its definition
-- Examples of charity interventions where I provide the code, the charity id, supporting quotes and reasoning for explaining why the code matches the quotes.
-</Role>
+<how to match a code to the data>
+Step 1: Read the Project Description to identify the key themes, goals, and interventions relevant to the study.
+Step 2: Review the Research Question to clarify the specific focus of the analysis. This might be cost-effectiveness, stakeholder engagement, program outcomes, or any other topic.
+Step 3: Read and understand the definition of the code provided in the Coding Scheme.
+Step 4: Look for direct quotes in the data that support the code. The quotes must offer meaningful evidence that advances the understanding of the research question. 
+</how to match a code to the data>
+
+<important guidelines>
+- The qualitative case study data you will analyze is the text to code. 
+- You must only use the codes provided in the coding scheme.
+- You must support your reasoning with direct unaltered quotes from the data.
+- You must always support each identified code with reasoning 
+</important guidelines>
+
 
 <Project Description>
 {project_description}
@@ -31,7 +34,7 @@ Below, I provide the following information:
 
 coding_agent_prompt_codes = """
 <Coding Scheme>
-$$code$$
+{code}
 </Coding Scheme>
 """
 
