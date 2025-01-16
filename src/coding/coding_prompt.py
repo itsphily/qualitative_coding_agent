@@ -77,11 +77,11 @@ coding_agent_prompt_footer = """
 In my questions I will ask if a case contains the presence of a certain theoretical construct.
 If you don't know the answer, just say 'There is no evidence of any of the qualitative codes' and provide an explanation. Don't try to make up an answer.
 Coding as an interative process, so let's think step by step.
-<\Further Instructions>
+</Further Instructions>
 
 <Question>
 Identify all qualitative codes (one or more) present in the text provided below, according to the coding scheme above. For each code identified also provide CharityID, a relevant quote, and the reasoning.
-<\Question>
+</Question>
 
 <Answer Structure>
 Always structure your answer following one of this two format alternatives, do not Include anything else in your answer: 
