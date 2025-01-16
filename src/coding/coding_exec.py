@@ -12,7 +12,12 @@ from coding_state import (
     StructuredOutputPerCode
 )
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
-from coding_prompt import coding_agent_prompt, text_to_code_prompt
+from coding_prompt import (
+    coding_agent_prompt_header,
+    coding_agent_prompt_codes,
+    coding_agent_prompt_footer,
+    text_to_code_prompt
+)
 
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -53,11 +58,10 @@ def fill_info_prompt(state: CodingAgentState):
     """
     This function takes the generic prompt and fills it with the charity and research specific information.
     """
-    prompt_with_charity_research_information = coding_agent_prompt.format(
+    prompt_with_charity_research_information = coding_agent_prompt_header.format(
         project_description=state['project_description'],
         charity_overview=f"{state['charity_id']}: {state['charity_overview']}",
-        research_question=state['research_question'], 
-        charity_id=state['charity_id']
+        research_question=state['research_question']
     )
     return {"prompt_for_project": prompt_with_charity_research_information}
 
@@ -83,7 +87,9 @@ def continue_to_invoke_prompt(state: CodingAgentState):
         Send(
             "invoke_prompt",
             {
-                "prompt_per_code": prompt_with_charity_research_information.replace("$$code$$", c),
+                "prompt_per_code": prompt_with_charity_research_information
+                                  + coding_agent_prompt_codes.replace("$$code$$", c)
+                                  + coding_agent_prompt_footer,
                 "charity_directory": state['charity_directory'],
                 "doc_text": d
             }

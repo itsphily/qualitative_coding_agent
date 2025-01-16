@@ -1,5 +1,5 @@
 # Define the prompts as variables that can be imported
-coding_agent_prompt = """
+coding_agent_prompt_header = """
 <Role>
 You are tasked with 'coding' qualitative case study data for a research project by matching a theoretical construct represented by a 'code' to the case study 'data'.
 Specifically, I have coded data for one of the case studies, and you are tasked with identifying whether theoretical constructs I identified in the first
@@ -10,8 +10,8 @@ Below, I provide the following information:
 - A project description
 - A charity overview, where I provide each charity identifier, its social cause and its intervention.
 - The Research Question.
-- Coding Shcheme where I provide Code name followed by its definition
-- Examples of sharity interventions where I provide the code, the charity id, supporting quotes and reasoning for explainning why the code matches the quotes.
+- Coding Scheme where I provide Code name followed by its definition
+- Examples of charity interventions where I provide the code, the charity id, supporting quotes and reasoning for explaining why the code matches the quotes.
 </Role>
 
 <Project Description>
@@ -24,12 +24,18 @@ Below, I provide the following information:
 
 <Research Question> 
 {research_question}
-</Research Question> 
+</Research Question>
 
+\n
+"""
+
+coding_agent_prompt_codes = """
 <Coding Scheme>
 $$code$$
 </Coding Scheme>
+"""
 
+coding_agent_prompt_footer = """
 <Examples>
 {
     "Code": "Pre-intervention data collection",
@@ -109,4 +115,9 @@ FINAL ANSWER:
 """
 
 # Export the variables
-__all__ = ['coding_agent_prompt', 'text_to_code_prompt']
+__all__ = [
+    'coding_agent_prompt_header',
+    'coding_agent_prompt_codes',
+    'coding_agent_prompt_footer',
+    'text_to_code_prompt'
+]
