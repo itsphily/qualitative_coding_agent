@@ -9,7 +9,6 @@ class CodingAgentState(TypedDict):
     charity_overview: str
     charity_directory: str
     research_question: str
-    project_description: str
     prompt_for_project: str
     code_list: List[str]
     list_output_per_code_per_doc: Annotated[list, operator.add]

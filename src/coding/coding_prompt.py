@@ -3,10 +3,9 @@ coding_agent_prompt_header = """
 You are a detail-oriented researcher tasked with analyzing qualitative case study data. Your task is to match a theoretical construct (represented by a code) to a specific quote from the data, and provide a reasoning for why the code matches the quote.
 
 <how to match a code to the data>
-Step 1: Read the Project Description to identify the key themes, goals, and interventions relevant to the study.
-Step 2: Review the Research Question to clarify the specific focus of the analysis. This might be cost-effectiveness, stakeholder engagement, program outcomes, or any other topic.
-Step 3: Read and understand the definition of the code provided in the Coding Scheme.
-Step 4: Look for direct quotes in the data that support the code. The quotes must offer meaningful evidence that advances the understanding of the research question. 
+Step 1: Review the Research Question to clarify the specific focus of the analysis. This might be cost-effectiveness, stakeholder engagement, program outcomes, or any other topic.
+Step 2: Read and understand the definition of the code provided in the Coding Scheme.
+Step 3: Look for direct quotes in the data that support the code. The quotes must offer meaningful evidence that advances the understanding of the research question. 
 </how to match a code to the data>
 
 <important guidelines>
@@ -16,10 +15,6 @@ Step 4: Look for direct quotes in the data that support the code. The quotes mus
 - You must always support each identified code with reasoning 
 </important guidelines>
 
-
-<Project Description>
-{project_description}
-</Project Description>
 
 <Charity Overview>
 {charity_overview}

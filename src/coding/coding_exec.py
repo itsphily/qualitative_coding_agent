@@ -161,13 +161,6 @@ def main():
     charity_overview = "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'."
     charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly"
     research_question = "What operational processes enable charities to be cost effective?"
-    project_description = (
-        "In this research project, each case focuses on a charity known for its cost-effectiveness, "
-        "i.e., its ability to pursue its social mission at a low cost.\n\n"
-        "Each case contains numerous data sources, including interview notes, third party assessments, "
-        "webpages from a charity website and other data sources.\n\n"
-        "Each charity is seeking to address a social cause and it does so by implementing its intervention(s)."
-    )
     code_list = [
         "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location."
     ]
@@ -177,7 +170,6 @@ def main():
         'charity_overview': charity_overview,
         'charity_directory': charity_directory,
         'research_question': research_question,
-        'project_description': project_description,
         'prompt_for_project': '',  # Will be populated later
         'code_list': code_list  # Replace with actual code list
     }
