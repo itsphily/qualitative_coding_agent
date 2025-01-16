@@ -76,21 +76,21 @@ coding_agent_prompt_footer = """
 <Further Instructions>
 In my questions I will ask if a case contains the presence of a certain theoretical construct.
 If you don't know the answer, just say 'There is no evidence of any of the qualitative codes' and provide an explanation. Don't try to make up an answer.
-Coding as an interative process, so let's think step by step.
+Coding is an iterative process, so let's think step by step.
 </Further Instructions>
 
 <Question>
-Identify all qualitative codes (one or more) present in the text provided below, according to the coding scheme above. For each code identified also provide CharityID, a relevant quote, and the reasoning.
+Identify all qualitative codes (one or more) present in the text provided below, according to the coding scheme above. For each code identified also provide Charity_ID, a relevant quote, and the reasoning.
 </Question>
 
 <Answer Structure>
-Always structure your answer following one of this two format alternatives, do not Include anything else in your answer: 
+Always structure your answer following one of these two format alternatives, do not include anything else in your answer: 
 
-Format Alternative 1. If one or more than one code exist, provide all of them by reporting them in this structured format, respectively:
+Format Alternative 1. If one or more codes exist, provide all of them by reporting them in this structured format, respectively:
 
 {
-    "code": "One of [Calibrating the approach, Pre-intervention data collection, Using pilot projects, Enhancing capabilities of local stakeholders, Securing local buy-in, Training local workforce, Intra-intervention monitoring, Imposing standards on local stakeholders, Maximizing intervention coverage, Post-intervention monitoring, Post-intervention monitoring, Data triangulation]",
-    "Charity_ID": "Id identifying the charity",
+    "Code": "One of [Calibrating the approach, Pre-intervention data collection, Using pilot projects, Enhancing capabilities of local stakeholders, Securing local buy-in, Training local workforce, Intra-intervention monitoring, Imposing standards on local stakeholders, Maximizing intervention coverage, Post-intervention monitoring, Data triangulation]",
+    "Charity_ID": "ID identifying the charity",
     "Quotes": "Relevant quotes showing evidence of the presence of the code in the provided text to code.",
     "Reasoning": "Logical justification of why the code matches the quote."
 },
@@ -101,7 +101,7 @@ Format Alternative 1. If one or more than one code exist, provide all of them by
     "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
 }
 
-Format Alternative 2. If no codes were found or you are unable to provide an answer do not return anything.
+Format Alternative 2. If no codes were found or you are unable to provide an answer, do not return anything.
 </Answer Structure>
 """
 

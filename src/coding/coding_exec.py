@@ -51,21 +51,21 @@ llm_with_tools = llm_with_tools.bind_tools(tools, tool_choice="any")
 
 def fill_info_prompt(state: CodingAgentState):
     """
-    This function takes the generic prompt and fills it with the charity and research specific information.
+    This function takes the generic prompt header and fills it with the charity and research specific information.
     """
-    prompt_with_charity_research_information = coding_agent_prompt.format(
+    prompt_with_charity_research_information = coding_agent_prompt_header.format(
         project_description=state['project_description'],
         charity_overview=f"{state['charity_id']}: {state['charity_overview']}",
         research_question=state['research_question']
     )
+    # Store the formatted header in the state
     return {"prompt_for_project": prompt_with_charity_research_information}
 
 def continue_to_invoke_prompt(state: CodingAgentState):
     """
-    This function sends the generically filled prompt to the subgraph to invoke the prompt per code per doc.
+    This function sends the formatted prompt to the subgraph to invoke the prompt per code per document.
     """
     prompt_with_charity_research_information = state['prompt_for_project']
-
 
     doc_path_list = []
     doc_text_list = []
@@ -82,7 +82,9 @@ def continue_to_invoke_prompt(state: CodingAgentState):
         Send(
             "invoke_prompt",
             {
-                "prompt_per_code": prompt_with_charity_research_information.replace("$$code$$", c),
+                "prompt_per_code": prompt_with_charity_research_information
+                                    + coding_agent_prompt_codes.replace("$$code$$", c)
+                                    + coding_agent_prompt_footer,
                 "charity_directory": state['charity_directory'],
                 "doc_text": d
             }
