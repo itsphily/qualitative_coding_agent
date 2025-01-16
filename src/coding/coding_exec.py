@@ -12,7 +12,12 @@ from coding_state import (
     StructuredOutputPerCode
 )
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
-from coding_prompt import coding_agent_prompt, text_to_code_prompt
+from coding_prompt import (
+    coding_agent_prompt_header,
+    coding_agent_prompt_codes,
+    coding_agent_prompt_footer,
+    text_to_code_prompt
+)
 
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
