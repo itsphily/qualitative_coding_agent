@@ -20,7 +20,6 @@ Below, I provide the following information:
 
 <Charity Overview>
 {charity_overview}
-Charity_ID: 'GiveDirectly'. Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'.
 </Charity Overview>
 
 <Research Question> 
@@ -32,30 +31,40 @@ $$code$$
 </Coding Scheme>
 
 <Examples>
-Code: Pre-intervention data collection
-Charity_ID: 'Against Malaria Foundation'
-Quotes: “[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.” (2016-04-15 Interview Notes)
-Reasoning: Run by a third-party partner, a pre-distribution registration survey is conducted in cooperation with village leaders and local health officials. The survey determines how many nets are needed for the upcoming distribution by identifying the number of households per district and the number of people in each household.
+{
+    "Code": "Pre-intervention data collection",
+    "Charity_ID": "Against Malaria Foundation",
+    "Quotes": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
+    "Reasoning": "Run by a third-party partner, a pre-distribution registration survey is conducted in cooperation with village leaders and local health officials. The survey determines how many nets are needed for the upcoming distribution by identifying the number of households per district and the number of people in each household."
+}
 
-Code: Using pilot projects
-Charity_ID: 'Against Malaria Foundation'
-Quotes: “In Country J, AMF’s net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection.” (2015-10-22 Interview Notes) “After nets have been obtained, it takes several months to put in place all the logistics and in-country planning that go into carrying out a multimillion-net campaign, including running a small-scale pilot.” (2018-12-17 Interview Notes)
-Reasoning: In a new country, the distribution often starts with a small intervention of a limited number of nets distributed in certain geographical areas. Interestingly, this is done even though the pilot projects delay net distribution.
+{
+    "Code": "Using pilot projects", 
+    "Charity_ID": "Against Malaria Foundation",
+    "Quotes": "In Country J, AMF's net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection. After nets have been obtained, it takes several months to put in place all the logistics and in-country planning that go into carrying out a multimillion-net campaign, including running a small-scale pilot.",
+    "Reasoning": "In a new country, the distribution often starts with a small intervention of a limited number of nets distributed in certain geographical areas. Interestingly, this is done even though the pilot projects delay net distribution."
+}
 
-Code: Enhancing capabilities of local stakeholders
-Charity_ID: 'Against Malaria Foundation'
-Quotes: “AMF aims to ensure that countries it works with have a good operational plan that is properly resourced and scheduled to enable effective delivery.” (2018-06-14 Interview Notes) “AMF works with the National Malaria Control Programme (NMCP) in each country and with speciﬁc distribution partners for each distribution who may take full operational responsibility for a distribution or may have speciﬁc monitoring and evaluation roles.” (2021 Charity Website)
-Reasoning: AMF aims to ensure that countries it works with have a properly resourced and scheduled operational plan. Once AMF decides to operate in a country, AMF begins the planning process by hosting meetings with local health officials and having planning workshops where they discuss the registration and distribution processes, budgets, rules, and responsibilities for different groups. The first time AMF operates in a country, a large amount of work is required. But afterward, because the infrastructure is in place and the partners have experience, the intervention is easier to implement and more effective.
+{
+    "Code": "Enhancing capabilities of local stakeholders",
+    "Charity_ID": "Against Malaria Foundation", 
+    "Quotes": "AMF aims to ensure that countries it works with have a good operational plan that is properly resourced and scheduled to enable effective delivery. AMF works with the National Malaria Control Programme (NMCP) in each country and with speciﬁc distribution partners for each distribution who may take full operational responsibility for a distribution or may have speciﬁc monitoring and evaluation roles.",
+    "Reasoning": "AMF aims to ensure that countries it works with have a properly resourced and scheduled operational plan. Once AMF decides to operate in a country, AMF begins the planning process by hosting meetings with local health officials and having planning workshops where they discuss the registration and distribution processes, budgets, rules, and responsibilities for different groups. The first time AMF operates in a country, a large amount of work is required. But afterward, because the infrastructure is in place and the partners have experience, the intervention is easier to implement and more effective."
+}
 
-Code: Training local workforce
-Charity_ID: 'Against Malaria Foundation'
-Quotes: “[During intervention planning], orientation attendees then pass on this training to supervisors and volunteers in their district; this cascades down until all volunteers are trained.” (2016-08-18 Interview Notes) “Early meeting seems to have served as a training for staff.” (2011-10-22 Site Visit Notes)
-Reasoning: In a new country, AMF trains supervisors and volunteers. They also train the local HSAs on (1) how to recognize a usable net; (2) how to check the data sheet with the village leader and read it to the whole village; and (3) how to answer questions about net distribution.
+{
+    "Code": "Training local workforce",
+    "Charity_ID": "Against Malaria Foundation",
+    "Quotes": "[During intervention planning], orientation attendees then pass on this training to supervisors and volunteers in their district; this cascades down until all volunteers are trained. Early meeting seems to have served as a training for staff.",
+    "Reasoning": "In a new country, AMF trains supervisors and volunteers. They also train the local HSAs on (1) how to recognize a usable net; (2) how to check the data sheet with the village leader and read it to the whole village; and (3) how to answer questions about net distribution."
+}
 
-Code: Securing local buy-in
-Charity_ID: 'Against Malaria Foundation'
-Quotes: “There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities.” (2011-02-11 Interview Notes) “Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.” (2018-08-14 Interview Notes)
-Reasoning: AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community "ownership" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition.
+{
+    "Code": "Securing local buy-in",
+    "Charity_ID": "Against Malaria Foundation",
+    "Quotes": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities. Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.",
+    "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
+}
 </Examples>
 
 <Further Instructions>
@@ -68,24 +77,25 @@ Coding as an interative process, so let's think step by step.
 Identify all qualitative codes (one or more) present in the text provided below, according to the coding scheme above. For each code identified also provide CharityID, a relevant quote, and the reasoning.
 <\Question>
 
-<Charity ID>
-{charity_id}
-</Charity ID>
-
 <Answer Structure>
 Always structure your answer following one of this two format alternatives, do not Include anything else in your answer: 
 
 Format Alternative 1. If one or more than one code exist, provide all of them by reporting them in this structured format, respectively:
 
-Code: One of [Calibrating the approach, Pre-intervention data collection, Using pilot projects, Enhancing capabilities of local stakeholders, Securing local buy-in, Training local workforce, Intra-intervention monitoring, Imposing standards on local stakeholders, Maximizing intervention coverage, Post-intervention monitoring, Post-intervention monitoring, Data triangulation]
-Charity_ID: Id identifying the charity
-Quotes: Relevant quotes showing evidence of the presence of the code in the provided text to code.
-Reasoning: Logical justification of why the code matches the quote. 
+{
+    "code": "One of [Calibrating the approach, Pre-intervention data collection, Using pilot projects, Enhancing capabilities of local stakeholders, Securing local buy-in, Training local workforce, Intra-intervention monitoring, Imposing standards on local stakeholders, Maximizing intervention coverage, Post-intervention monitoring, Post-intervention monitoring, Data triangulation]",
+    "Charity_ID": "Id identifying the charity",
+    "Quotes": "Relevant quotes showing evidence of the presence of the code in the provided text to code.",
+    "Reasoning": "Logical justification of why the code matches the quote."
+},
+{
+    "Code": "Securing local buy-in",
+    "Charity_ID": "Against Malaria Foundation",
+    "Quotes": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities. Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.",
+    "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
+}
 
-Format Alternative 2. If no codes were found or you are unable to provide an answer, report the following, nothing else:
-
-'There is no evidence of any of the qualitative codes'. 
-Explanation: Provide an explanation of why the content in the text does not match any of the codes.
+Format Alternative 2. If no codes were found or you are unable to provide an answer do not return anything.
 </Answer Structure>
 """
 
