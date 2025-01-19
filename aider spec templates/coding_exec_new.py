@@ -57,13 +57,50 @@ llm_with_tools = llm_with_tools.bind_tools(tools, tool_choice="any")
 
 def fill_info_prompt(state: CodingAgentState):
     """
-    This function takes the combine_code_and_research_question_prompt and fills it with the research question.
+    This function takes the generic prompt header and fills it with the charity and research specific information.
     """
-    combine_code_and_research_question = combine_code_and_research_question_prompt.format(
+    code_and_research_question_prompt = combine_code_and_research_question_prompt.format(
         research_question=state['research_question']
     )
     # Store the formatted header in the state
-    return {"combine_code_and_research_question": combine_code_and_research_question}
+    return {"code_and_research_question_prompt": code_and_research_question_prompt}
+
+def continue_to_research_question(state: CodingAgentState):
+    """
+    This function sends the formatted prompt to the subgraph to invoke the prompt per code per document.
+    """
+    combine_code_and_research_question = state['combine_code_and_research_question']
+
+    return [
+        Send(
+            "invoke_prompt_graph_research_question",
+            {
+                "combine_code_and_research_question": combine_code_and_research_question + "<code>" + c + "</code>",
+                "charity_id": state['charity_id'],
+                "charity_directory": state['charity_directory'],
+                "code": c,
+            }
+        )
+        for c in state['code_list']
+    ]
+
+def combine_code_and_research_question_with_code(state: CodingAgentState):
+    """
+    This function combines the research question with the code.
+    """
+    combine_code_and_research_question = state['combine_code_and_research_question']
+    return [
+        Send(
+            "invoke_prompt_graph_research_question",
+            {
+                "combine_code_and_research_question": combine_code_and_research_question + "<code>" + c + "</code>",
+                "charity_id": state['charity_id'],
+                "charity_directory": state['charity_directory'],
+                "code": c,
+            }
+        )
+    ]
+
 
 def continue_to_invoke_prompt(state: CodingAgentState):
     """
@@ -135,19 +172,23 @@ def aggregate_all_results(state: CodingAgentState) -> CodingAgentOutputState:
 
 main_graph = StateGraph(CodingAgentState, output=CodingAgentOutputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
+main_graph.add_node('combine_code_and_research_question_with_code_node', combine_code_and_research_question_with_code)
+
+
 main_graph.add_node('invoke_prompt',invoke_prompt)
 main_graph.add_node("structure_answer", ToolNode(tools))
 main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
 
 # add the edge for the main graph
 main_graph.add_edge(START, 'fill_info_prompt_node')
-main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_invoke_prompt, ['invoke_prompt'])
+main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_research_question, ['invoke_prompt'])
 main_graph.add_edge('invoke_prompt', 'structure_answer')
 main_graph.add_edge('structure_answer', 'aggregate_all_results_node')
 main_graph.add_edge('aggregate_all_results_node', END)
 
-
 main_graph = main_graph.compile()
+
+
 
 def main():
     # Hardcode the CodingAgentInputState

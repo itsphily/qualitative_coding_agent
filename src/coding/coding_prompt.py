@@ -13,12 +13,13 @@ Step 3: Look for direct quotes in the data that support the code. The quotes mus
 - You must only use the codes provided in the coding scheme.
 - You must support your reasoning with direct unaltered quotes from the data.
 - You must always support each identified code with reasoning 
+- You must only output your answer in the format specificied in Answer Structure. do not include anything else in your answer.
 </important guidelines>
 
 
-<Charity Overview>
-{charity_overview}
-</Charity Overview>
+<Charity ID>
+{charity_id}
+</Charity ID>
 
 <Research Question> 
 {research_question}
@@ -82,7 +83,7 @@ Identify all qualitative codes (one or more) present in the text provided below,
 </Question>
 
 <Answer Structure>
-Always structure your answer following one of these two format alternatives, do not include anything else in your answer: 
+
 
 Format Alternative 1. If one or more codes exist, provide all of them by reporting them in this structured format, respectively:
 
@@ -103,19 +104,127 @@ Format Alternative 2. If no codes were found or you are unable to provide an ans
 </Answer Structure>
 """
 
+
 text_to_code_prompt = """
-Here is the text to code 
-<Text to code> 
+Here is the case study data
+<case study data> 
 {text}
-</Text to code>
+</case study data>
 
 FINAL ANSWER:
 """
+
+# Define the prompts as variables that can be imported
+coding_agent_prompt_header_specific = """
+You are a detail-oriented researcher tasked with analyzing case study data. Your task is to find quotes in the case study data that offer meaningful evidence that advances the understanding of the research question. 
+
+<how to match a code to the data>
+Step 1: Carefully read the research question and case study data.
+Step 2: Look for direct unaltered quotes in the case study data that answers or helps to answer the research question. In other words, quotes must offer meaningful evidence that advances the understanding of the research question. 
+Step 3: Write the reasoning for why the quote answers or helps to answer the research question.
+</how to match a code to the data>
+
+<including quotes in your answer>
+- The quotes included in your answer must be unaltered and directly extracted from the case study data. 
+- They must be long enough to provide the reader of your output with sufficient evidence to answer the research question.
+</including quotes in your answer>
+
+<important guidelines>
+- You must support your reasoning with direct unaltered quotes from the data.
+- You must always support each identified code with reasoning
+- You must always include quotes in your answer, and you must follow the guidelines for including quotes in your answer.
+- You must only output your answer in the format specificied in Answer Structure. do not include anything else in your answer.
+- If there are no quotes in the data that answer or help to answer the research question, do not output anything.
+</important guidelines>
+
+
+<research Question> 
+{research_question}
+</research Question>
+\n
+"""
+
+coding_agent_prompt_codes_specific = """
+<code name>
+{code_name}
+</code name>
+
+<code definition>
+{code_definition}
+</code definition>
+"""
+
+coding_agent_prompt_footer_specific = """
+<Examples>
+{
+    "Quotes": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
+    "Reasoning": "Run by a third-party partner, a pre-distribution registration survey is conducted in cooperation with village leaders and local health officials. The survey determines how many nets are needed for the upcoming distribution by identifying the number of households per district and the number of people in each household."
+}
+
+{
+    "Quotes": "In Country J, AMF's net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection. After nets have been obtained, it takes several months to put in place all the logistics and in-country planning that go into carrying out a multimillion-net campaign, including running a small-scale pilot.",
+    "Reasoning": "In a new country, the distribution often starts with a small intervention of a limited number of nets distributed in certain geographical areas. Interestingly, this is done even though the pilot projects delay net distribution."
+}
+
+{
+    "Quotes": "AMF aims to ensure that countries it works with have a good operational plan that is properly resourced and scheduled to enable effective delivery. AMF works with the National Malaria Control Programme (NMCP) in each country and with speciﬁc distribution partners for each distribution who may take full operational responsibility for a distribution or may have speciﬁc monitoring and evaluation roles.",
+    "Reasoning": "AMF aims to ensure that countries it works with have a properly resourced and scheduled operational plan. Once AMF decides to operate in a country, AMF begins the planning process by hosting meetings with local health officials and having planning workshops where they discuss the registration and distribution processes, budgets, rules, and responsibilities for different groups. The first time AMF operates in a country, a large amount of work is required. But afterward, because the infrastructure is in place and the partners have experience, the intervention is easier to implement and more effective."
+}
+
+{
+    "Quotes": "[During intervention planning], orientation attendees then pass on this training to supervisors and volunteers in their district; this cascades down until all volunteers are trained. Early meeting seems to have served as a training for staff.",
+    "Reasoning": "In a new country, AMF trains supervisors and volunteers. They also train the local HSAs on (1) how to recognize a usable net; (2) how to check the data sheet with the village leader and read it to the whole village; and (3) how to answer questions about net distribution."
+}
+
+{
+    "Quotes": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities. Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.",
+    "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
+}
+</Examples>
+
+
+<Answer Structure>
+{
+    "Quotes": "Relevant quotes showing evidence of the presence of the code in the provided text to code.",
+    "Reasoning": "Logical justification of why the code matches the quote."
+},
+{
+    "Quotes": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities. Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.",
+    "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
+}
+</Answer Structure>
+"""
+
+
+combine_code_and_research_question_prompt = """
+You are a detail-oriented researcher. Your task is to combine a research question with a code. The code is defined as the particular aspect of the research question that you are interested in.
+In other words, your task is to combine the code and the research question into a single more specific question. 
+
+You have the following inputs:
+1) Code Description:  {code_description}
+2) Research Question: {research_question}
+
+# Guidelines
+Create one unified question tha: 
+- Preserves the core focus of the research question.
+- Serves as a single, self-contained question that encourages finding direct quotes in the data illustrating how the code addresses the research question.
+- Does not omit any important details from the code or the research question.
+
+# Output 
+The output must be exactly one question, with no extra commentary or instructions.
+"""
+
 
 # Export the variables
 __all__ = [
     'coding_agent_prompt_header',
     'coding_agent_prompt_codes',
     'coding_agent_prompt_footer',
-    'text_to_code_prompt'
+    'text_to_code_prompt',
+    'coding_agent_prompt_header_specific',
+    'coding_agent_prompt_codes_specific',
+    'coding_agent_prompt_footer_specific',
+    'combine_code_and_research_question_prompt'
 ]
+
+
