@@ -8,12 +8,35 @@ class CodingAgentState(TypedDict):
     charity_id: str
     charity_directory: str
     research_question: str
-    prompt_for_project: str
     code_list: List[str]
     code_and_research_question_prompt: str
-    list_output_per_code_per_doc: Annotated[list, operator.add]
+    prompt_per_code_results: List[dict]
 
+class CodingAgentOutputState(TypedDict):
+    markdown_output: str
+
+class InvokePromptInputState(TypedDict):
+    combine_code_and_research_question_prompt: str
+    charity_id: str
+    charity_directory: str
+    code: str
+
+class InvokePromptState(TypedDict):
+    combine_code_and_research_question_prompt: str
+    charity_id: str
+    charity_directory: str
+    code: str
+    research_question_with_code: str
+
+class InvokePromptOutputState(TypedDict):
+    code: str
+    charity_id: str
+    quote: str
+    reasoning: str
 
 class StructuredOutputPerCode(BaseModel):
+    code: str = Field(description="The code that was used to extract the information")
+    charity_id: str = Field(description="The ID of the charity")
+    doc_name: str = Field(description="The name of the document")
     quote: str = Field(description="The quote that was extracted from the document")
     reasoning: str = Field(description="The reasoning that was used to extract the information")
