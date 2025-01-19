@@ -3,31 +3,42 @@ from pydantic import BaseModel, Field
 import operator
 from typing_extensions import Annotated
 from langchain_core.tools import tool
+from coding_utils import merge_lists
 
 class CodingAgentState(TypedDict):
     charity_id: str
     charity_directory: str
     research_question: str
     code_list: List[str]
-    code_and_research_question_prompt: str
-    prompt_per_code_results: List[dict]
+    code_and_research_question_prompt_variable: str
+    prompt_per_code_results: Annotated[list, merge_lists]
 
 class CodingAgentOutputState(TypedDict):
     markdown_output: str
 
 class InvokePromptInputState(TypedDict):
-    combine_code_and_research_question_prompt: str
+    code_and_research_question_prompt_variable: str
     charity_id: str
     charity_directory: str
     code: str
 
 class InvokePromptState(TypedDict):
-    combine_code_and_research_question_prompt: str
+    code_and_research_question_prompt_variable: str
     charity_id: str
     charity_directory: str
     code: str
     research_question_with_code: str
+    prompt_per_code_results: Annotated[list, merge_lists]
 
+class InvokePromptPerCodeState(TypedDict):
+    prompt_per_code:str
+    code:str
+    charity_id:str
+    doc_name:str
+    doc_text:str
+
+
+    code: str
 class InvokePromptOutputState(TypedDict):
     code: str
     charity_id: str

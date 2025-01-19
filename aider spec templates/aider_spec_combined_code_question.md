@@ -27,6 +27,7 @@
 - Every function should be properly commented
 - all the environment variables have been loaded in the .env file at this path: /Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/.env
 - When creating a function for the graph, follow the convention shown in the example (node function example below).
+- Make sure you implement the changes to all the files as stated in the low-level tasks.
 - The directory where the files coding_prompt.py, coding_exec_new.py, coding_utils.py, coding_state_new.py are located is /Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/src/coding
 - When the function uses an input schema such as InvokePromptInputState always map the input schema to the overall state (in this case InvokePromptState). Use the convention shown in the multiple input and output schema example below.
 - Here are mandatory urls you need to consult before starting to code this project:

@@ -83,3 +83,49 @@ def merge_dicts(dict_a: dict, dict_b: dict) -> dict:
     merged = dict_a.copy()
     merged.update(dict_b)
     return merged
+
+def generate_markdown(documents):
+    """
+    Generate a Markdown string grouped by:
+      1) code (top-level #)
+      2) charity_id (##)
+      3) doc_name (###)
+    For each document, include lines for "Quote" and "Reasoning".
+    """
+    # Group data in a nested structure: code -> charity_id -> doc_name -> list of (quote, reasoning)
+    grouped_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+
+    for doc in documents:
+        code = doc["code"]
+        charity_id = doc["charity_id"]
+        doc_name = doc["doc_name"]
+        
+        # You can replace these lines with your actual logic for generating quotes and reasoning
+        quote = f"Quote from {doc_name}"
+        reasoning = f"Reasoning about {doc_name}"
+        
+        # Append to our nested data structure
+        grouped_data[code][charity_id][doc_name].append((quote, reasoning))
+
+    # Build the Markdown output
+    markdown_lines = []
+    for code, charities in grouped_data.items():
+        # Top-level heading for code
+        markdown_lines.append(f"# {code}")
+        
+        for charity_id, doc_names in charities.items():
+            # Heading for charity_id
+            markdown_lines.append(f"## {charity_id}")
+            
+            for doc_name, entries in doc_names.items():
+                # Sub-heading for doc_name
+                for (quote, reasoning) in entries:
+                    markdown_lines.append(f"### {doc_name}")
+                    markdown_lines.append(f"Quote: {quote}")
+                    markdown_lines.append(f"Reasoning: {reasoning}")
+                    
+                    # Optional blank line for spacing
+                    markdown_lines.append("")
+    
+    # Join everything with newlines
+    return "\n".join(markdown_lines)

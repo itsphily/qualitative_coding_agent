@@ -115,7 +115,7 @@ FINAL ANSWER:
 """
 
 # Define the prompts as variables that can be imported
-coding_agent_prompt_header_specific = """
+coding_agent_prompt_header_specific_prompt = """
 You are a detail-oriented researcher tasked with analyzing case study data. Your task is to find quotes in the case study data that offer meaningful evidence that advances the understanding of the research question. 
 
 <how to match a code to the data>
@@ -127,6 +127,7 @@ Step 3: Write the reasoning for why the quote answers or helps to answer the res
 <including quotes in your answer>
 - The quotes included in your answer must be unaltered and directly extracted from the case study data. 
 - They must be long enough to provide the reader of your output with sufficient evidence to answer the research question.
+- Each quote must be full sentences, don't break them up.
 </including quotes in your answer>
 
 <important guidelines>
@@ -137,6 +138,9 @@ Step 3: Write the reasoning for why the quote answers or helps to answer the res
 - If there are no quotes in the data that answer or help to answer the research question, do not output anything.
 </important guidelines>
 
+<project specific instructions>
+{project_specific_instructions}
+</project specific instructions>
 
 <research Question> 
 {research_question}
@@ -154,7 +158,7 @@ coding_agent_prompt_codes_specific = """
 </code definition>
 """
 
-coding_agent_prompt_footer_specific = """
+coding_agent_prompt_footer_specific_prompt = """
 <Examples>
 {
     "Quotes": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
@@ -200,10 +204,6 @@ combine_code_and_research_question_prompt = """
 You are a detail-oriented researcher. Your task is to combine a research question with a code. The code is defined as the particular aspect of the research question that you are interested in.
 In other words, your task is to combine the code and the research question into a single more specific question. 
 
-You have the following inputs:
-1) Code Description:  {code_description}
-2) Research Question: {research_question}
-
 # Guidelines
 Create one unified question tha: 
 - Preserves the core focus of the research question.
@@ -212,6 +212,13 @@ Create one unified question tha:
 
 # Output 
 The output must be exactly one question, with no extra commentary or instructions.
+
+here is the research question:
+<research_question>
+{research_question}
+</research_question>
+
+here is the code:
 """
 
 
