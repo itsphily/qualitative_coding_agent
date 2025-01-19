@@ -11,9 +11,21 @@ from coding_state import (
     AgentPerCodeState,
     StructuredOutputPerCode
 )
+from coding_state_new import (
+    InvokePromptInputState,
+    InvokePromptState
+)
+from coding_utils import (
+    path_to_text,
+    visualize_graph,
+    save_final_markdown,
+    path_to_doc_name,
+    generate_markdown
+)
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import (
     coding_agent_prompt_header,
+    coding_agent_prompt_header_specific,
     coding_agent_prompt_codes,
     coding_agent_prompt_footer,
     text_to_code_prompt,
@@ -93,12 +105,13 @@ def combine_code_and_research_question_with_code(state: CodingAgentState):
         Send(
             "invoke_prompt_graph_research_question",
             {
-                "combine_code_and_research_question": combine_code_and_research_question + "<code>" + c + "</code>",
+                "combine_code_and_research_question": combine_code_and_research_question + "<code>" + code + "</code>",
                 "charity_id": state['charity_id'],
                 "charity_directory": state['charity_directory'],
-                "code": c,
+                "code": code,
             }
         )
+        for code in state['code_list']
     ]
 
 
@@ -154,7 +167,13 @@ def invoke_prompt(state: AgentPerCodeState):
         print("Tool Call: ", tool_call)
 
         # Return the structured JSON string so it can be aggregated
-        return {"list_output_per_code_per_doc": [structured_json_str]}
+        structured_output = {
+            "code": state['code'],
+            "charity_id": state['charity_id'],
+            "quote": tool_call,
+            "reasoning": result.tool_calls[0]['args']['reasoning']
+        }
+        return {"list_output_per_code_per_doc": [structured_output]}
     else:
         # If no tool call was made, fallback
         print("No tool call was made")
@@ -330,23 +349,6 @@ if __name__ == "__main__":
 
 
 
-main_graph = StateGraph(CodingAgentState, output=CodingAgentOutputState)
-main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
-main_graph.add_node('combine_code_and_research_question_with_code_node', combine_code_and_research_question_with_code)
-
-
-main_graph.add_node('invoke_prompt',invoke_prompt)
-main_graph.add_node("structure_answer", ToolNode(tools))
-main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
-
-# add the edge for the main graph
-main_graph.add_edge(START, 'fill_info_prompt_node')
-main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_research_question, ['invoke_prompt'])
-main_graph.add_edge('invoke_prompt', 'structure_answer')
-main_graph.add_edge('structure_answer', 'aggregate_all_results_node')
-main_graph.add_edge('aggregate_all_results_node', END)
-
-main_graph = main_graph.compile()
 
 
 

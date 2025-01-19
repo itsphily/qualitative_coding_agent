@@ -123,13 +123,6 @@ def invoke_prompt(state: AgentPerCodeState):
         print("No tool call was made")
         return {"list_output_per_code_per_doc": [result.content]}
 
-def aggregate_all_results(state: CodingAgentState) -> CodingAgentOutputState:
-    """
-    This function aggregates all the structured results 
-    from each code/doc invocation.
-    """
-    output_per_code = ''.join(state['list_output_per_code_per_doc'])
-    return {"output_per_code": output_per_code}
 
 
 
