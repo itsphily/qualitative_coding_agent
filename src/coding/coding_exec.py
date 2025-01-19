@@ -11,7 +11,12 @@ from coding_state import (
     AgentPerCodeState,
     StructuredOutputPerCode
 )
-from coding_utils import path_to_text, visualize_graph, save_final_markdown
+from coding_utils import (
+    path_to_text, 
+    visualize_graph, 
+    save_final_markdown,
+    generate_markdown
+)
 from coding_prompt import (
     coding_agent_prompt_header,
     coding_agent_prompt_codes,
@@ -99,6 +104,13 @@ def continue_to_invoke_prompt(state: CodingAgentState):
         for d in doc_text_list
     ]
 
+def output_to_markdown(state: CodingAgentState) -> CodingAgentOutputState:
+    """
+    This function generates the markdown output from the collected results.
+    """
+    markdown_doc = generate_markdown(state['list_output_per_code_per_doc'])
+    return {"markdown_output": markdown_doc}
+
 def invoke_prompt(state: AgentPerCodeState):
     """
     This function takes in the full prompt and invokes the LLM (with bound tools) for each document.
@@ -117,7 +129,13 @@ def invoke_prompt(state: AgentPerCodeState):
         print("Tool Call: ", tool_call)
 
         # Return the structured JSON string so it can be aggregated
-        return {"list_output_per_code_per_doc": [structured_json_str]}
+        structured_output = {
+            "code": state['code'],
+            "charity_id": state['charity_id'],
+            "quote": tool_call,
+            "reasoning": result.tool_calls[0]['args']['reasoning']
+        }
+        return {"list_output_per_code_per_doc": [structured_output]}
     else:
         # If no tool call was made, fallback
         print("No tool call was made")
@@ -130,14 +148,14 @@ main_graph = StateGraph(CodingAgentState, output=CodingAgentOutputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_prompt',invoke_prompt)
 main_graph.add_node("structure_answer", ToolNode(tools))
-main_graph.add_node('aggregate_all_results_node', aggregate_all_results)
+main_graph.add_node('output_to_markdown_node', output_to_markdown)
 
 # add the edge for the main graph
 main_graph.add_edge(START, 'fill_info_prompt_node')
 main_graph.add_conditional_edges('fill_info_prompt_node', continue_to_invoke_prompt, ['invoke_prompt'])
 main_graph.add_edge('invoke_prompt', 'structure_answer')
-main_graph.add_edge('structure_answer', 'aggregate_all_results_node')
-main_graph.add_edge('aggregate_all_results_node', END)
+main_graph.add_edge('structure_answer', 'output_to_markdown_node')
+main_graph.add_edge('output_to_markdown_node', END)
 
 
 main_graph = main_graph.compile()
