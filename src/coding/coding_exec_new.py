@@ -6,6 +6,8 @@ from langchain.schema import SystemMessage, HumanMessage
 from langgraph.graph import START, END, StateGraph
 from langgraph.constants import Send
 
+from langchain_core.output_parsers import JsonOutputParser
+
 from coding_state_new import (
     InvokePromptInputState,
     InvokePromptState,
@@ -156,7 +158,7 @@ def invoke_prompt(state:InvokePromptPerCodeState):
                 "reasoning": tool_call['args']['reasoning']
             }
             data_list.append(data)
-        return {"prompt_per_code_results": [data]}
+        return {"prompt_per_code_results": data_list}
     else:
         print("No tool call was made")
         return {"prompt_per_code_results": []}

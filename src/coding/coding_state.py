@@ -10,7 +10,7 @@ class CodingAgentState(TypedDict):
     research_question: str
     prompt_for_project: str
     code_list: List[str]
-    combine_code_and_research_question: str
+    code_and_research_question_prompt: str
     list_output_per_code_per_doc: Annotated[list, operator.add]
 
 class CodingAgentOutputState(TypedDict):
@@ -37,6 +37,5 @@ class AgentPerCodeState(TypedDict):
 
 
 class StructuredOutputPerCode(BaseModel):
-    code: str = Field(description="The code that was used to extract the information")
     quote: str = Field(description="The quote that was extracted from the document")
     reasoning: str = Field(description="The reasoning that was used to extract the information")
