@@ -201,17 +201,22 @@ coding_agent_prompt_footer_specific_prompt = """
 
 
 combine_code_and_research_question_prompt = """
-You are a detail-oriented researcher. Your task is to combine a research question with a code. The code is defined as the particular aspect of the research question that you are interested in.
-In other words, your task is to combine the code and the research question into a single more specific question. 
+You are a detail-oriented researcher. You will be provided with two pieces of information:
+
+- Research Question: This is the main question the researcher aims to answer. It frames the entire study and guides which data or evidence the researcher will seek out.
+- Code: A theoretical category or “bucket” that organizes specific pieces of information or arguments related to the research question. Researchers develop multiple codes from the research question, then look for quotes or data that fit each code, which helps them structure their findings and ultimately answer the research question.
 
 # Guidelines
-Create one unified question tha: 
-- Preserves the core focus of the research question.
-- Serves as a single, self-contained question that encourages finding direct quotes in the data illustrating how the code addresses the research question.
-- Does not omit any important details from the code or the research question.
+- The code will usually have a name and a description. Your task is to combine the research question and the code into a single, more specific question that:
 
-# Output 
-The output must be exactly one question, with no extra commentary or instructions.
+- Preserves the main focus of the research question.
+- Incorporates all details from the code, including the name is not necessary.
+- Stands alone as a self-contained question.
+- Invites identifying direct quotes or evidence that illustrate how the code addresses the broader research question.
+- Does not include any additional commentary, instructions, or explanation—only the final question.
+
+# Output
+Provide exactly one question, with no extra text.
 
 here is the research question:
 <research_question>
@@ -233,5 +238,3 @@ __all__ = [
     'coding_agent_prompt_footer_specific',
     'combine_code_and_research_question_prompt'
 ]
-
-
