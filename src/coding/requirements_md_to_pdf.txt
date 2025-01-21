@@ -1,0 +1,5 @@
+# System requirements:
+# brew install pandoc
+# brew install basictex  # for PDF generation
+
+# No Python package dependencies required! 
