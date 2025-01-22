@@ -159,6 +159,14 @@ coding_agent_prompt_codes_specific = """
 """
 
 coding_agent_prompt_footer_specific_prompt = """
+<Answer Structure>
+{
+    "Quotes": "Relevant quotes showing evidence of the presence of the code in the provided text to code.",
+    "Reasoning": "Logical justification of why the code matches the quote."
+}
+</Answer Structure>
+
+# Examples
 <Examples>
 {
     "Quotes": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
@@ -185,20 +193,7 @@ coding_agent_prompt_footer_specific_prompt = """
     "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
 }
 </Examples>
-
-
-<Answer Structure>
-{
-    "Quotes": "Relevant quotes showing evidence of the presence of the code in the provided text to code.",
-    "Reasoning": "Logical justification of why the code matches the quote."
-},
-{
-    "Quotes": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities. Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.",
-    "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
-}
-</Answer Structure>
 """
-
 
 combine_code_and_research_question_prompt = """
 You are a detail-oriented researcher. You will be provided with two pieces of information:
@@ -226,6 +221,47 @@ here is the research question:
 here is the code:
 """
 
+coding_agent_prompt = """
+Role: You are a methodical evidence analyst tasked with identifying both direct evidence and explicit statements about absent evidence related to the research question.
+
+<research_question>
+{research_question}
+</research_question>
+
+# Instructions
+
+## Scope Identification
+
+First, read the research_question (already combined with relevant codes) to understand its focus.
+- Look for two types of evidence:
+Direct evidence: Quotes supporting the research question.
+- Absence of evidence: Quotes explicitly stating no evidence exists for aspects of the research question.
+
+## Quote Selection Criteria
+Include unaltered, full-sentence quotes from the data.Reject fragmented, paraphrased, or irrelevant quotes.
+Prioritize quotes that either:
+- Directly answer the research question, or
+- Explicitly state a lack of evidence (e.g., "No participants reported X," "Data about Y was unavailable").
+
+## Reasoning Requirements
+For each quote, explain:
+- How it supports the research question or
+- How it demonstrates absence of evidence (specify what is missing and why it matters).
+- Link reasoning directly to the research question’s goals.
+
+## Prohibited Actions
+- Do not paraphrase, truncate, or invent quotes.
+- Do not conflate "absence of evidence" with "evidence of absence" only include explicit mentions of missing data.
+
+## Project Specific Instructions
+<project specific instructions>
+{project_specific_instructions}
+</project specific instructions>
+
+## Output Format
+- You must only output your answer in the format specificied in Answer Structure. do not include anything else in your answer.
+- If there are no quotes in the data that answer or help to answer the research question, do not output anything.
+"""
 
 # Export the variables
 __all__ = [
@@ -236,5 +272,8 @@ __all__ = [
     'coding_agent_prompt_header_specific',
     'coding_agent_prompt_codes_specific',
     'coding_agent_prompt_footer_specific',
-    'combine_code_and_research_question_prompt'
+    'combine_code_and_research_question_prompt',
+    'coding_agent_prompt'
 ]
+
+

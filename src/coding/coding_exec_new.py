@@ -26,9 +26,9 @@ from coding_utils import (
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import (
     combine_code_and_research_question_prompt,
-    coding_agent_prompt_footer_specific_prompt,
-    coding_agent_prompt_header_specific_prompt,
-    text_to_code_prompt
+    coding_agent_prompt,
+    text_to_code_prompt,
+    coding_agent_prompt_footer_specific_prompt
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -111,7 +111,7 @@ def continue_invoke_research_question(state: InvokePromptState):
     """
     This function sends the formatted prompt to invoke the prompt per code per document.
     """
-    prompt = coding_agent_prompt_header_specific_prompt.format(
+    prompt = coding_agent_prompt.format(
         research_question=state['research_question_with_code'],
         project_specific_instructions="It is important to distinguish between actions, processes or activities that happened before, during or after the intervention. For example when asked to find quotes for Pre-intervention data collection, you must only include quotes from the data that were collected before the intervention. Use the context to determine when the action, process or activity happened.",
     ) + coding_agent_prompt_footer_specific_prompt
