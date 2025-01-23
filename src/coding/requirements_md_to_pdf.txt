@@ -1,5 +1,14 @@
 # System requirements:
-# brew install pandoc
-# brew install basictex  # for PDF generation
+# 1. pandoc - for converting markdown to HTML
+#    Install with: brew install pandoc
+#
+# 2. Google Chrome - for converting HTML to PDF
+#    Chrome must be installed at: /Applications/Google Chrome.app
+#
+# No additional Python package dependencies required!
+# The script only uses standard library modules:
+# - os
+# - argparse
+# - subprocess
 
 # No Python package dependencies required! 
