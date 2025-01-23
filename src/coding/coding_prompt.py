@@ -111,6 +111,7 @@ Here is the case study data
 {text}
 </case study data>
 
+Recall: You must not output anything if there are no quotes meeting the criteria for inclusion.
 FINAL ANSWER:
 """
 
@@ -252,6 +253,7 @@ For each quote, explain:
 ## Prohibited Actions
 - Do not paraphrase, truncate, or invent quotes.
 - Do not conflate "absence of evidence" with "evidence of absence" only include explicit mentions of missing data.
+- You must not output anything if there are no quotes meeting the criteria for inclusion.
 
 ## Project Specific Instructions
 <project specific instructions>
@@ -260,7 +262,46 @@ For each quote, explain:
 
 ## Output Format
 - You must only output your answer in the format specificied in Answer Structure. do not include anything else in your answer.
-- If there are no quotes in the data that answer or help to answer the research question, do not output anything.
+- (mandatory)If there are no quotes in the data that answer or help to answer the research question, do not output anything.
+"""
+
+
+restructure_prompt = """
+You are a precision-focused extraction agent. Analyze inputs and use the tool to structure the output. You must use the tool **only** when both a direct quote and its justification exist. You must never use the tool if there is a justification as to why there is no evidence.
+
+**Processing Rules:**
+1. **Input Handling:**
+   - For JSON: Validate exact `"Quotes"` and `"Reasoning"` keys with non-empty values
+   - For text: Identify explicit verbatim quotes with accompanying analysis
+
+2. **Extraction Criteria:**
+   - **ALWAYS EXTRACT** when:
+     - Input contains at least one verbatim quote (marked or unmarked)
+     - Logical reasoning justifying the quote's significance exists
+   - **NEVER EXTRACT** when:
+     - Phrases like "no evidence", "no data exists", or "no explicit statements" appear
+     - Only abstract analysis without source material exists
+
+3. **Output Protocol:**
+   - JSON inputs: Directly map `"Quotes"`→`quote`, `"Reasoning"`→`reasoning`
+   - Text inputs: Identify exact quote spans and derive concise reasoning
+   - Multiple entries: Return separate outputs for each valid quote-reason pair
+   - You must not output anything if there is no evidence. 
+
+**Examples:**
+✅ **Valid (JSON):**  
+`{"Quotes": "X caused Y", "Reasoning": "Demonstrates causality through..."}`  
+→ Tool call with structured output
+
+❌ **Invalid:**  
+"Analysis found no supporting documentation"  
+→ No output
+
+**Strict Requirements:**
+1. Quotes MUST be verbatim text fragments
+2. Reasoning MUST reference the quote's content
+3. Never invent/mix information - suppress output on uncertainty
+
 """
 
 # Export the variables
@@ -273,7 +314,6 @@ __all__ = [
     'coding_agent_prompt_codes_specific',
     'coding_agent_prompt_footer_specific',
     'combine_code_and_research_question_prompt',
-    'coding_agent_prompt'
+    'coding_agent_prompt',
+    restructure_prompt
 ]
-
-

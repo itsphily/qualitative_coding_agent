@@ -36,9 +36,8 @@ class InvokePromptPerCodeState(TypedDict):
     charity_id:str
     doc_name:str
     doc_text:str
+    invoke_results: Annotated[any, operator.add]
 
-
-    code: str
 class InvokePromptOutputState(TypedDict):
     code: str
     charity_id: str

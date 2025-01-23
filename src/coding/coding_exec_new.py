@@ -5,6 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from langgraph.graph import START, END, StateGraph
 from langgraph.constants import Send
+import json
 
 from langchain_core.output_parsers import JsonOutputParser
 
@@ -28,7 +29,8 @@ from coding_prompt import (
     combine_code_and_research_question_prompt,
     coding_agent_prompt,
     text_to_code_prompt,
-    coding_agent_prompt_footer_specific_prompt
+    coding_agent_prompt_footer_specific_prompt,
+    restructure_prompt
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -36,17 +38,31 @@ from langgraph.prebuilt import ToolNode
 # Load environment variables from .env file
 load_dotenv()
 
+model = "deepseek-reasoner"
+weak_model = "deepseek-chat"
+tools = [StructuredOutputPerCode]
 # initialize the LLM
 llm = ChatOpenAI(
-    model="deepseek-chat",
+    model=model,
     api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com/v1",
     temperature=0.0
 )
 
+llm_weak = ChatOpenAI(
+    model=weak_model,
+    api_key=os.getenv("DEEPSEEK_API_KEY"),
+    base_url="https://api.deepseek.com/v1",
+    temperature=0.0
+)
+
+llm_weak.bind_tools(tools, tool_choice="any")
+
+llm_weak_with_tools = llm_weak.bind_tools(tools, tool_choice="any")
+
 # This is the LLM with JSON mode
 llm_json_mode = ChatOpenAI(
-    model="deepseek-chat",
+    model=model,
     api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com/v1",
     temperature=0.0,
@@ -55,13 +71,13 @@ llm_json_mode = ChatOpenAI(
 
 # This is the LLM with tools
 llm_with_tools = ChatOpenAI(
-    model="deepseek-chat",
+    model=model,
     api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com/v1",
     temperature=0.0
 )
 
-tools = [StructuredOutputPerCode]
+
 
 llm_with_tools = llm_with_tools.bind_tools(tools, tool_choice="any")
 
@@ -145,10 +161,12 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     system_message = SystemMessage(content=state['prompt_per_code'])
     human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
 
-    result = llm_with_tools.invoke([system_message, human_message])
+    print(f"\nProcessing document: {state['doc_name']}")
+    result = llm.invoke([system_message, human_message])
+    data_list = []
 
     if result.tool_calls:
-        data_list = []
+        print("Found tool calls in response")
         for tool_call in result.tool_calls:
             data = {
                 "code": state['code'],
@@ -158,10 +176,65 @@ def invoke_prompt(state:InvokePromptPerCodeState):
                 "reasoning": tool_call['args']['reasoning']
             }
             data_list.append(data)
+            print(f"Added data from tool call: {json.dumps(data, indent=2)}")
+    else:
+        print("No tool calls found, processing content as JSON")
+        # Extract quotes and reasoning from result.content
+        content = result.content.strip()
+        print(f"\nRaw content:\n{content}\n")
+        
+        # Split the content by newlines and process each block
+        # Using a more robust method to split JSON objects
+        import re
+        json_blocks = re.findall(r'(\{[^{}]*\})', content.replace('\n', ' '))
+        print(f"Found {len(json_blocks)} potential JSON blocks")
+        
+        for i, block in enumerate(json_blocks):
+            print(f"\nProcessing block {i+1}:")
+            try:
+                # Clean up the JSON string
+                clean_block = block.strip()
+                print(f"Original block: {clean_block}")
+                
+                # Replace escaped quotes with regular quotes
+                clean_block = clean_block.replace('\\"', '"')
+                # Handle special characters
+                clean_block = clean_block.replace('\\(', '(').replace('\\)', ')')
+                clean_block = clean_block.replace('\\~', '~')
+                print(f"Cleaned block: {clean_block}")
+                
+                result_json = json.loads(clean_block)
+                print("Successfully parsed JSON")
+                
+                if "Quotes" in result_json and "Reasoning" in result_json:
+                    data = {
+                        "code": state['code'],
+                        "charity_id": state["charity_id"],
+                        "doc_name": state["doc_name"],
+                        "quote": result_json["Quotes"],
+                        "reasoning": result_json["Reasoning"]
+                    }
+                    data_list.append(data)
+                    print(f"Added data: {json.dumps(data, indent=2)}")
+                else:
+                    print("Block missing required fields (Quotes and/or Reasoning)")
+            except json.JSONDecodeError as e:
+                print(f"Could not parse block as JSON: {block}")
+                print(f"Error details: {str(e)}")
+                continue
+
+    if data_list:
+        print(f"\nSuccessfully extracted {len(data_list)} data items")
         return {"prompt_per_code_results": data_list}
     else:
-        print("No tool call was made")
+        print("\nNo valid data extracted from response")
+        if not content.strip().startswith('{'):
+            print("Response appears to be a message without JSON data:", content)
+        else:
+            print("Original response:", content)
         return {"prompt_per_code_results": []}
+
+
 
 def output_to_markdown(state: CodingAgentState) -> CodingAgentOutputState:
     """
@@ -186,6 +259,7 @@ invoke_subgraph.add_conditional_edges(
 )
 invoke_subgraph.add_edge("invoke_research_question_prompt_node", END)
 
+
 # Define the main graph
 main_graph = StateGraph(CodingAgentState, output=CodingAgentOutputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
@@ -203,29 +277,6 @@ main_graph.add_edge('output_to_markdown_node', END)
 
 main_graph = main_graph.compile()
 
-def main():
-    # Hardcode the CodingAgentState
-    charity_id = 'GiveDirectly'
-    charity_overview = "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'."
-    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly"
-    research_question = "What operational processes enable charities to be cost effective?"
-    code_list = [
-        "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location."
-    ]
-
-    input_state = {
-        'charity_id': charity_id,
-        'charity_overview': charity_overview,
-        'charity_directory': charity_directory,
-        'research_question': research_question,
-        'prompt_for_project': '',  # Will be populated later
-        'code_list': code_list,
-        'prompt_per_code_results': []
-    }
-
-
-if __name__ == "__main__":
-    main()
 
 def main():
     # Hardcode the CodingAgentInputState
@@ -246,12 +297,13 @@ def main():
         'code_list': code_list  # Replace with actual code list
     }
 
-    # Run the main graph
-    
-    main_graph.invoke(input_state)
 
     # Visualize the graph
     visualize_graph(main_graph, "coding_graph")
+    # Run the main graph
+    main_graph.invoke(input_state)
+
+
 
 if __name__ == "__main__":
     main()
