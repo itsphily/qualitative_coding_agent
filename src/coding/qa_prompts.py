@@ -1,7 +1,5 @@
-building the quality control prompt = """
-
+building_the_quality_control_prompt = """
 You are an expert prompt engineer. 
-
 # Task
 Your task is to help me write a QA prompt that will check the output of a coding agent. The goal of the coding agent is to extract a quote from a document, and justify why the quote serves as evidence for the code using the reasoning. The code is a theoretical construct, or an aspect of the research question. The research question is ultimately what we are trying to answer by finding quotes and explanaining the reasoning for chosing these quotes. We try to answer the research question from several aspects (codes).
 Your task is to write a prompt that will identify all the quotes/reasoning pairs that do not help answer the research question, those that do, and those for which you would need to review the whole document to gather more information to see if the quote helps answer the research question.
@@ -643,3 +641,94 @@ Evaluation: NEED MORE CONTEXT Explanation: The quote implies a potential operati
 </coding_agent_output>
 """
 
+qa_prompt_deepseek = """
+# QA Evaluation Protocol for Coding Agent Output
+
+## Evaluation Purpose
+Categorize each quote/reasoning pair into:
+1. **Valid** - Directly demonstrates location-specific operational adjustments impacting cost-effectiveness
+2. **Needs Context** - Requires full document review to confirm geographic specificity
+3. **Invalid** - Fails to show location-driven operational changes or misapplies cost-effectiveness rationale
+
+## Evaluation Criteria
+
+### Valid Pairs Must Show:
+1. **Geographic Factor**: Explicit location-specific constraint/characteristic
+2. **Operational Change**: Modified process/strategy in response to #1
+3. **Cost-Effectiveness Link**: Clear explanation of efficiency/impact improvement
+
+### Invalid Pairs Occur When:
+1. **General Processes**: Operational improvements without geographic drivers
+2. **Concept Stretching**: Forced connections between generic features and location
+3. **Irrelevant Factors**: Focus on non-operational aspects (e.g., inflation, fraud response)
+
+## Evaluation Process
+
+For each quote/reasoning pair:
+1. **Identify Anchor Points**:
+   - Highlight geographic references (place names, infrastructure, cultural factors)
+   - Underline operational verbs (changed, adapted, modified, piloted)
+   - Circle cost-effectiveness rationales (efficiency, impact, scalability)
+
+2. **Apply 3-Part Test**:
+   ```mermaid
+   graph TD
+       A[Location-Specific Factor?] --> B[Operational Response?]
+       B --> C[Cost-Effectiveness Link?]
+       C -->|All Yes| Valid
+       C -->|Missing C| Needs_Context
+       C -->|Missing A/B| Invalid
+
+3. Flag Common Pitfalls:
+- Using "location" as synonym for "implementation"
+- Equating general flexibility with geographic adaptation
+- Assuming rather than demonstrating causality
+
+# Calibrating the approach: Changing the charity's intervention depending on the specifics of the location
+
+## Valid Quotes
+
+### [Document Name]
+**Quote:** [Exact quote text]
+**Reasoning:** [Exact reasoning text]
+
+## Quotes Needing Context Review
+
+### [Document Name]
+**Quote:** [Exact quote text]
+**Reasoning:** [Exact reasoning text]
+
+## Invalid Quotes
+
+### [Document Name]
+**Quote:** [Exact quote text]
+**Reasoning:** [Exact reasoning text]
+
+Examples from Feedback
+Valid Example
+Document: Niehaus 12-7-13 (public).md
+Quote: "GiveDirectly may eventually conduct transfers in urban areas..."
+Reasoning: Explicitly ties urban/rural housing materials and mobile money gaps to operational changes
+
+Invalid Example
+Document: Conversation with Stuart Skeates.md
+Quote: "In 2014, GiveDirectly decided to adjust transfer sizes for inflation"
+Reasoning: Fails to link inflation adjustment to location-specific factors
+
+Needs Context Example
+Document: Paul Niehaus 9-5-2014.md
+Quote: "Separating jobs previously done by one person"
+Reasoning: Requires document review to confirm if role separation was Uganda-specific fraud response
+
+Special Instructions
+Preserve original formatting exactly
+
+Maintain document grouping structure
+
+Only modify categorization headers (Valid/Needs Context/Invalid)
+
+Include ALL original entries in one of the three sections
+
+Never edit quote/reasoning text - only reorganize sections
+
+"""
