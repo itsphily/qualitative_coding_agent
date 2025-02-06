@@ -40,8 +40,31 @@ The QA prompt must:
 ## Important notes on the output format of the prompt 
 - Quote: must be the exact quote extracted from the output of the coding agent.
 - Reasoning: must be the exact reasoning associated with the quote that is extracted from the output of the coding agent.
-- Relevant to the research question: must be either "Yes", "No", or "Needs review". 
+- Relevant to the research question: must be either "Yes", "No", or "Needs review". Use “No” when the quote definitely does not address or provide any evidence relevant to the research question. Use “Needs review” when you suspect it could be relevant but the excerpt alone is insufficient, and you would need additional context from the source document (or more background information) to make a final determination.
 - Document name: must be the exact name of the document, see output of the coding agent to find the document name associated with the quote/reasoning pair.
+- Each quote/reasoning pair must be unique.
+- For each quote in the <code-reasoning pairs> section, create one JSON object with the output format of the prompt return all these JSON objects in a top-level JSON array. For example:
+[
+  {
+    "Document name": "ExampleDoc1",
+    "Quote": "Sample quote text…",
+    "Reasoning": "Why this quote was chosen…",
+    "Relevant to the research question": "Yes"
+  },
+  {
+    "Document name": "ExampleDoc1",
+    "Quote": "Another quote text…",
+    "Reasoning": "Further reasoning…",
+    "Relevant to the research question": "Needs review"
+  },
+  {
+    "Document name": "ExampleDoc2",
+    "Quote": "Different sample quote…",
+    "Reasoning": "Rationale for inclusion…",
+    "Relevant to the research question": "No"
+  }
+]
+
 
 <input format of the coding-reasoning pairs>
 # Code name: Code description
@@ -63,7 +86,7 @@ The QA prompt must:
 1) True Positives (Fully Relevant and Evidence): quotes that directly address the research question and provide strong evidence for the research question. Evidence can be proof of presence or absence of a process, an effect, a relationship, etc.
 
 # How to make the prompt specific to the code and the research question?
-After reading the code, Research question, and code specific Research question highlight common mistakes and logic that would make the quote-reasoning pairs relevant or irrelevant to the research question.Use the sections "What type of quotes/reasoning pairs might not be relevant to the research question?" and "What type of quotes/reasoning pairs are relevant to the research question?" To come up with specific examples for this code, research question and code specific Research question combination. If feedback has been received, you must use it to make the prompt more specific.
+After reading the code, Research question, and code specific Research question highlight common mistakes and logic that would make the quote-reasoning pairs relevant or irrelevant to the research question.Use the sections "What type of quotes/reasoning pairs might not be relevant to the research question?" and "What type of quotes/reasoning pairs are relevant to the research question?" To come up with specific examples for this code, research question and code specific Research question combination. If feedback has been received, you must use these feedback examples (and their reasoning) to illustrate typical errors or successes in coding. Highlight these points explicitly in the final QA prompt so that the model knows how to treat similar quotes.
 
 <code>
 "Changing the charity's intervention depending on the specifics of the location."
