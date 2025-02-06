@@ -1,27 +1,61 @@
 building_the_quality_control_prompt = """
 You are an expert prompt engineer. 
+
 # Task
-Your task is to help me write a QA prompt that will check the output of a coding agent. The goal of the coding agent is to extract a quote from a document, and justify why the quote serves as evidence for the code using the reasoning. The code is a theoretical construct, or an aspect of the research question. The research question is ultimately what we are trying to answer by finding quotes and explanaining the reasoning for chosing these quotes. We try to answer the research question from several aspects (codes).
-Your task is to write a prompt that will identify all the quotes/reasoning pairs that do not help answer the research question, those that do, and those for which you would need to review the whole document to gather more information to see if the quote helps answer the research question.
-When I evaluated the output of the coding agent manually I found that two main issues were present: 
-1) There is still an issue with false positive selection, meaning that the coding agent selects quotes that are somewhat related to the code but are not really evidence for the underlying code. 
-2) the coding agent is trying to hard and often includes quotes that are relevant for overall charity’s cost-effectiveness but not for the specific code it is asked to find evidence for.
+Your task is to write a QA prompt that will check if the quote/reasoning pairs help answer the research question. You will need to make the prompt specific to the code and the research question.
 
-# Guidelines for writing the prompt
-1) The prompt could explain the relation between the research question and the code. This is my understanding of how they are linked:  The code is a theoretical construct, or an aspect of the research question. The research question is ultimately what we are trying to answer by finding quotes and explanaining the reasoning for chosing these quotes. We try to answer the research question from several aspects (codes).
+# Explanation of the task
+The quote/reasoning pairs are extracted from several documents to help answer the code specific research question (check relationship between the code and the research question below). Some of the quotes/reasoning pairs are relevant to the research question, some are not, some might require re-reading the document to see if they are elevant. Your task is to write a prompt that will identify all the quotes/reasoning pairs that do not help answer the research question, those that do, and those for which you would need to review the whole document to gather more information to see if the quote helps answer the research question.
 
+<Relationship between the code and the research question>
+Ex: Code "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location."
+Research question: "What operational processes enable charities to be cost effective?"
+Code specific research question: What operational processes involved in adjusting a charity's interventions based on location-specific factors contribute to its cost-effectiveness?
+</Relationship between the code and the research question>
+
+# How to write the prompt
+The QA prompt must:
+- be written in markdown format, 
+- must be clear and specific
+- must use clear directives
+- must specify the role of the LLM (in this case, the LLM is a QA evaluator)
+- must specify the output to strictly follow the output format of the prompt. Instruct the LLM to only return the output in the specified format with any comments or other text.
+<output format of the prompt>
+{
+    "Document name": {
+        "Quote": "Quote extracted from the document",
+        "Reasoning": "Reasoning for choosing the quote",
+        "Relevant to the research question": "Yes/No/Needs review",
+        "Document name": "Document name"
+    }
+}
+</output format of the prompt>
+
+Quote: must be the exact quote extracted from the output of the coding agent.
+Reasoning: must be the exact reasoning associated with the quote that is extracted from the output of the coding agent.
+Relevant to the research question: must be either "Yes", "No", or "Needs review". 
+Document name: must be the exact name of the document, see output of the coding agent to find the document name associated with the quote/reasoning pair.
+
+# What type of quotes/reasoning pairs might not be relevant to the research question?
+1) False Positives (Somewhat Related but Not Really Evidence): quotes that are somewhat related to the code or the code specific research question but are not really evidence for the research question. The core issue is that the coding agent is that quotes that appear relevant at a glance (they touch on related terms or concepts) but do not actually provide evidence to support or address the research question. The nature of the error is that the quotes are superficially connected (e.g., they use the same keywords), but they do not give the kind of information or insight needed to answer the question.
+2) Over-Inclusion of Partially Relevant Quotes: quotes that addresses some subtopic or minor point related to the code but not the main research question. Here, the error is a kind of “overreach”, the quote is a partial match but fails to address the research question.
+
+# How to make the prompt specific to the code and the research question?
 In the example I am providing the code is: "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.". The code is composed of the code name ("Calibrating the approach"), and code description: "Changing the charity's intervention depending on the specifics of the location.". In this example the research question is: "What operational processes enable charities to be cost effective?". 
 
 2) The prompt must evaluate quotes/reasoning pairs to see if they help answer the research question and are related to the code. Recall the ultimate goal is answering the research question.
 
 # Feedback received
-I manually reviewed the output of the coding agent. The output has been provided to you. The output has the following format: 
+I manuailly reviewed the output of the codng agent (see output format below). The output has been provided to you. 
+<output format>
 # Code name: Code description
 ## Charity name
 ### Document name
 **Quote:** Quote extracted from the document
 **Reasoning:** Reasoning for choosing the quote
-Important: 
+</output format>
+
+## Important note on the output format: 
 - there can be several quotes/reasoning for each document
 - The quote is always associated to the reasoning that comes after it.
 
@@ -70,6 +104,7 @@ Reasoning: This shows adaptive processes for disaster-affected locations. The fl
 
 # Format of the prompt
 The prompt should be written in markdown format and should respect the guidelines found at this link: https://platform.openai.com/docs/guides/prompt-engineering
+
 
 <output of the coding agent>
 # Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.
@@ -566,7 +601,7 @@ The prompt should be written in markdown format and should respect the guideline
 """
 
 qa_prompt_o1 = """
-You are a reviewer tasked with evaluating whether each quote–reasoning pair meaningfully supports the research question **“What operational processes enable charities to be cost effective?”** in the context of the code:
+You are a reviewer tasked with evaluating whether each quote–reasoning pair meaningfully helps answer the research question **“What operational processes enable charities to be cost effective?”** in the context of the code:
 
 > **Code Name:** Calibrating the approach  
 > **Code Description:** Changing the charity’s intervention depending on the specifics of the location.
