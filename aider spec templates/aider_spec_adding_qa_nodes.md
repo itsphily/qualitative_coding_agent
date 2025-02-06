@@ -6,9 +6,8 @@
 Add a qa nodes to the end of the main graph and add a summarization node to the end of the main graph. The QA step will be used to check the quality of the evidence and the summarization node will be used to summarize the evidence.
 
 ## Mid-Level Objective
-
 - Add qa nodes to the end of the main graph. The QA node will be split into two nodes: the first one will write the prompt specific to the code and the second one will use the prompt to evaluate the quality of the quote and reasoning pair. The prompts will be invoked by two different LLMs that will debate on the quality of the quote and reasoning pair.
-- Add a summarization node to the end of the main graph. The summarization node will use the 
+- Add a summarization node to the end of the main graph. The summarization node will use the (still need to work on that)
 
 ## Implementation Notes
 - [Important technical details - what are the important technical details?]
