@@ -40,6 +40,8 @@ load_dotenv()
 
 model = "deepseek-reasoner"
 weak_model = "deepseek-chat"
+
+
 tools = [StructuredOutputPerCode]
 # initialize the LLM
 llm = ChatOpenAI(
@@ -75,6 +77,11 @@ llm_with_tools = ChatOpenAI(
     api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com/v1",
     temperature=0.0
+)
+
+llm_o3 = ChatOpenAI(
+    model="o3-mini",
+    reasoning_effort="high"
 )
 
 
@@ -114,7 +121,7 @@ def combine_code_and_research_question_function(state: InvokePromptInputState) -
     """
     This function combines the code and research question into a more specific research question.
     """
-    result = llm.invoke([HumanMessage(content=state['code_and_research_question_prompt_variable'])])
+    result = llm_o3.invoke([HumanMessage(content=state['code_and_research_question_prompt_variable'])])
 
     return {
         "research_question_with_code": result.content,
@@ -162,7 +169,7 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
 
     print(f"\nProcessing document: {state['doc_name']}")
-    result = llm.invoke([system_message, human_message])
+    result = llm_o3.invoke([system_message, human_message])
     data_list = []
 
     if result.tool_calls:

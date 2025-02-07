@@ -159,42 +159,6 @@ coding_agent_prompt_codes_specific = """
 </code definition>
 """
 
-coding_agent_prompt_footer_specific_prompt = """
-<Answer Structure>
-{
-    "Quotes": "Relevant quotes showing evidence of the presence of the code in the provided text to code.",
-    "Reasoning": "Logical justification of why the code matches the quote."
-}
-</Answer Structure>
-
-# Examples
-<Examples>
-{
-    "Quotes": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
-    "Reasoning": "Run by a third-party partner, a pre-distribution registration survey is conducted in cooperation with village leaders and local health officials. The survey determines how many nets are needed for the upcoming distribution by identifying the number of households per district and the number of people in each household."
-}
-
-{
-    "Quotes": "In Country J, AMF's net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection. After nets have been obtained, it takes several months to put in place all the logistics and in-country planning that go into carrying out a multimillion-net campaign, including running a small-scale pilot.",
-    "Reasoning": "In a new country, the distribution often starts with a small intervention of a limited number of nets distributed in certain geographical areas. Interestingly, this is done even though the pilot projects delay net distribution."
-}
-
-{
-    "Quotes": "AMF aims to ensure that countries it works with have a good operational plan that is properly resourced and scheduled to enable effective delivery. AMF works with the National Malaria Control Programme (NMCP) in each country and with speciﬁc distribution partners for each distribution who may take full operational responsibility for a distribution or may have speciﬁc monitoring and evaluation roles.",
-    "Reasoning": "AMF aims to ensure that countries it works with have a properly resourced and scheduled operational plan. Once AMF decides to operate in a country, AMF begins the planning process by hosting meetings with local health officials and having planning workshops where they discuss the registration and distribution processes, budgets, rules, and responsibilities for different groups. The first time AMF operates in a country, a large amount of work is required. But afterward, because the infrastructure is in place and the partners have experience, the intervention is easier to implement and more effective."
-}
-
-{
-    "Quotes": "[During intervention planning], orientation attendees then pass on this training to supervisors and volunteers in their district; this cascades down until all volunteers are trained. Early meeting seems to have served as a training for staff.",
-    "Reasoning": "In a new country, AMF trains supervisors and volunteers. They also train the local HSAs on (1) how to recognize a usable net; (2) how to check the data sheet with the village leader and read it to the whole village; and (3) how to answer questions about net distribution."
-}
-
-{
-    "Quotes": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities. Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.",
-    "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
-}
-</Examples>
-"""
 
 combine_code_and_research_question_prompt = """
 You are a detail-oriented researcher. You will be provided with two pieces of information:
@@ -223,23 +187,31 @@ here is the code:
 """
 
 coding_agent_prompt = """
-Role: You are a methodical evidence analyst tasked with identifying both direct evidence and explicit statements about absent evidence related to the research question.
+You are a methodical research analyst. 
+
+# Task
+Your task is to find evidence in a text that would help us address the research question.
 
 <research_question>
 {research_question}
 </research_question>
 
+# What is considered as evidence ?
+identifying both direct evidence and explicit statements about absent evidence related to the research question.
+
+
 # Instructions
 
 ## Scope Identification
 
-First, read the research_question (already combined with relevant codes) to understand its focus.
-- Look for two types of evidence:
-Direct evidence: Quotes supporting the research question.
+First, read the research_question to understand its focus.
+- Direct evidence: Quotes supporting the research question.
 - Absence of evidence: Quotes explicitly stating no evidence exists for aspects of the research question.
 
 ## Quote Selection Criteria
-Include unaltered, full-sentence quotes from the data.Reject fragmented, paraphrased, or irrelevant quotes.
+Include unaltered, full-sentence quotes from the data (you must not truncate sentences).
+- Quotes must be long enough to provide the reader with enough context to understand why it helps answer the research question. 
+- Longer quotes are preferred over shorter ones.
 Prioritize quotes that either:
 - Directly answer the research question, or
 - Explicitly state a lack of evidence (e.g., "No participants reported X," "Data about Y was unavailable").
@@ -253,7 +225,7 @@ For each quote, explain:
 ## Prohibited Actions
 - Do not paraphrase, truncate, or invent quotes.
 - Do not conflate "absence of evidence" with "evidence of absence" only include explicit mentions of missing data.
-- You must not output anything if there are no quotes meeting the criteria for inclusion.
+- if there are no relevant quotes, do not output anything
 
 ## Project Specific Instructions
 <project specific instructions>
@@ -263,7 +235,123 @@ For each quote, explain:
 ## Output Format
 - You must only output your answer in the format specificied in Answer Structure. do not include anything else in your answer.
 - (mandatory)If there are no quotes in the data that answer or help to answer the research question, do not output anything.
+- Each quote must have its own reasoning.
+
 """
+
+coding_agent_prompt_footer_specific_prompt = """
+<Answer Structure>
+{
+    "Quote": "Relevant quote showing evidence of the presence of the code in the provided text to code.",
+    "Reasoning": "Logical justification of why the code matches the quote."
+}
+</Answer Structure>
+
+
+# Examples
+<Examples>
+{
+    "Quote": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
+    "Reasoning": "Run by a third-party partner, a pre-distribution registration survey is conducted in cooperation with village leaders and local health officials. The survey determines how many nets are needed for the upcoming distribution by identifying the number of households per district and the number of people in each household."
+}
+
+{
+    "Quote": "In Country J, AMF's net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection. After nets have been obtained, it takes several months to put in place all the logistics and in-country planning that go into carrying out a multimillion-net campaign, including running a small-scale pilot.",
+    "Reasoning": "In a new country, the distribution often starts with a small intervention of a limited number of nets distributed in certain geographical areas. Interestingly, this is done even though the pilot projects delay net distribution."
+}
+
+{
+    "Quote": "AMF aims to ensure that countries it works with have a good operational plan that is properly resourced and scheduled to enable effective delivery. AMF works with the National Malaria Control Programme (NMCP) in each country and with speciﬁc distribution partners for each distribution who may take full operational responsibility for a distribution or may have speciﬁc monitoring and evaluation roles.",
+    "Reasoning": "AMF aims to ensure that countries it works with have a properly resourced and scheduled operational plan. Once AMF decides to operate in a country, AMF begins the planning process by hosting meetings with local health officials and having planning workshops where they discuss the registration and distribution processes, budgets, rules, and responsibilities for different groups. The first time AMF operates in a country, a large amount of work is required. But afterward, because the infrastructure is in place and the partners have experience, the intervention is easier to implement and more effective."
+}
+
+{
+    "Quote": "[During intervention planning], orientation attendees then pass on this training to supervisors and volunteers in their district; this cascades down until all volunteers are trained. Early meeting seems to have served as a training for staff.",
+    "Reasoning": "In a new country, AMF trains supervisors and volunteers. They also train the local HSAs on (1) how to recognize a usable net; (2) how to check the data sheet with the village leader and read it to the whole village; and (3) how to answer questions about net distribution."
+}
+
+{
+    "Quote": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities. Once AMF has identified funding gaps, it begins discussions with in-country partners, typically starting with the country's National Malaria Control Program.",
+    "Reasoning": "AMF hosts meetings with local health officials and has planning workshops. Community sensitization activities are implemented to provide more community \"ownership\" of the program and make people aware of the distribution date and location. AMF rarely works with partners that do not have a connection with local communities because they noticed that working with these partners is associated with nets being in better condition."
+}
+</Examples>
+"""
+
+coding_agent_prompt = """
+You are a methodical research analyst with expertise in qualitative analysis, functioning at the level of a Ph.D. Your role is to meticulously review a given text and extract evidence that addresses the research question.
+
+# Task
+Extract and compile evidence from the provided text that helps answer the research question. Your evidence should consist of direct quotes and explicit statements regarding the absence of evidence related to the research question.
+
+<research_question> 
+{research_question} 
+</research_question>
+
+# What is Considered Evidence?
+Evidence consists of any passages in the text that provide concrete, context-rich information relevant to answering the research question. As a Ph.D.-level qualitative researcher, you should look for the following types of evidence:
+
+- Direct Statements: Full, unaltered quotes where the text explicitly addresses key aspects of the research question or directly mentions variables, concepts, or phenomena of interest.
+- Descriptive Narratives: Detailed accounts or storytelling passages that illustrate behaviors, events, interactions, or processes. These narratives help contextualize the phenomena and provide insights into the underlying dynamics relevant to the research question.
+- Contextual Explanations: Passages that include background information, explanations of circumstances, or elaborations on how and why a particular situation arises. This context is crucial for understanding the significance of the evidence in relation to the research question.
+- Recurring Themes and Patterns: Identifiable patterns or repeated ideas within the text that reinforce certain aspects of the research question. Look for trends in language, tone, or descriptions that suggest a broader narrative or conceptual pattern.
+- Contradictions or Ambiguities: Instances where the text presents conflicting views or highlights uncertainties. These may indicate areas where evidence is contested or where important nuances require further investigation.
+- Explicit Statements of Absence: Clear declarations that certain data, observations, or information is missing. Such explicit acknowledgments of absent evidence are valuable as they help identify gaps in the available data that are pertinent to the research question.
+
+Each selected quote must be presented in its entirety, ensuring that it provides sufficient context for understanding its relevance. The evidence should not only support direct answers to the research question but also illuminate underlying processes, motivations, or barriers associated with the topic under investigation.
+
+# Instructions
+1. Understand the Research Question
+Read the research question thoroughly to grasp its focus.
+Identify passages that either support the research question directly or point out where evidence is lacking.
+2. Extracting Quotes
+Select full, unmodified quotes from the text that meet the following criteria:
+They are long enough to offer clear context.
+They directly contribute to answering the research question or clearly indicate missing evidence.
+Do not paraphrase, alter, or truncate any part of the quote.
+3. Provide Reasoning
+For each extracted quote, explain how it supports the research question or how it highlights the absence of relevant evidence.
+Link your reasoning directly to aspects of the research question, explaining the significance of the evidence or the noted absence.
+4. Classify Document Importance
+In addition to the quote and its reasoning, assign a document importance classification based on these objective guidelines:
+- important to read: The document contains multiple or highly compelling pieces of evidence that strongly support or refute the research question.
+- worth reading: The document provides some relevant evidence that contributes moderately to addressing the research question.
+- not worth reading: The document offers minimal or no evidence that is relevant to the research question. Evaluate the overall strength, quantity, and clarity of the evidence in the text when choosing the appropriate tier.
+
+# Prohibited Actions
+Do not alter, paraphrase, or truncate the original quotes.
+Do not interpret absence of evidence as evidence of absence unless the text explicitly states it.
+If no relevant quotes are found, do not output anything.
+
+# Project Specific Instructions
+<project_specific_instructions> 
+{project_specific_instructions} 
+</project_specific_instructions>
+
+# Output Format
+Output your answer as individual JSON objects for each piece of evidence. Use the following format without adding any additional text:
+
+<Answer Structure> { "Quote": "Exact quote from the text.", "Reasoning": "Explanation of how this quote supports or indicates the absence of evidence in relation to the research question.", "document importance": "Choose one: 'important to read', 'worth reading', or 'not worth reading'." } </Answer Structure>
+Each quote must be presented as its own JSON object. If there are no relevant quotes in the data that help answer the research question, do not output anything.
+
+Examples
+<Examples> { "Quote": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.", 
+"Reasoning": "This quote demonstrates that pre-distribution surveys are conducted to determine net requirements, directly supporting the research question on distribution planning.", 
+"document importance": "important to read" }
+
+{ "Quote": "In Country J, AMF's net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection.", 
+"Reasoning": "The quote provides context about delays and pilot projects in net distribution, offering moderate insight into the challenges of distribution planning.", "document importance": "worth reading" }
+
+{ "Quote": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities.", 
+"Reasoning": "While the quote hints at the importance of community connections, it offers indirect evidence that may only partially support the research question.", 
+"document importance": "worth reading" }
+
+{ "Quote": "[During intervention planning], orientation attendees then pass on this training to supervisors and volunteers in their district; this cascades down until all volunteers are trained. Early meeting seems to have served as a training for staff.", 
+"Reasoning": "The quote is related to training procedures but provides limited context on its impact regarding the research question, making it less compelling.", 
+"document importance": "not worth reading" } 
+</Examples>
+
+"""
+
 
 
 restructure_prompt = """
