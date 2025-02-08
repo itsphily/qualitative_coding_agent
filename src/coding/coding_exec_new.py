@@ -186,6 +186,7 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     system_message = SystemMessage(content=state['prompt_per_code'])
     human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
     data_list = []
+    unprocessed_documents = []
 
     try:
         result = llm_o3_with_structured_output.invoke([system_message, human_message])
@@ -205,8 +206,7 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     except Exception as e:
         # Log the error but continue processing
         logging.warning(f"Error processing document {state['doc_name']}: {str(e)}")
-        # Return empty list to allow processing to continue
-        data_list = []
+        unprocessed_documents.append(state["doc_name"])
 
     return {"prompt_per_code_results": data_list, "unprocessed_documents": unprocessed_documents}
 
