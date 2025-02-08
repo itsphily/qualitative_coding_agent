@@ -37,47 +37,70 @@ def merge_lists(list_a: list, list_b: list) -> list:
     merged.extend(list_b)
     return merged
 
-def generate_markdown(documents):
+def generate_markdown(documents, unprocessed_documents):
     """
-    Generate a Markdown string grouped by:
-      1) code (top-level #)
-      2) charity_id (##)
-      3) doc_name (###)
-    For each document, include lines for "Quote" and "Reasoning".
+    Generate a Markdown string with three sections:
+    1) Document Evidence: Grouped by code (#), charity_id (##), and doc_name - document_importance (###) with the list of quote–reasoning pairs.
+    2) Important Documents: Under a fixed title "Important documents" with document_importance (##) and list of document names.
+    3) Unprocessed Documents: Under a fixed title "Unprocessed documents" with a list of document names.
     """
-    # Group data in a nested structure: code -> charity_id -> doc_name -> list of (quote, reasoning)
-    grouped_data = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    markdown_sections = []
 
+    # Section 1: Document Evidence
+    evidence_lines = []
+    # Group by code -> charity_id -> doc_name with document importance (displayed next to doc_name)
+    grouped = {}
     for doc in documents:
         code = doc["code"]
         charity_id = doc["charity_id"]
-        doc_name = doc["doc_name"]
-        quote = doc["quote"]
-        reasoning = doc["reasoning"]
-        
-        grouped_data[code][charity_id][doc_name].append((quote, reasoning))
+        key = (code, charity_id)
+        if key not in grouped:
+            grouped[key] = {}
+        # Each doc_name with its document importance and a list of quote-reasoning pairs
+        doc_key = f'{doc["doc_name"]} - {doc["document_importance"]}'
+        if doc_key not in grouped[key]:
+            grouped[key][doc_key] = []
+        grouped[key][doc_key].append((doc["quote"], doc["reasoning"]))
 
-    # Build the Markdown output
-    markdown_lines = []
-    for code, charities in grouped_data.items():
-        # Top-level heading for code
-        markdown_lines.append(f"# {code}\n")
-        
-        for charity_id, doc_names in charities.items():
-            # Heading for charity_id
-            markdown_lines.append(f"## {charity_id}\n")
-            
-            for doc_name, entries in doc_names.items():
-                # Sub-heading for doc_name
-                markdown_lines.append(f"### {doc_name}\n")
-                for (quote, reasoning) in entries:
-                    markdown_lines.append(f"**Quote:** {quote}\n")
-                    markdown_lines.append(f"**Reasoning:** {reasoning}\n")
-                    markdown_lines.append("")  # Blank line for spacing
-        
-        markdown_lines.append("")  # Blank line after each code
-    
-    return "\n".join(markdown_lines)
+    for (code, charity_id), docs in grouped.items():
+        evidence_lines.append(f"# {code}")
+        evidence_lines.append(f"## {charity_id}")
+        for doc_key, pairs in docs.items():
+            evidence_lines.append(f"### {doc_key}")
+            for quote, reasoning in pairs:
+                evidence_lines.append(f"- **Quote:** {quote}")
+                evidence_lines.append(f"  **Reasoning:** {reasoning}")
+            evidence_lines.append("")  # Blank line
+        evidence_lines.append("")  # Blank line after each charity group
+
+    markdown_sections.append("\n".join(evidence_lines))
+
+    # Section 2: Important Documents
+    important_docs = {}
+    for doc in documents:
+        imp = doc["document_importance"]
+        if imp not in important_docs:
+            important_docs[imp] = set()
+        important_docs[imp].add(doc["doc_name"])
+    # Order the importance categories as specified.
+    importance_order = ["important to read", "worth reading", "not worth reading"]
+    important_lines = ["# Important documents"]
+    for imp in importance_order:
+        if imp in important_docs:
+            important_lines.append(f"## {imp}")
+            for doc_name in sorted(important_docs[imp]):
+                important_lines.append(f"- {doc_name}")
+    markdown_sections.append("\n".join(important_lines))
+
+    # Section 3: Unprocessed Documents
+    unprocessed_lines = ["# Unprocessed documents"]
+    for doc_name in unprocessed_documents:
+        unprocessed_lines.append(f"- {doc_name}")
+    markdown_sections.append("\n".join(unprocessed_lines))
+
+    # Join sections with a separator line.
+    markdown_doc = ("\n\n----\n\n").join(markdown_sections)
+    return markdown_doc
 
 def save_final_markdown(filepath: str, cleaned_text: str):
     """

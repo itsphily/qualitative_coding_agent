@@ -190,24 +190,17 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     try:
         result = llm_o3_with_structured_output.invoke([system_message, human_message])
         
-        if result.tool_calls:
-            for tool_call in result.tool_calls:
-                data = {
-                    "code": state['code'],
-                    "charity_id": state["charity_id"], 
-                    "doc_name": state["doc_name"],
-                    "quote": tool_call['args']['quote'],
-                    "reasoning": tool_call['args']['reasoning'],
-                    "document_importance": tool_call['args']['document_importance']
-                }
-                data_list.append(data)
-        else:
-            content = result.content.strip()
-            import re
-            json_blocks = re.findall(r'(\{[^{}]*\})', content.replace('\n', ' '))
-            
-            for block in json_blocks:
-                try:
+        # Assuming result is a dict with keys "quote_reasoning_pairs" and "document_importance"
+        for pair in result.quote_reasoning_pairs:
+            data = {
+                "code": state['code'],
+                "charity_id": state["charity_id"],
+                "doc_name": state["doc_name"],
+                "quote": pair["quote"],
+                "reasoning": pair["reasoning"],
+                "document_importance": result["document_importance"]
+            }
+            data_list.append(data)
                     clean_block = block.strip()
                     clean_block = clean_block.replace('\\"', '"')
                     clean_block = clean_block.replace('\\(', '(').replace('\\)', ')')
