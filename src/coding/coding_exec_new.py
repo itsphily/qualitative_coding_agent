@@ -242,7 +242,7 @@ def output_to_markdown(state: CodingAgentState) -> CodingAgentOutputState:
     """
     This function generates the markdown output from the collected results.
     """
-    markdown_doc = generate_markdown(state['prompt_per_code_results'])
+    markdown_doc = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
     # Save the output to a markdown file
     save_final_markdown('final_output.md', markdown_doc)
     

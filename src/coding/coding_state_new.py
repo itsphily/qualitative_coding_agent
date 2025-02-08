@@ -12,6 +12,7 @@ class CodingAgentState(TypedDict):
     code_list: List[str]
     code_and_research_question_prompt_variable: str
     prompt_per_code_results: Annotated[list, merge_lists]
+    unprocessed_documents: Annotated[list, merge_lists]  # ADD THIS LINE
 
 class CodingAgentOutputState(TypedDict):
     markdown_output: str
