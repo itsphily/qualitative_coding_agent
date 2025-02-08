@@ -6,6 +6,14 @@ from langchain.schema import SystemMessage, HumanMessage
 from langgraph.graph import START, END, StateGraph
 from langgraph.constants import Send
 import json
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
 from langchain_core.output_parsers import JsonOutputParser
 
@@ -203,11 +211,12 @@ def invoke_prompt(state:InvokePromptPerCodeState):
                         }
                         data_list.append(data)
                 except json.JSONDecodeError:
+                    logging.warning(f"Failed to parse JSON block: {block}")
                     continue
                     
     except Exception as e:
         # Log the error but continue processing
-        print(f"Warning: Error processing document {state['doc_name']}: {str(e)}")
+        logging.warning(f"Error processing document {state['doc_name']}: {str(e)}")
         # Return empty list to allow processing to continue
         data_list = []
 

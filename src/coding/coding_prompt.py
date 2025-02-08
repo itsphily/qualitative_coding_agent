@@ -38,7 +38,7 @@ coding_agent_prompt = """
 You are a methodical research analyst with expertise in qualitative analysis, functioning at the level of a Ph.D. Your role is to meticulously review a given text and extract evidence that addresses the research question.
 
 # Task
-Extract and compile evidence from the provided text that helps answer the research question. Your evidence should consist of direct quotes and explicit statements regarding the absence of evidence related to the research question. Each document may have multiple quote and reasoning pairs. Each time you find a quote and reasoning pair, you must use the tool call to log the quote and reasoning pair.
+Extract and compile evidence from the provided text that helps answer the research question. Your evidence should consist of direct quotes and explicit statements regarding the absence of evidence related to the research question. Each document may have multiple quote and reasoning pairs. You must use the tool provided to log all quote and reasoning pairs, and the document importance.
 
 <research_question> 
 {research_question} 
@@ -69,46 +69,66 @@ Each selected quote must be presented in its entirety, ensuring that it provides
 - For each extracted quote, explain how it supports the research question or how it highlights the absence of relevant evidence.
 - Link your reasoning directly to aspects of the research question, explaining the significance of the evidence or the noted absence.
 4. Classify Document Importance
-- In addition to the quote and its reasoning, assign a document importance classification based on these objective guidelines:
+- In addition to the quote and its reasoning, assign a document importance classification based on these guidelines:
 - important to read: The document contains multiple or highly compelling pieces of evidence that strongly support or refute the research question.
 - worth reading: The document provides some relevant evidence that contributes moderately to addressing the research question.
-- not worth reading: The document offers minimal or no evidence that is relevant to the research question. Evaluate the overall strength, quantity, and clarity of the evidence in the text when choosing the appropriate tier.
-5. if there is no evidence, do not output anything.
+- not worth reading: The document offers minimal or no evidence that is relevant to the research question. 
+Evaluate the overall strength, quantity, and clarity of the evidence in the text when choosing the appropriate tier.
+5. if there is no evidence, only output the document importance.
 
 # Prohibited Actions
-Do not alter, paraphrase, or truncate the original quotes.
-Do not interpret absence of evidence as evidence of absence unless the text explicitly states it.
-If no relevant quotes are found, do not output anything.
+- Do not alter, paraphrase, or truncate the original quotes.
+- Do not interpret absence of evidence as evidence of absence unless the text explicitly states it.
+- If no relevant quotes are found, only output the document importance..
 
 # Project Specific Instructions
 <project_specific_instructions> 
 {project_specific_instructions} 
 </project_specific_instructions>
 
-# Output Format
-Output your answer as individual JSON objects for each piece of evidence.
-For each quote you must use a separate tool call. Use the following format without adding any additional text:
+
+
 """
 
 coding_agent_prompt_footer = """
-<Answer Structure> { "Quote": "Exact quote from the text.", "Reasoning": "Explanation of how this quote supports or indicates the absence of evidence in relation to the research question.", "document importance": "Choose one: 'important to read', 'worth reading', or 'not worth reading'." } </Answer Structure>
-Each quote must be presented as its own JSON object. If there are no relevant quotes in the data that help answer the research question, do not output anything.
 
-Examples
-<Examples> { "Quote": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.", 
-"Reasoning": "This quote demonstrates that pre-distribution surveys are conducted to determine net requirements, directly supporting the research question on distribution planning.", 
-"document importance": "important to read" }
+# Output Format
+Your response must be a single JSON object with exactly two keys:
+1) "quote_reasoning_pairs": This key holds an array of objects. Each object in the array represents a quote–reasoning pair and must have exactly two keys: "quote": A string that contains the exact quote extracted from the document. "reasoning": A string that explains how the quote relates to or addresses the research question.
+Examples:
+If the AI finds one pair, the array should look like:
+[ { "quote": "Extracted quote text", "reasoning": "Explanation of its relevance." } ]
+If the AI finds three pairs, the array should look like:
+[ { "quote": "Quote #1", "reasoning": "Explanation #1" }, { "quote": "Quote #2", "reasoning": "Explanation #2" }, { "quote": "Quote #3", "reasoning": "Explanation #3" } ]
+2) "document_importance": This key holds a single string that classifies the importance of the document relative to the research question.
+The value must be one of the following exactly: "important to read", "worth reading", "not worth reading". 
 
-{ "Quote": "In Country J, AMF's net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection.", 
-"Reasoning": "The quote provides context about delays and pilot projects in net distribution, offering moderate insight into the challenges of distribution planning.", "document importance": "worth reading" }
 
-{ "Quote": "There does seem to be a strong correlation between partners who … have an ongoing connection with communities, and nets being in better condition. We rarely if ever now work with groups that do not have a permanent or semi-permanent connection with communities.", 
-"Reasoning": "While the quote hints at the importance of community connections, it offers indirect evidence that may only partially support the research question.", 
-"document importance": "worth reading" }
+#Examples
+<Examples> 
+{
+  "quote_reasoning_pairs": [
+    {
+      "quote": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
+      "reasoning": "This quote demonstrates that pre-distribution surveys are conducted to determine net requirements, directly supporting the research question on distribution planning."
+    },
+    {
+      "quote": "In Country J, AMF's net distribution negotiations have been put on hold. AMF had proposed carrying out a three-phase distribution of 3.2 million nets to pilot the use of digital electronic devices, such as smart phones and tablets, for data collection.",
+      "reasoning": "The quote provides context about delays and pilot projects in net distribution, offering moderate insight into the challenges of distribution planning."
+    }
+  ],
+  "document_importance": "important to read"
+}
 
-{ "Quote": "[During intervention planning], orientation attendees then pass on this training to supervisors and volunteers in their district; this cascades down until all volunteers are trained. Early meeting seems to have served as a training for staff.", 
-"Reasoning": "The quote is related to training procedures but provides limited context on its impact regarding the research question, making it less compelling.", 
-"document importance": "not worth reading" } 
+{
+  "pairs": [
+    {
+      "quote": "[A third party] conducts pre-distribution registration surveys in the four districts in Malawi it carries out net distributions in. These surveys are conducted in cooperation with traditional leaders and local health officials. The purpose of the surveys is to determine how many nets are needed for the upcoming net distribution.",
+      "reasoning": "This quote demonstrates that pre-distribution surveys are conducted to determine net requirements, directly supporting the research question on distribution planning."
+    }
+  ],
+  "document_importance": "important to read"
+}
 </Examples>
 """
 
