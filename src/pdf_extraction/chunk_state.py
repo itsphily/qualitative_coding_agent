@@ -10,7 +10,7 @@ class PDFToMarkdownState(TypedDict):
     extracted_text: str 
     filepath: str 
     cleaned_text: str 
-    chunks_dict: Dict
+    chunks_dict: Annotated[Dict[str, str], merge_dicts]
     cleaned_chunk_dict: Annotated[Dict[int, str], merge_dicts]
     qa_loop_limit: int
 
