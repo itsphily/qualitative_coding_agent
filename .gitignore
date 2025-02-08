@@ -52,3 +52,5 @@ outputs/
 outputs/*
 src/final_markdown_files/
 src/final_markdown_files/*
+debug/
+debug/*
