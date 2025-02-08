@@ -1,5 +1,7 @@
 import os
 import argparse
+import logging
+from datetime import datetime
 from typing import List, Dict, Literal
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import START, END, StateGraph
@@ -22,6 +24,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Configure logging
+debug_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/debug_cleaner"
+os.makedirs(debug_dir, exist_ok=True)
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+log_file = os.path.join(debug_dir, f"debug_{timestamp}.log")
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(log_file),
+        logging.StreamHandler()
+    ]
+)
+
+logger = logging.getLogger(__name__)
+
 llm = ChatOpenAI(
     model="deepseek-chat",
     api_key=os.getenv("DEEPSEEK_API_KEY"),
@@ -41,7 +60,7 @@ llm_json_mode.bind(response_format={"type": "json_object"})
 def restructure_chunk_node(state: ChunktoMarkdownInputState):
     """Clean the chunk by reconstructing fragmented sentences, removing page labels, and identifying potential boilerplate."""
     
-    print(f"Cleaning chunk {state['chunk_number']} -- in progress")
+    logger.info(f"Cleaning chunk {state['chunk_number']} -- in progress")
     text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
         text_to_be_cleaned=state['chunk_text']
     )
@@ -49,9 +68,9 @@ def restructure_chunk_node(state: ChunktoMarkdownInputState):
         SystemMessage(content=restructure_text_prompt),
         HumanMessage(content=text_to_reformat_prompt_formatted)
     ])
-    # Print chunk number and word count
+    # Log chunk number and word count
     word_count = len(state['chunk_text'].split())
-    print(f"Chunk {state['chunk_number']} word count: {word_count}")
+    logger.info(f"Chunk {state['chunk_number']} word count: {word_count}")
     
     
     if "cleaned_chunk_dict" not in state:
@@ -59,12 +78,12 @@ def restructure_chunk_node(state: ChunktoMarkdownInputState):
 
     state["cleaned_chunk_dict"][state["chunk_number"]] = result.content
 
-    print(f"Cleaning chunk {state['chunk_number']} -- done")
+    logger.info(f"Cleaning chunk {state['chunk_number']} -- done")
     return {"cleaned_chunk_dict": state["cleaned_chunk_dict"]}
 
 def get_qa_feedback(state: ChunktoMarkdownState):
     """Provide QA feedback comparing the cleaned chunk to the original chunk."""
-    print(f"QA feedback for chunk {state['chunk_number']} -- in progress")
+    logger.info(f"QA feedback for chunk {state['chunk_number']} -- in progress")
     
     original_text = state["chunk_text"]
     cleaned_text  = state["cleaned_chunk_dict"][state["chunk_number"]]
@@ -82,12 +101,12 @@ def get_qa_feedback(state: ChunktoMarkdownState):
     ])
     
     state['chunk_qa_feedback'] = result.content
-    print(f"QA feedback for chunk {state['chunk_number']} -- done")
+    logger.info(f"QA feedback for chunk {state['chunk_number']} -- done")
     return {"chunk_qa_feedback": state['chunk_qa_feedback']}
 
 def apply_qa_feedback(state: ChunktoMarkdownState):
     """Apply the QA feedback to the cleaned chunk using the original chunk as reference."""
-    print(f"Applying QA feedback for chunk {state['chunk_number']} -- in progress")
+    logger.info(f"Applying QA feedback for chunk {state['chunk_number']} -- in progress")
     
     original_text = state["chunk_text"]
     current_cleaned = state["cleaned_chunk_dict"][state["chunk_number"]]
@@ -112,7 +131,7 @@ def apply_qa_feedback(state: ChunktoMarkdownState):
     state["cleaned_chunk_dict"][state["chunk_number"]] = result.content
     state["chunk_feedback_application_counter"] += 1
 
-    print(f"Applied QA feedback for chunk {state['chunk_number']} "
+    logger.info(f"Applied QA feedback for chunk {state['chunk_number']} "
           f"-- iteration: {state['chunk_feedback_application_counter']}")
     return {
         "cleaned_chunk_dict": state["cleaned_chunk_dict"],
@@ -121,10 +140,10 @@ def apply_qa_feedback(state: ChunktoMarkdownState):
 
 def continue_qa_feedback_node(state: ChunktoMarkdownState) -> Literal['qa_feedback_node', 'save_to_cleaned_chunks_dict_node']:
     if state['chunk_feedback_application_counter'] < state['qa_loop_limit']:
-        print(f"Continuing QA feedback loop for chunk {state['chunk_number']}. Iteration: {state['chunk_feedback_application_counter'] + 1}")
+        logger.info(f"Continuing QA feedback loop for chunk {state['chunk_number']}. Iteration: {state['chunk_feedback_application_counter'] + 1}")
         return 'qa_feedback_node'
     else:
-        print(f"QA feedback loop completed for chunk {state['chunk_number']}.")
+        logger.info(f"QA feedback loop completed for chunk {state['chunk_number']}.")
         return 'save_to_cleaned_chunks_dict_node'
 
 def save_to_cleaned_chunks_dict(state: ChunktoMarkdownState):
@@ -148,23 +167,23 @@ chunk_cleaner.add_edge('save_to_cleaned_chunks_dict_node', END)
 
 def chunk_file_node(state: PDFToMarkdownState):
     """Chunk the extracted text into a dictionary of chunks."""
-    print("Chunking file -- in progress")
+    logger.info("Chunking file -- in progress")
     # Get total word count of file
 
     state['chunks_dict'] = chunk_file(state['filepath'])
-    print("Chunking file -- done")
+    logger.info("Chunking file -- done")
     return {"chunks_dict": state['chunks_dict']}
 
 def send_to_clean_node(state: PDFToMarkdownState):
     """Send each chunk to the chunk cleaner subgraph."""
-    print("Sending chunks to cleaner -- in progress")
+    logger.info("Sending chunks to cleaner -- in progress")
 
     total_words = 0
     for chunk_number, chunk_text in state['chunks_dict'].items():
         word_count = len(chunk_text.split())
         total_words += word_count
-        print(f"Chunk {chunk_number}: {word_count} words")
-    print(f"Total words across all chunks: {total_words}")
+        logger.info(f"Chunk {chunk_number}: {word_count} words")
+    logger.info(f"Total words across all chunks: {total_words}")
 
     return [
         Send(
@@ -187,10 +206,10 @@ def compile_clean_text(state: PDFToMarkdownState):
 
 def save_final_markdown(state: PDFToMarkdownState):
     """Save the cleaned text to the appropriate folder."""
-    print("Saving final markdown...")
+    logger.info("Saving final markdown...")
     
     save_md(state['filepath'], state['cleaned_text'])
-    print("Final markdown saved.")
+    logger.info("Final markdown saved.")
 
 # Build the main graph
 main_graph = StateGraph(PDFToMarkdownState, input=PDFToMarkdownInputState, output=PDFToMarkdownOutputState)
@@ -216,6 +235,9 @@ def main():
     filepath = args.filepath
     qa_loop_limit = args.qa_loop_limit
 
+    logger.info(f"Starting processing of file: {filepath}")
+    logger.info(f"QA loop limit set to: {qa_loop_limit}")
+
     with open(filepath, "r", encoding="utf-8") as f:
         extracted_text = f.read()
 
@@ -229,8 +251,7 @@ def main():
     # Run the main graph with the given input
     main_graph.invoke(pdf_state)
     
-
-    print("Processing completed.")
+    logger.info("Processing completed.")
 
 if __name__ == "__main__":
     main()
