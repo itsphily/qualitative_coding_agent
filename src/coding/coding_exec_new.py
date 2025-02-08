@@ -208,7 +208,7 @@ def invoke_prompt(state:InvokePromptPerCodeState):
         # Return empty list to allow processing to continue
         data_list = []
 
-    return {"prompt_per_code_results": data_list}
+    return {"prompt_per_code_results": data_list, "unprocessed_documents": unprocessed_documents}
 
 
 
