@@ -45,8 +45,26 @@ class InvokePromptOutputState(TypedDict):
     reasoning: str
 
 class StructuredOutputPerCode(BaseModel):
-    code: str = Field(description="The code that was used to extract the information")
-    charity_id: str = Field(description="The ID of the charity")
-    doc_name: str = Field(description="The name of the document")
     quote: str = Field(description="The quote that was extracted from the document")
     reasoning: str = Field(description="The reasoning that was used to extract the information")
+    document_importance: str = Field(description="The importance of the document to the research question, either 'important to read', 'worth reading', or 'not worth reading")
+
+
+class QuoteReasoningPair(BaseModel):
+    quote: str = Field(..., description="The quote that was extracted from the document")
+    reasoning: str = Field(..., description="The reasoning that was used to extract the information")
+
+class StructuredOutputPerCode(BaseModel):
+    quote_reasoning_pairs: List[QuoteReasoningPair] = Field(
+        ...,
+        description=(
+            "A list of quote–reasoning pairs. "
+            "If the AI finds one pair, this list will have one element: [(Quote, reasoning)]. "
+            "If it finds three pairs, the list will have three elements: "
+            "[(Quote#1, reasoning#1), (Quote#2, reasoning#2), (Quote#3, reasoning#3)]."
+        )
+    )
+    document_importance: str = Field(
+        ...,
+        description="The importance of the document to the research question, either 'important to read', 'worth reading', or 'not worth reading'"
+    )

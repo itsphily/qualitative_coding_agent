@@ -38,7 +38,7 @@ coding_agent_prompt = """
 You are a methodical research analyst with expertise in qualitative analysis, functioning at the level of a Ph.D. Your role is to meticulously review a given text and extract evidence that addresses the research question.
 
 # Task
-Extract and compile evidence from the provided text that helps answer the research question. Your evidence should consist of direct quotes and explicit statements regarding the absence of evidence related to the research question.
+Extract and compile evidence from the provided text that helps answer the research question. Your evidence should consist of direct quotes and explicit statements regarding the absence of evidence related to the research question. Each document may have multiple quote and reasoning pairs. Each time you find a quote and reasoning pair, you must use the tool call to log the quote and reasoning pair.
 
 <research_question> 
 {research_question} 
@@ -58,21 +58,22 @@ Each selected quote must be presented in its entirety, ensuring that it provides
 
 # Instructions
 1. Understand the Research Question
-Read the research question thoroughly to grasp its focus.
-Identify passages that either support the research question directly or point out where evidence is lacking.
+- Read the research question thoroughly to grasp its focus.
+- Identify passages that either support the research question directly or point out where evidence is lacking.
 2. Extracting Quotes
-Select full, unmodified quotes from the text that meet the following criteria:
-They are long enough to offer clear context.
-They directly contribute to answering the research question or clearly indicate missing evidence.
-Do not paraphrase, alter, or truncate any part of the quote.
+- Select full, unmodified quotes from the text that meet the following criteria:
+- They are long enough to offer clear context.
+- They directly contribute to answering the research question or clearly indicate missing evidence.
+- Do not paraphrase, alter, or truncate any part of the quote.
 3. Provide Reasoning
-For each extracted quote, explain how it supports the research question or how it highlights the absence of relevant evidence.
-Link your reasoning directly to aspects of the research question, explaining the significance of the evidence or the noted absence.
+- For each extracted quote, explain how it supports the research question or how it highlights the absence of relevant evidence.
+- Link your reasoning directly to aspects of the research question, explaining the significance of the evidence or the noted absence.
 4. Classify Document Importance
-In addition to the quote and its reasoning, assign a document importance classification based on these objective guidelines:
+- In addition to the quote and its reasoning, assign a document importance classification based on these objective guidelines:
 - important to read: The document contains multiple or highly compelling pieces of evidence that strongly support or refute the research question.
 - worth reading: The document provides some relevant evidence that contributes moderately to addressing the research question.
 - not worth reading: The document offers minimal or no evidence that is relevant to the research question. Evaluate the overall strength, quantity, and clarity of the evidence in the text when choosing the appropriate tier.
+5. if there is no evidence, do not output anything.
 
 # Prohibited Actions
 Do not alter, paraphrase, or truncate the original quotes.
@@ -85,8 +86,11 @@ If no relevant quotes are found, do not output anything.
 </project_specific_instructions>
 
 # Output Format
-Output your answer as individual JSON objects for each piece of evidence. Use the following format without adding any additional text:
+Output your answer as individual JSON objects for each piece of evidence.
+For each quote you must use a separate tool call. Use the following format without adding any additional text:
+"""
 
+coding_agent_prompt_footer = """
 <Answer Structure> { "Quote": "Exact quote from the text.", "Reasoning": "Explanation of how this quote supports or indicates the absence of evidence in relation to the research question.", "document importance": "Choose one: 'important to read', 'worth reading', or 'not worth reading'." } </Answer Structure>
 Each quote must be presented as its own JSON object. If there are no relevant quotes in the data that help answer the research question, do not output anything.
 
@@ -106,7 +110,6 @@ Examples
 "Reasoning": "The quote is related to training procedures but provides limited context on its impact regarding the research question, making it less compelling.", 
 "document importance": "not worth reading" } 
 </Examples>
-
 """
 
 restructure_prompt = """

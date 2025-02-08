@@ -28,7 +28,8 @@ from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import (
     combine_code_and_research_question_prompt,
     coding_agent_prompt,
-    text_to_code_prompt
+    text_to_code_prompt,
+    coding_agent_prompt_footer
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -37,10 +38,9 @@ from langgraph.prebuilt import ToolNode
 load_dotenv()
 
 model = "deepseek-reasoner"
-weak_model = "deepseek-chat"
-
-
 tools = [StructuredOutputPerCode]
+model_openai = "o3-mini"
+
 # initialize the LLM
 llm = ChatOpenAI(
     model=model,
@@ -48,25 +48,12 @@ llm = ChatOpenAI(
     base_url="https://api.deepseek.com/v1",
     temperature=0.0
 )
-
-llm_weak = ChatOpenAI(
-    model=weak_model,
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url="https://api.deepseek.com/v1",
-    temperature=0.0
-)
-
-llm_weak.bind_tools(tools, tool_choice="any")
-
-llm_weak_with_tools = llm_weak.bind_tools(tools, tool_choice="any")
-
 # This is the LLM with JSON mode
 llm_json_mode = ChatOpenAI(
     model=model,
     api_key=os.getenv("DEEPSEEK_API_KEY"),
     base_url="https://api.deepseek.com/v1",
-    temperature=0.0,
-    response_format={"type": "json_object"}
+    temperature=0.0
 )
 
 # This is the LLM with tools
@@ -77,14 +64,24 @@ llm_with_tools = ChatOpenAI(
     temperature=0.0
 )
 
+llm_with_tools = llm_with_tools.with_structured_output(StructuredOutputPerCode)
+
+
 llm_o3 = ChatOpenAI(
-    model="o3-mini",
+    model = model_openai,
+    reasoning_effort="high"
+)
+
+llm_o3_with_tools = ChatOpenAI(
+    model= model_openai,
     reasoning_effort="high"
 )
 
 
+llm_o3_with_tools = llm_o3_with_tools.bind_tools(tools, 
+                                                 tool_choice="any")
 
-llm_with_tools = llm_with_tools.bind_tools(tools, tool_choice="any")
+llm_o3_with_structured_output = llm_o3_with_tools.with_structured_output(StructuredOutputPerCode)
 
 
 def fill_info_prompt(state: CodingAgentState):
@@ -128,14 +125,15 @@ def combine_code_and_research_question_function(state: InvokePromptInputState) -
         "code": state['code']
     }
 
+
 def continue_invoke_research_question(state: InvokePromptState):
     """
     This function sends the formatted prompt to invoke the prompt per code per document.
     """
     prompt = coding_agent_prompt.format(
         research_question=state['research_question_with_code'],
-        project_specific_instructions="It is important to distinguish between actions, processes or activities that happened before, during or after the intervention. For example when asked to find quotes for Pre-intervention data collection, you must only include quotes from the data that were collected before the intervention. Use the context to determine when the action, process or activity happened."
-    )
+        project_specific_instructions="It is important to distinguish between actions, processes or activities that happened before, during or after the intervention. For example when asked to find quotes for Pre-intervention data collection, you must only include quotes from the data that were collected before the intervention. Use the context to determine when the action, process or activity happened.",
+    ) + coding_agent_prompt_footer
 
     doc_path_list = []
 
@@ -165,79 +163,55 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     """
     system_message = SystemMessage(content=state['prompt_per_code'])
     human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
-
-    print(f"\nProcessing document: {state['doc_name']}")
-    result = llm_o3.invoke([system_message, human_message])
     data_list = []
 
-    if result.tool_calls:
-        print("Found tool calls in response")
-        for tool_call in result.tool_calls:
-            data = {
-                "code": state['code'],
-                "charity_id": state["charity_id"], 
-                "doc_name": state["doc_name"],
-                "quote": tool_call['args']['quote'],
-                "reasoning": tool_call['args']['reasoning']
-            }
-            data_list.append(data)
-            print(f"Added data from tool call: {json.dumps(data, indent=2)}")
-    else:
-        print("No tool calls found, processing content as JSON")
-        # Extract quotes and reasoning from result.content
-        content = result.content.strip()
-        print(f"\nRaw content:\n{content}\n")
+    try:
+        result = llm_o3_with_structured_output.invoke([system_message, human_message])
         
-        # Split the content by newlines and process each block
-        # Using a more robust method to split JSON objects
-        import re
-        json_blocks = re.findall(r'(\{[^{}]*\})', content.replace('\n', ' '))
-        print(f"Found {len(json_blocks)} potential JSON blocks")
-        
-        for i, block in enumerate(json_blocks):
-            print(f"\nProcessing block {i+1}:")
-            try:
-                # Clean up the JSON string
-                clean_block = block.strip()
-                print(f"Original block: {clean_block}")
-                
-                # Replace escaped quotes with regular quotes
-                clean_block = clean_block.replace('\\"', '"')
-                # Handle special characters
-                clean_block = clean_block.replace('\\(', '(').replace('\\)', ')')
-                clean_block = clean_block.replace('\\~', '~')
-                print(f"Cleaned block: {clean_block}")
-                
-                result_json = json.loads(clean_block)
-                print("Successfully parsed JSON")
-                
-                if "Quotes" in result_json and "Reasoning" in result_json:
-                    data = {
-                        "code": state['code'],
-                        "charity_id": state["charity_id"],
-                        "doc_name": state["doc_name"],
-                        "quote": result_json["Quotes"],
-                        "reasoning": result_json["Reasoning"]
-                    }
-                    data_list.append(data)
-                    print(f"Added data: {json.dumps(data, indent=2)}")
-                else:
-                    print("Block missing required fields (Quotes and/or Reasoning)")
-            except json.JSONDecodeError as e:
-                print(f"Could not parse block as JSON: {block}")
-                print(f"Error details: {str(e)}")
-                continue
-
-    if data_list:
-        print(f"\nSuccessfully extracted {len(data_list)} data items")
-        return {"prompt_per_code_results": data_list}
-    else:
-        print("\nNo valid data extracted from response")
-        if not content.strip().startswith('{'):
-            print("Response appears to be a message without JSON data:", content)
+        if result.tool_calls:
+            for tool_call in result.tool_calls:
+                data = {
+                    "code": state['code'],
+                    "charity_id": state["charity_id"], 
+                    "doc_name": state["doc_name"],
+                    "quote": tool_call['args']['quote'],
+                    "reasoning": tool_call['args']['reasoning'],
+                    "document_importance": tool_call['args']['document_importance']
+                }
+                data_list.append(data)
         else:
-            print("Original response:", content)
-        return {"prompt_per_code_results": []}
+            content = result.content.strip()
+            import re
+            json_blocks = re.findall(r'(\{[^{}]*\})', content.replace('\n', ' '))
+            
+            for block in json_blocks:
+                try:
+                    clean_block = block.strip()
+                    clean_block = clean_block.replace('\\"', '"')
+                    clean_block = clean_block.replace('\\(', '(').replace('\\)', ')')
+                    clean_block = clean_block.replace('\\~', '~')
+                    
+                    result_json = json.loads(clean_block)
+                    if "Quotes" in result_json and "Reasoning" in result_json:
+                        data = {
+                            "code": state['code'],
+                            "charity_id": state["charity_id"],
+                            "doc_name": state["doc_name"],
+                            "quote": result_json["Quotes"],
+                            "reasoning": result_json["Reasoning"],
+                            "document_importance": result_json.get("document_importance", "worth reading")
+                        }
+                        data_list.append(data)
+                except json.JSONDecodeError:
+                    continue
+                    
+    except Exception as e:
+        # Log the error but continue processing
+        print(f"Warning: Error processing document {state['doc_name']}: {str(e)}")
+        # Return empty list to allow processing to continue
+        data_list = []
+
+    return {"prompt_per_code_results": data_list}
 
 
 
