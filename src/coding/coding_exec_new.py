@@ -173,6 +173,7 @@ def continue_invoke_research_question(state: InvokePromptState):
                 "code": state['code'],
                 "charity_id": state['charity_id'],
                 "doc_name": path_to_doc_name(d),
+                "doc_path": d,
                 "doc_text": path_to_text(d)
             }
         )
@@ -190,13 +191,28 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     try:
         result = llm_o3_with_structured_output.invoke([system_message, human_message])
         # Assuming result is a dict with keys "quote_reasoning_pairs" and "document_importance"
-        for quote,reasoning in result.quote_reasoning_pairs:
+        if result.quote_reasoning_pairs:
+            # If there are quote-reasoning pairs, process them as before
+            for quote,reasoning in result.quote_reasoning_pairs:
+                data = {
+                    "code": state['code'],
+                    "charity_id": state['charity_id'],
+                    "doc_path": state['doc_path'],
+                    "doc_name": state['doc_name'],
+                    "quote": quote[1],
+                    "reasoning": reasoning[1],
+                    "document_importance": result.document_importance
+                }
+                data_list.append(data)
+        else:
+            # If no quote-reasoning pairs, still add a document entry for importance tracking
             data = {
                 "code": state['code'],
                 "charity_id": state['charity_id'],
+                "doc_path": state['doc_path'],
                 "doc_name": state['doc_name'],
-                "quote": quote[1],
-                "reasoning": reasoning[1],
+                "quote": "",
+                "reasoning": "",
                 "document_importance": result.document_importance
             }
             data_list.append(data)
@@ -256,7 +272,7 @@ def main():
     # Hardcode the CodingAgentInputState
     charity_id = 'GiveDirectly'
     charity_overview = "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'."
-    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly_short"
+    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly"
     research_question = "What operational processes enable charities to be cost effective?"
     code_list = [
         "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location."

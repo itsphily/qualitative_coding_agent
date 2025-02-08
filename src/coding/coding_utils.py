@@ -41,6 +41,7 @@ def generate_markdown(documents, unprocessed_documents):
     """
     Generate a Markdown string with three sections:
     1) Document Evidence: Grouped by code (#), charity_id (##), and doc_name - document_importance (###) with the list of quote–reasoning pairs.
+       Only includes documents that have quote-reasoning pairs.
     2) Important Documents: Under a fixed title "Important documents" with document_importance (##) and list of document names.
     3) Unprocessed Documents: Under a fixed title "Unprocessed documents" with a list of document names.
     """
@@ -51,6 +52,10 @@ def generate_markdown(documents, unprocessed_documents):
     # Group by code -> charity_id -> doc_name with document importance (displayed next to doc_name)
     grouped = {}
     for doc in documents:
+        # Skip documents without quote-reasoning pairs
+        if not doc["quote"] or not doc["reasoning"]:
+            continue
+            
         code = doc["code"]
         charity_id = doc["charity_id"]
         key = (code, charity_id)
@@ -62,18 +67,29 @@ def generate_markdown(documents, unprocessed_documents):
             grouped[key][doc_key] = []
         grouped[key][doc_key].append((doc["quote"], doc["reasoning"]))
 
-    for (code, charity_id), docs in grouped.items():
-        evidence_lines.append(f"# {code}")
-        evidence_lines.append(f"## {charity_id}")
-        for doc_key, pairs in docs.items():
-            evidence_lines.append(f"### {doc_key}")
-            for quote, reasoning in pairs:
-                evidence_lines.append(f"- **Quote:** {quote}")
-                evidence_lines.append(f"  **Reasoning:** {reasoning}")
-            evidence_lines.append("")  # Blank line
-        evidence_lines.append("")  # Blank line after each charity group
+    # Only add section 1 if there are documents with quote-reasoning pairs
+    if grouped:
+        for (code, charity_id), docs in grouped.items():
+            evidence_lines.append(f"# {code}")
+            evidence_lines.append(f"## {charity_id}")
+            for doc_key, pairs in docs.items():
+                evidence_lines.append(f"### {doc_key}")
+                for quote, reasoning in pairs:
+                    # Format multi-line quote by indenting subsequent lines
+                    quote_lines = quote.split('\n')
+                    formatted_quote = quote_lines[0]
+                    if len(quote_lines) > 1:
+                        for line in quote_lines[1:]:
+                            formatted_quote += f"\n  {line}"
+                    
+                    evidence_lines.append(f"- **Quote:** {formatted_quote}")
+                    evidence_lines.append("")  # Add blank line between quote and reasoning
+                    evidence_lines.append(f"  **Reasoning:** {reasoning}")
+                    evidence_lines.append("")  # Add blank line after each quote-reasoning pair
+                evidence_lines.append("")  # Add extra blank line between documents
+            evidence_lines.append("")  # Blank line after each charity group
 
-    markdown_sections.append("\n".join(evidence_lines))
+        markdown_sections.append("\n".join(evidence_lines))
 
     # Section 2: Important Documents
     important_docs = {}
