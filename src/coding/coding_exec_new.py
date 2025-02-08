@@ -186,19 +186,17 @@ def invoke_prompt(state:InvokePromptPerCodeState):
     system_message = SystemMessage(content=state['prompt_per_code'])
     human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
     data_list = []
-    unprocessed_documents = []
-
+    unprocessed_documents = []    
     try:
         result = llm_o3_with_structured_output.invoke([system_message, human_message])
-        
         # Assuming result is a dict with keys "quote_reasoning_pairs" and "document_importance"
-        for pair in result.quote_reasoning_pairs:
+        for quote,reasoning in result.quote_reasoning_pairs:
             data = {
                 "code": state['code'],
-                "charity_id": state["charity_id"],
-                "doc_name": state["doc_name"],
-                "quote": pair.quote,
-                "reasoning": pair.reasoning,
+                "charity_id": state['charity_id'],
+                "doc_name": state['doc_name'],
+                "quote": quote[1],
+                "reasoning": reasoning[1],
                 "document_importance": result.document_importance
             }
             data_list.append(data)

@@ -1,0 +1,101 @@
+# Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.
+## GiveDirectly
+### Research at GiveDirectly.md - important to read
+- **Quote:** Are large cash transfers to very remote communities feasible?
+
+Location: Lamwo District, Uganda
+
+Overview: Poverty levels are often high in remote areas, but the operational challenges that such areas present to implementing organisations have hindered the rollout of cash transfer programs. This evaluation comprised recipient surveys, mobile money agent surveys, and operational data analysis to assess the feasibility of $880 cash transfers to very remote communities in northern Uganda. It found that cash transfers can be delivered safely, securely and efficiently to recipients in very remote areas, suggesting that, mobile money offers a viable and beneficial delivery-channel for cash in this setting.
+  **Reasoning:** This quote highlights how GiveDirectly is tailoring its delivery method to address the unique operational challenges posed by remote locations, using mobile money to ensure efficient and secure cash transfers. This adjustment is a practical example of calibrating intervention strategies to location-specific factors, potentially enhancing overall cost effectiveness by overcoming logistical hurdles.
+- **Quote:** Location: Machinga and Chiradzulu districts, Malawi
+Overview: This study will evaluate the impact of different cash transfers sizes ($250 to $750) on a broad range of outcome measures, for a broad range of recipients. Its findings will provide a benchmark against which the impacts of other potential development interventions in Malawi can be assessed. It will also test whether improving access to agricultural input markets increases the impact of cash transfers.
+  **Reasoning:** This extract shows that in Malawi, intervention strategies are being adjusted by testing not only varying cash transfer sizes but also by enhancing local economic conditions through improved access to agricultural input markets. This reflects a calibration process where the program is tailored to the local agricultural context, which may contribute to improved cost effectiveness by ensuring that the interventions are well-suited to the local needs.
+- **Quote:** Location: Goma, Democratic Republic of the Congo
+Overview: This study will evaluate the impact of different cash transfers sizes to young people living in an urban environment on a broad range of outcome measures. Its findings will provide a benchmark against which the impacts of other potential development interventions targeting young people in DRC can be assessed. It will also explore the impact of varying transfer timing to inform future cash transfer program design.
+  **Reasoning:** This passage indicates that GiveDirectly is considering location-specific factors in urban settings by exploring how the timing of cash transfers affects outcomes for young people. The emphasis on varying transfer timing suggests an adjustment in their intervention strategy to optimize program delivery based on local circumstances, which is likely intended to enhance the overall cost effectiveness of the initiative.
+
+### Paul Niehaus, GiveDirectly, 9-5-2014 (public).md - worth reading
+- **Quote:** GiveDirectly's work in Kenya is currently concentrated in ethnically Luo areas. GiveDirectly is considering whether it should begin work in areas dominated by other ethnic groups, even if these are not the poorest areas, in order to send a statement that GiveDirectly's agenda has no political or ethnic bias.
+  **Reasoning:** This quote demonstrates that GiveDirectly tailors its geographic targeting based on local ethnic compositions—a location-specific factor. Although it does not directly address cost effectiveness, calibrating interventions to ensure political neutrality and focus on target populations can contribute indirectly to overall efficiency.
+- **Quote:** GiveDirectly has identified five or six districts in Siaya County in Kenya that are poor enough to be eligible for its program.
+  **Reasoning:** This statement shows that the charity adjusts its intervention strategy by selecting districts based on local economic conditions. Targeting regions based on poverty levels is a location-specific calibration that likely enhances the cost effectiveness of their cash transfer program.
+- **Quote:** Separating jobs that were previously done by one person (e.g., GiveDirectly has moved the complaint hotline and followup calls to an office in Kamapala, so that the employees in charge of these are in a different part of the country and do not know the field staff). GiveDirectly's larger network in Kenya is already structured this way.
+  **Reasoning:** This quote illustrates an operational adjustment made in Uganda by adopting a structure proven effective in Kenya. By realigning roles based on local organizational contexts, GiveDirectly is calibrating its intervention strategies to local conditions, a change that may improve oversight and ultimately contribute to cost effectiveness.
+- **Quote:** In Uganda, GiveDirectly renewed both national registration and Bukedea District-specific registration for one year. The amount GiveDirectly moves in that year will depend more on fundraising than on approvals.
+  **Reasoning:** This passage reflects how GiveDirectly customizes its operational approach to align with location-specific regulatory environments. Adjusting strategies in response to local government processes is an example of calibration that can streamline operations and enhance cost effectiveness.
+- **Quote:** GiveDirectly is currently planning its work in Uganda for next year. Its intention is to always be active in some way, and Uganda is likely to be used for more experimental projects (e.g. GiveDirectly may try serving as payment provider, instead of using a separate agency). The results of such experiments could help GiveDirectly advise public sector partners who may face different situations. GiveDirectly would seek funding from an institutional donor, rather than using retail donor funding, for potentially risky experimental opportunities in Uganda. Uganda also serves as a backup in case political conflict ever prevents GiveDirectly from working in Kenya. GiveDirectly's Kenyan program will likely remain somewhat more efficient than the Ugandan program.
+  **Reasoning:** This extended quote highlights that GiveDirectly is considering different operational models in Uganda—using experimental approaches compared to its more efficient Kenyan operations. This indicates a conscious calibration of intervention strategies based on location-specific contexts, which could inform and potentially improve the organization’s overall cost effectiveness.
+
+### Paul_Niehaus_and_Carolina_Toth_9-7-15_(public).md - important to read
+- **Quote:** Until recently, the transfer size had been pegged to an amount in Kenyan shillings (KES) or Ugandan shillings, equal to about $1,000 based on 2011 exchange rates, and was held constant at that amount. As a result, the transfers in Kenya have decreased in value along with the KES, which has masked GiveDirectly's efficiency gains since 2011, as its costs (such as wages and transportation costs) were increasing due to inflation while the size of the transfers was not.
+
+GiveDirectly's board has thus decided to raise the amount of the transfers in Kenya by about 30%. Transfer amounts will be indexed for inflation going forward based on regular reevaluations of the inflation rate, which will likely take place every six months when the budget is refreshed.
+  **Reasoning:** This quote demonstrates how GiveDirectly adjusts its intervention strategy in response to location-specific economic factors—specifically the inflationary pressures in Kenya. By recalibrating transfer sizes via regular inflation reassessments, the charity ensures that the real value of transfers is maintained, which is essential for upholding their cost-effectiveness metrics.
+- **Quote:** The presence of a thatched roof on a household's dwelling will continue to serve as a proxy test for extreme poverty whenever GiveDirectly enters a new area. However, GiveDirectly is exploring other tests to see whether they perform better at targeting households for cash transfers. In Homa Bay County, thatch is not commonly used, so a different proxy means test is needed.
+  **Reasoning:** This quote highlights the charity's calibration of its targeting strategy based on local housing conditions. By modifying eligibility criteria to better reflect regional differences, GiveDirectly tailors its interventions to local realities, which can improve the efficiency and cost effectiveness of its cash transfer programs.
+
+### Conversation with Stuart Skeates, GiveDirectly, October 20-21, 2014.md - worth reading
+- **Quote:** Moved the GiveDirectly call center (hotline) to Kampala, to increase the separation of call center staff from field staff, who are based in Mbale.
+  **Reasoning:** This quote demonstrates a location-specific adjustment where the charity relocates an operational unit to separate roles based on geographic location. This calibration is intended to mitigate risks, such as fraud arising from proximity, and indirectly supports cost effectiveness by reducing losses and enhancing oversight.
+- **Quote:** Appointed community-nominated monitors to assist the Uganda Field Director on the cash out day with translation, observe transactions between recipients and mobile money agents, and report any issues they see.
+  **Reasoning:** This quote shows that the charity leverages local human resources to tailor its intervention, using community-nominated monitors for translation and oversight. This adjustment reflects sensitivity to local factors and can contribute to cost effectiveness by improving the accuracy and efficiency of fund distribution.
+
+### Paul_Niehaus_Ian_Bassin_Carolina_Toth_02-23-16_(public).md - important to read
+- **Quote:** GiveDirectly would also like to test two different approaches to its cash transfer distribution process:
+
+* **Methods for cash transfer distribution in areas lacking mobile-payment infrastructure**, including areas with few mobile-payment agents. GiveDirectly does not plan to create its own payment infrastructure. Instead, it would likely try a model incorporating two approaches: * Alerting mobile-money agents in other areas to opportunities in the areas lacking payment infrastructure. These agents would then travel on their own to the low-infrastructure areas to help transfer recipients cash out. * Enlisting community members in low-infrastructure areas to become informal agents by collecting others' vouchers and taking them all to be cashed out at once.
+* **A higher throughput, lower-cost program in which participants interact less frequently with GiveDirectly.** The current program is very high-quality and high-cost. For example, recipients typically interact with GiveDirectly four times in person and four times by phone. One variation that GiveDirectly might test is removing the backcheck step and conducting only the audit step for some recipients. This may slightly increase the risk of fraud, but would simplify the checking process, lower costs and enable faster enrollment.
+  **Reasoning:** This quote demonstrates how GiveDirectly is planning to adjust its cash transfer distribution strategy to account for location-specific constraints, such as areas lacking mobile-payment infrastructure, and to reduce operational costs through a simplified process. This directly addresses the research question by linking intervention calibration with potential improvements in cost effectiveness.
+- **Quote:** All enrollment in Kenya is taking place in Homa Bay County, using new targeting criteria. These are not the same criteria used in Uganda, which still uses the old targeting criteria. The new criteria took into account feedback from focus groups (e.g., feedback about the importance of widows as a particularly vulnerable group), which were conducted before the criteria were fully tested. GiveDirectly is not soliciting any explicit feedback on the fairness of the new criteria, and so far has not heard of any issues with fairness in targeting.
+  **Reasoning:** This quote illustrates how GiveDirectly customizes its targeting strategy based on local feedback and conditions, differing its approach in Kenya versus Uganda. Although it does not explicitly mention cost effectiveness, tailoring interventions to local needs is a key part of ensuring that resources are allocated efficiently, which can enhance overall cost effectiveness.
+
+### Paul_Niehaus_Carolina_Toth_Ian_Bassin_08-12-16_(public).md - important to read
+- **Quote:** Capacity-building in Rwanda
+
+GiveDirectly has quickly increased its capacity in Rwanda and has been happy with the progress it has made on this front. Registration has gone well, and hiring a team was faster and easier than it has been in the past. The work of NGOs is tightly regulated by the president's office in Rwanda, which has required close coordination and attention by GiveDirectly.
+  **Reasoning:** This quote demonstrates how GiveDirectly adjusts its intervention approach in Rwanda in response to local regulatory and operational conditions. By ramping up capacity and coordinating with local government requirements, the charity tailors its strategies to the specific context, a process that may help optimize cost effectiveness.
+- **Quote:** GiveDirectly does not see expansion to other countries as a priority. There remain large populations of the extreme poor in the countries in which GiveDirectly already operates. GiveDirectly therefore believes it is more cost efficient to serve more of the poor there than to incur the added expenses of setting up additional country operations.
+  **Reasoning:** This passage indicates that GiveDirectly calibrates its geographic focus based on cost efficiency considerations. By choosing to intensify interventions in existing operational areas rather than expanding into new regions, the charity aligns its strategy with location-specific cost considerations, thereby contributing to overall cost effectiveness.
+- **Quote:** Rwanda: GiveDirectly will be partnering with a funder to conduct two benchmarking experiments in Rwanda that will test cash transfers against two other interventions.
+  **Reasoning:** This quote shows a deliberate, location-specific calibration of intervention strategies. By experimenting with different types of interventions in Rwanda, GiveDirectly is adapting its methods to the local context, which may help in determining the most cost-effective approach.
+
+### Cash Transfers _ GiveWell.md - important to read
+- **Quote:** GiveDirectly is an organization that delivers unconditional cash transfers to poor households in Kenya through a mobile money system called M-Pesa. While it has altered its model for various experiments, GiveDirectly's standard model involves transferring $1,000 to poor households, which are identified by their use of thatch roofs.
+  **Reasoning:** This quote highlights a clear instance of location-specific calibration. By using a mobile money system (M-Pesa) that is well established in Kenya and by targeting households based on a local indicator of poverty (thatched roofs), the charity tailors its intervention to local conditions. This strategy likely improves targeting efficiency and contributes to its overall cost effectiveness.
+- **Quote:** Different variations of the program were evaluated. Treatment households were cross‐randomized into three arms, which varied the gender of the recipient, the frequency of the transfer (lump‐sum v. monthly installment), and the size of the transfer ($287 v. $1,085).
+  **Reasoning:** This quote demonstrates that the charity actively experiments with multiple intervention modalities — such as transfer size, frequency, and recipient characteristics — to determine which approach works best in the local context. This iterative calibration based on local performance data is integral to maximizing cost effectiveness.
+
+### Site visit_2012.md - important to read
+- **Quote:** Western Kenya is a good place to scale up chlorine dispensers because the people living there have relatively good access to water, high diarrhea rates, and there is high population density. This means that creating water sources is a lower priority in many areas, but there is a significant need to improve water quality.
+  **Reasoning:** This quote highlights that the intervention is chosen based on local conditions—such as water access, disease prevalence, and population density—which is a direct example of adjusting the strategy to reflect location-specific factors. Focusing on these areas likely maximizes the impact of the investment, indirectly contributing to overall cost effectiveness.
+- **Quote:** Choose areas in which DSW will work using data on diarrhea rates/waterborne disease, prevalence and type of water sources, and population density.
+  **Reasoning:** This direct instruction from the implementation process demonstrates how the charity deliberately selects intervention sites using local data. This tailored, location-specific selection process ensures that interventions are deployed where they are most needed and can be most effective, thus improving cost effectiveness.
+- **Quote:** We asked why the dispenser was placed in this position rather than in a place that people would be able to access it more easily, but there was not a clear reason. DSW explained that this was one of their earlier pilots, and clearer placement instructions for dispenser installation staff had been put in place since then.
+  **Reasoning:** This quote illustrates the charity's iterative learning process—adjusting their intervention strategy based on on-the-ground feedback. By revising placement guidelines after an initial pilot, they adapt to local usage patterns, which likely helps to enhance the efficiency and cost effectiveness of the intervention over time.
+
+### Site visit_2014.md - important to read
+- **Quote:** In Uganda, GiveDirectly has coordinated cash out days to enable recipients to withdraw funds at a location in or very near to their villages. GiveDirectly coordinated cash out days because the agent network around their villages was not robust and lacked sufficient liquidity. Cash out days also reduce costs for recipients who would otherwise pay for transportation to a nearby agent.
+  **Reasoning:** This quote directly illustrates how GiveDirectly adapts its intervention to local conditions—by setting up centralized cash out events in response to a sparse local agent network—which in turn reduces transportation costs for recipients and enhances overall cost effectiveness.
+- **Quote:** Mr. Skeates noted that far fewer people were withdrawing cash at this cash out day than he had expected. In total, we estimated that about 40 people withdrew cash at the event, while 380 people across two villages had received transfers. Mr. Skeates asked an English-speaking village member about this, who said that many people traveled to an adjacent district to withdraw cash from an MTN agent there, because the big market day in their area is on Monday, and the cash out day was happening on a Tuesday.
+  **Reasoning:** This observation highlights the importance of aligning intervention timing with local practices. The fact that recipients opted to withdraw cash elsewhere due to local market day schedules indicates a location-specific factor that, if better calibrated, could improve uptake and cost efficiency.
+
+
+
+----
+
+# Important documents
+## important to read
+- Cash Transfers _ GiveWell.md
+- Paul_Niehaus_Carolina_Toth_Ian_Bassin_08-12-16_(public).md
+- Paul_Niehaus_Ian_Bassin_Carolina_Toth_02-23-16_(public).md
+- Paul_Niehaus_and_Carolina_Toth_9-7-15_(public).md
+- Research at GiveDirectly.md
+- Site visit_2012.md
+- Site visit_2014.md
+## worth reading
+- Conversation with Stuart Skeates, GiveDirectly, October 20-21, 2014.md
+- Paul Niehaus, GiveDirectly, 9-5-2014 (public).md
+
+----
+
+# Unprocessed documents
