@@ -201,25 +201,6 @@ def invoke_prompt(state:InvokePromptPerCodeState):
                 "document_importance": result["document_importance"]
             }
             data_list.append(data)
-                    clean_block = block.strip()
-                    clean_block = clean_block.replace('\\"', '"')
-                    clean_block = clean_block.replace('\\(', '(').replace('\\)', ')')
-                    clean_block = clean_block.replace('\\~', '~')
-                    
-                    result_json = json.loads(clean_block)
-                    if "Quotes" in result_json and "Reasoning" in result_json:
-                        data = {
-                            "code": state['code'],
-                            "charity_id": state["charity_id"],
-                            "doc_name": state["doc_name"],
-                            "quote": result_json["Quotes"],
-                            "reasoning": result_json["Reasoning"],
-                            "document_importance": result_json.get("document_importance", "worth reading")
-                        }
-                        data_list.append(data)
-                except json.JSONDecodeError:
-                    logging.warning(f"Failed to parse JSON block: {block}")
-                    continue
                     
     except Exception as e:
         # Log the error but continue processing
