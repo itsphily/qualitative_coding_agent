@@ -197,9 +197,9 @@ def invoke_prompt(state:InvokePromptPerCodeState):
                 "code": state['code'],
                 "charity_id": state["charity_id"],
                 "doc_name": state["doc_name"],
-                "quote": pair["quote"],
-                "reasoning": pair["reasoning"],
-                "document_importance": result["document_importance"]
+                "quote": pair.quote,
+                "reasoning": pair.reasoning,
+                "document_importance": result.document_importance
             }
             data_list.append(data)
                     
