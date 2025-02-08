@@ -7,13 +7,28 @@ from langgraph.graph import START, END, StateGraph
 from langgraph.constants import Send
 import json
 import logging
+from datetime import datetime
+
+# Create debug directory if it doesn't exist
+debug_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/debug"
+os.makedirs(debug_dir, exist_ok=True)
+
+# Configure logging to write to both file and console
+debug_file = os.path.join(debug_dir, f'debug_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[
+        logging.FileHandler(debug_file),
+        logging.StreamHandler()  # This will maintain console output
+    ]
 )
+
+# Log the start of the script
+logging.info(f"Starting script execution. Debug log file: {debug_file}")
 
 from langchain_core.output_parsers import JsonOutputParser
 
@@ -86,8 +101,7 @@ llm_o3_with_tools = ChatOpenAI(
 )
 
 
-llm_o3_with_tools = llm_o3_with_tools.bind_tools(tools, 
-                                                 tool_choice="any")
+llm_o3_with_tools = llm_o3_with_tools.bind_tools(tools, tool_choice="any")
 
 llm_o3_with_structured_output = llm_o3_with_tools.with_structured_output(StructuredOutputPerCode)
 
@@ -270,7 +284,7 @@ def main():
     # Hardcode the CodingAgentInputState
     charity_id = 'GiveDirectly'
     charity_overview = "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'."
-    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly"
+    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly_short"
     research_question = "What operational processes enable charities to be cost effective?"
     code_list = [
         "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location."
