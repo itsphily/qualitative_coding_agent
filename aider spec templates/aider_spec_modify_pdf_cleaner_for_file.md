@@ -233,7 +233,21 @@ return {
 }
 ```
 
-10. 
+10. modify ChunktoMarkdownOutputState
+```aider
+class ChunktoMarkdownOutputState(TypedDict):
+    cleaned_chunk_dict: Dict[str, Dict[int, str]]
+```
+
+11. modify save_to_cleaned_chunks_dict so that it returns a nested dictionary with the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value as in the example of nested dictionary.
+```aider
+in chunk_to_md.py, modify the save_to_cleaned_chunks_dict(state: ChunktoMarkdownState) -> ChunktoMarkdownOutputState:
+ Modify the description to accurately reflect what this function does: """Save the cleaned chunk text to the cleaned_chunks_dict."""
+
+nested_dict = you can create the nested dictionary by using the state['chunk_name'] as the key for the first tier, and the state['chunk_number'] as the key for the second tier, and state['chunk_cleaned_text'] as the value.
+
+return {nested_dict: state['cleaned_chunk_dict']}
+```
 
 
 What is chunks_dict ? 
