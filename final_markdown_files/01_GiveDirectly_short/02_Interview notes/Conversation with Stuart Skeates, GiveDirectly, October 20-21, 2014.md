@@ -19,6 +19,7 @@ Stuart Skeates is GiveDirectly's Uganda Field Director. Prior to his role at Giv
 ### Mr. Skeates' work plan in 2015
 
 Around early November 2014, Mr. Skeates will transition from working full time in Uganda as the Field Director to being based out of GiveDirectly's Kenya office. Mr. Skeates will still spend one week per month in Mbale, Uganda, to oversee the ongoing Uganda 2M campaign. In total, he expects to spend one third of his time on work specific to Uganda. The other two thirds of his time will be spent on miscellaneous projects, including:
+
 * Conducting a cost benefit analysis of GiveDirectly's program to better understand the tradeoffs of cutting certain costs.
 * Assisting Joe Huston, GiveDirectly Kenya Field Director, with some of GiveDirectly's research projects. Mr. Skeates is planning to supervise data collection for the behavioral study.
 * Changing protocols such as conducting a cash out day with GiveDirectly filling the role of the mobile money provider, and modifying targeting criteria to a "Thatch Plus" model that includes some additional types of households.
@@ -27,9 +28,10 @@ Around early November 2014, Mr. Skeates will transition from working full time i
 ### Changes implemented in response to staff fraud
 
 In the Uganda pilot campaign, GiveDirectly cash out days were managed by the Uganda Senior Field Officer, the Uganda Office Manager who also managed the GiveDirectly hotline, and mobile money agents. After these people fraudulently diverted funds from recipients, GiveDirectly implemented a series of changes:
+
 * Terminated the GiveDirectly staff who had been involved in the fraud; started working with new mobile money agents.
 * Removed all of its staff from the cash out day process except the Uganda Field Director. The Uganda Field Director had previously been making planned visits to oversee some of the cash out days; he now actively manages all of them along with new mobile money agents.
-* Appointed community-nominated monitors to assist the Uganda Field Director on the cash out day with translation, observe transactions between recipients and mobile money agents, and report any issues they see. GiveDirectly compensates the monitors with 10,000 UGX (~$4) for their time during a cash out day.
+* Appointed community-nominated monitors to assist the Uganda Field Director on the cash out day with translation, observe transactions between recipients and mobile money agents, and report any issues they see. GiveDirectly compensates the monitors with 10,000 UGX (\(\sim\)$4) for their time during a cash out day.
 * Developed networks of English-speaking informants who are not formally announced within the villages, but are tasked with also reporting any issues they see regarding transfers. To date, 4 of the 9 informants have provided GiveDirectly with helpful information, such as identifying that households in the enrollment process were actually ineligible, and telling GiveDirectly that someone had taken a recipient's phone after the recipient passed away.
 * Moved the GiveDirectly call center (hotline) to Kampala, to increase the separation of call center staff from field staff, who are based in Mbale.
 * Tasked the call center with calling a randomly selected 10% of the village during a cash out day to see if it is going smoothly.
@@ -43,7 +45,9 @@ Some recipients, especially elderly ones, have to learn how to use cell phones f
 
 ### Increased gaming
 
-One village in Kenya had a significantly higher than average level of gaming (ineligible residents falsely posing as meeting the eligibility requirements). The gaming seemed to be coordinated across the village, though GiveDirectly did not know who had orchestrated it. In this case, GiveDirectly responded by holding a community meeting to acknowledge the issue and announce that it would be pausing transfers for all recipients until the cases of gaming were resolved. GiveDirectly also asked community members to report any information they had on these cases. In the Uganda 2M campaign, there was also one village with high levels of gaming. GiveDirectly mentioned two possible contributing factors: 1) the village was close to another village that had already received transfers, so it is likely that there was a higher level of awareness of GiveDirectly's targeting criteria at the outset, enabling people to pose as meeting the criteria from the census stage; 2) evidence that a corrupt staff member planted a false recipient in the village.
+One village in Kenya had a significantly higher than average level of gaming (ineligible residents falsely posing as meeting the eligibility requirements). The gaming seemed to be coordinated across the village, though GiveDirectly did not know who had orchestrated it. In this case, GiveDirectly responded by holding a community meeting to acknowledge the issue and announce that it would be pausing transfers for all recipients until the cases of gaming were resolved. GiveDirectly also asked community members to report any information they had on these cases.
+
+In the Uganda 2M campaign, there was also one village with high levels of gaming. GiveDirectly mentioned two possible contributing factors: 1) the village was close to another village that had already received transfers, so it is likely that there was a higher level of awareness of GiveDirectly's targeting criteria at the outset, enabling people to pose as meeting the criteria from the census stage; 2) evidence that a corrupt staff member planted a false recipient in the village.
 
 ### Theft
 
@@ -51,4 +55,6 @@ There are cases of theft from individual recipients. Most of the theft of transf
 
 ### Transfer size
 
-In 2014, GiveDirectly decided to adjust the size of future transfers to keep up with inflation. This will come into effect during 2015. _All GiveWell conversations are available at http://www.givewell.org/conversations_
+In 2014, GiveDirectly decided to adjust the size of future transfers to keep up with inflation. This will come into effect during 2015.
+
+_All GiveWell conversations are available at http://www.givewell.org/conversations_

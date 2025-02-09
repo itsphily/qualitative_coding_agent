@@ -17,7 +17,6 @@ GiveWell spoke with Dr. Niehaus, Ms. Toth, and Mr. Bassin of GiveDirectly to rec
 ## Hiring a vice president of marketing
 
 GiveDirectly plans to use part of the grant from Good Ventures to hire a vice president of marketing. Progress on finding the right person has been slow, and GiveDirectly has not yet hired anyone for this position. (_Update: in September 2016, GiveDirectly hired Matt Johnson, former CMO of Tough Mudder and VP of marketing at Seamless, for this role._) GiveDirectly recently began to work with a recruiting firm to assist with the hiring process. This person will:
-
 * Lead a digital marketing strategy, which will include producing mobile, web, email, and social media content.
 * Be responsible for all levels of interactions with the public, from people who are first learning about GiveDirectly through managing the experience they have as donors.
 * Manage a $6-9 million fundraising budget.
@@ -25,7 +24,7 @@ GiveDirectly plans to use part of the grant from Good Ventures to hire a vice pr
 
 ## Difficulty attracting qualified candidates
 
-The market for qualified candidates is competitive. The candidates that GiveDirectly hopes to attract for this position could otherwise be earning about $500,000 per year at large, well-respected private sector companies, where they would be managing larger fundraising budgets (on the order of $100 million). Managing a smaller fundraising budget is not necessarily a deterrent for candidates, but while GiveDirectly aims to pay fairly and competitively, compensation has been an issue. Part of the reason it has been difficult to attract qualified candidates for this position is because the job description is fairly demanding. If GiveDirectly does not find anyone for this position in the next 6 months, it will consider splitting this into two separate roles. GiveDirectly expects to hire someone in the next 6 months, but has not set a concrete deadline for hiring because this may lead it to hire someone who is not an ideal candidate. There is currently no need to hire someone quickly, because GiveDirectly's retail revenue stream has been steady and is ahead of where it was last year. If this were to change, that would affect GiveDirectly's decisions about its hiring strategy.
+The market for qualified candidates is competitive. The candidates that GiveDirectly hopes to attract for this position could otherwise be earning about $500,000 per year at large, well-respected private sector companies, where they would be managing larger fundraising budgets (on the order of $100 million). Managing a smaller fundraising budget is not necessarily a deterrent for candidates, but while GiveDirectly aims to pay fairly and competitively, compensation has been an issue. Part of the reason it has been difficult to attract qualified candidates for this position is because the job description is fairly demanding. If GiveDirectly does not find anyone for this position in the next 6 months, it will consider splitting this into two separate roles. GiveDirectly expects to hire someone in the next 6 months, but has not set a concrete deadline for hiring because this may lead it to hire someone who is not an ideal candidate. There is currently no need to hire someone quickly, because GiveDirectly's retail revenue stream has been steady and is ahead of where it was last year.
 
 **Work that has been slowed down by the delay in hiring a marketing lead**
 
@@ -50,7 +49,6 @@ GiveDirectly's work on testing strategies to retain and engage with existing don
 _Creating mobile and web apps_
 
 GiveDirectly is working on creating mobile and web apps to enable donors to track their donations, when GiveDirectly enrolls recipients, and how those recipients fare after receiving transfers. There are internal versions of a mobile app that include many of the desired elements but are not polished enough to release yet. The next version, which is currently in development and which GiveDirectly hopes to launch by the end of the year, will be a web interface. This would have several advantages over mobile apps:
-
 * They are easier and cheaper to change and experiment with. This will allow GiveDirectly to create and test many versions before releasing it.
 * There seems to be a significant barrier to downloading a mobile app. For example, Humans of New York has millions of followers online but only about 5,000 downloads of its mobile app.
 * A web interface can more easily integrate with GiveDirectly's existing online presence.
@@ -80,7 +78,6 @@ GiveDirectly has quickly increased its capacity in Rwanda and has been happy wit
 #### Other countries
 
 GiveDirectly does not see expansion to other countries as a priority. There remain large populations of the extreme poor in the countries in which GiveDirectly already operates. GiveDirectly therefore believes it is more cost efficient to serve more of the poor there than to incur the added expenses of setting up additional country operations. However, there are three situations in which GiveDirectly does consider geographical expansion:
-
 1. When policy research it deems important can only be conducted in a location in which GiveDirectly does not currently operate.
 2. When one of the institutional funders who drive the direction of global development spending is interested in working with GiveDirectly in a way that could lead to broader adoption of the model by them but they require the work to be in another country.
 3. When a large funder offers sufficient funding for the poor that working in that funder's country of choice would benefit the poor in a way that outweighs the costs of expansion.

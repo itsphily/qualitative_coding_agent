@@ -29,7 +29,7 @@ class ChunktoMarkdownInputState(TypedDict):
     chunk_feedback_application_counter: int
 
 class ChunktoMarkdownOutputState(TypedDict):
-    cleaned_chunk_dict: Dict[str, Dict[int, str]]
+    cleaned_chunk_dict: Annotated[Dict[str, Dict[int, str]], merge_dicts]
 
 # Merge input + output + optional internal keys
 class ChunktoMarkdownState(ChunktoMarkdownInputState, ChunktoMarkdownOutputState):

@@ -54,7 +54,7 @@ model_openai = "o3-mini"
 
 llm_o3 = ChatOpenAI(
     model = model_openai,
-    reasoning_effort="medium"
+    reasoning_effort="low"
 )
 
 # Define functions for the chunk cleaner subgraph
@@ -142,7 +142,7 @@ def continue_qa_feedback_node(state: ChunktoMarkdownState) -> Literal['qa_feedba
         logger.info(f"QA feedback loop completed for chunk {state['chunk_number']}.")
         return 'save_to_cleaned_chunks_dict_node'
 
-def save_to_cleaned_chunks_dict(state: ChunktoMarkdownState):
+def save_to_cleaned_chunks_dict(state: ChunktoMarkdownState) -> ChunktoMarkdownOutputState:
     """
     Save the cleaned chunk text into a nested dictionary: {file_name: {chunk_number: chunk_cleaned_text}}.
     """
