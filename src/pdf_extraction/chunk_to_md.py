@@ -9,8 +9,11 @@ from langgraph.constants import Send
 import asyncio
 from chunk_utils import chunk_file
 from chunk_state import (
-    PDFToMarkdownState, PDFToMarkdownInputState, PDFToMarkdownOutputState,
-    ChunktoMarkdownState, ChunktoMarkdownInputState, ChunktoMarkdownOutputState
+    PDFToMarkdownState, 
+    PDFToMarkdownInputState,
+    ChunktoMarkdownState, 
+    ChunktoMarkdownInputState, 
+    ChunktoMarkdownOutputState
 )
 from prompt import (
     restructure_text_prompt, text_to_reformat_prompt, 
@@ -47,13 +50,12 @@ llm = ChatOpenAI(
     base_url="https://api.deepseek.com/v1",
     temperature=0.0
 )
-llm_json_mode = ChatOpenAI(
-    model="deepseek-chat",
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url="https://api.deepseek.com/v1",
-    temperature=0.0
+model_openai = "o3-mini"
+
+llm_o3 = ChatOpenAI(
+    model = model_openai,
+    reasoning_effort="medium"
 )
-llm_json_mode.bind(response_format={"type": "json_object"})
 
 # Define functions for the chunk cleaner subgraph
 
@@ -66,7 +68,7 @@ def restructure_chunk_node(state: ChunktoMarkdownInputState):
     text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
         text_to_be_cleaned=state['chunk_text']
     )
-    result = llm.invoke([
+    result = llm_o3.invoke([
         SystemMessage(content=restructure_text_prompt),
         HumanMessage(content=text_to_reformat_prompt_formatted)
     ])
@@ -83,7 +85,7 @@ def get_qa_feedback(state: ChunktoMarkdownState):
     original_text = state["chunk_text"]
     cleaned_text  = state["chunk_cleaned_text"]
     
-    result = llm.invoke([
+    result = llm_o3.invoke([
         SystemMessage(content=qa_feedback_prompt),
         HumanMessage(content=f"""
             Compare the Original Text:
@@ -107,7 +109,7 @@ def apply_qa_feedback(state: ChunktoMarkdownState):
     original_text = state["chunk_text"]
     current_cleaned = state["chunk_cleaned_text"]
 
-    result = llm.invoke([
+    result = llm_o3.invoke([
         SystemMessage(content=apply_qa_feedback_prompt),
         HumanMessage(content=f"""
             <QA Feedback>
@@ -164,6 +166,22 @@ chunk_cleaner.add_conditional_edges('apply_qa_feedback_node', continue_qa_feedba
 chunk_cleaner.add_edge('save_to_cleaned_chunks_dict_node', END)
 
 # Main graph functions
+def retrieve_files_in_directory(state: PDFToMarkdownState):
+    """
+    Recursively search the directory specified in state['filepath'] for text files (.md)
+    and store them in state['files_dict'] where the key is the file name and the value is its path.
+    """
+    import os
+    from glob import glob
+    directory = state["filepath"]
+    files = {}
+    for root, _, filenames in os.walk(directory):
+        for name in filenames:
+            if name.lower().endswith(".md"):
+                files[name] = os.path.join(root, name)
+    state["files_dict"] = files
+    return {"files_dict": state["files_dict"]}
+
 
 def chunk_file_node(state: PDFToMarkdownState):
     """
@@ -227,13 +245,15 @@ def save_final_markdown(state: PDFToMarkdownState):
             logger.error(f"File path not found for {file_name}.")
 
 # Build the main graph
-main_graph = StateGraph(PDFToMarkdownState, input=PDFToMarkdownInputState, output=PDFToMarkdownOutputState)
+main_graph = StateGraph(PDFToMarkdownState, input=PDFToMarkdownInputState)
+main_graph.add_node('retrieve_files_in_directory', retrieve_files_in_directory)
 main_graph.add_node('chunk_file_node', chunk_file_node)
 main_graph.add_node('clean_text', chunk_cleaner.compile())
 main_graph.add_node('compile_clean_text', compile_clean_text)
 main_graph.add_node('save_final_markdown', save_final_markdown)
 
-main_graph.add_edge(START, 'chunk_file_node')
+main_graph.add_edge(START, 'retrieve_files_in_directory')
+main_graph.add_edge('retrieve_files_in_directory', 'chunk_file_node')
 main_graph.add_conditional_edges('chunk_file_node',send_to_clean_node, ['clean_text'])
 main_graph.add_edge('clean_text', 'compile_clean_text')
 main_graph.add_edge('compile_clean_text', 'save_final_markdown')
@@ -241,21 +261,7 @@ main_graph.add_edge('save_final_markdown', END)
 
 main_graph = main_graph.compile()
 
-def retrieve_files_in_directory(state: PDFToMarkdownState):
-    """
-    Recursively search the directory specified in state['filepath'] for text files (.md)
-    and store them in state['files_dict'] where the key is the file name and the value is its path.
-    """
-    import os
-    from glob import glob
-    directory = state["filepath"]
-    files = {}
-    for root, _, filenames in os.walk(directory):
-        for name in filenames:
-            if name.lower().endswith(".md"):
-                files[name] = os.path.join(root, name)
-    state["files_dict"] = files
-    return {"files_dict": state["files_dict"]}
+
 
 def main():
     parser = argparse.ArgumentParser(description='Process PDF to Markdown with chunking.')
