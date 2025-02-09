@@ -204,7 +204,7 @@ class ChunktoMarkdownState(ChunktoMarkdownInputState, ChunktoMarkdownOutputState
     chunk_cleaned_text: str
 ```
 
-7. modify restructure_chunk_node to return a nested dictionary with the file name as the key and the chunk number and chunk text as the values.
+8. modify restructure_chunk_node to return a nested dictionary with the file name as the key and the chunk number and chunk text as the values.
 ```aider
 in chunk_to_md.py, modify the restructure_chunk_node(state: ChunktoMarkdownInputState) ---> ChunktoMarkdownState:
 the function itself will not change. 
@@ -213,14 +213,14 @@ return {"chunk_cleaned_text": state["chunk_cleaned_text"]}
 
 ```
 
-8. modify the get_qa_feedback function to be able to access the right chunk text since we changed the structure of the cleaned_chunk_dict.
+9. modify the get_qa_feedback function to be able to access the right chunk text since we changed the structure of the cleaned_chunk_dict.
 ```aider
 in chunk_to_md.py, modify the get_qa_feedback function:
 modify the variable cleaned_text = state["chunk_cleaned_text"]
 everything else will remain the same.
 ```
 
-9. modify the apply_qa_feedback function to access the state["chunk_cleaned_text"]
+10. modify the apply_qa_feedback function to access the state["chunk_cleaned_text"]
 ```aider
 in chunk_to_md.py, modify the apply_qa_feedback function:
 modify the variable current_cleaned = state["chunk_cleaned_text"]
@@ -234,24 +234,28 @@ return {
 }
 ```
 
-10. modify ChunktoMarkdownOutputState
+11. modify ChunktoMarkdownOutputState
 ```aider
 class ChunktoMarkdownOutputState(TypedDict):
     cleaned_chunk_dict: Dict[str, Dict[int, str]]
 ```
 
-11. modify save_to_cleaned_chunks_dict so that it returns a nested dictionary with the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value as in the example of nested dictionary.
+12. modify save_to_cleaned_chunks_dict so that it returns a nested dictionary with the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value as in the example of nested dictionary.
 ```aider
 in chunk_to_md.py, modify the save_to_cleaned_chunks_dict(state: ChunktoMarkdownState) -> ChunktoMarkdownOutputState:
  Modify the description to accurately reflect what this function does: """Save the cleaned chunk text to the cleaned_chunks_dict."""
 
 nested_dict = you can create the nested dictionary by using the state['chunk_name'] as the key for the first tier, and the state['chunk_number'] as the key for the second tier, and state['chunk_cleaned_text'] as the value.
 
-return {nested_dict: state['cleaned_chunk_dict']}
+return {{
+        state['chunk_name']: {
+            state['chunk_number']: state['cleaned_chunk_dict']
+        }
+    }: state['cleaned_chunk_dict']}
 ```
 
 
-12. modify PDFToMarkdownState(TypedDict):
+13. modify PDFToMarkdownState(TypedDict):
 ```aider
 class PDFToMarkdownState(TypedDict):
     extracted_text: str 
@@ -264,7 +268,7 @@ class PDFToMarkdownState(TypedDict):
 
 ```
 
-13. Previously the compile_clean_text function's input was a dictionary with the chunk number as the keys and chunk text as the values, we need to modify it to be able to handle the new structure of the cleaned_chunk_dict (nested dictionary). Recall the nested dictionary is uses the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value.
+14. Previously the compile_clean_text function's input was a dictionary with the chunk number as the keys and chunk text as the values, we need to modify it to be able to handle the new structure of the cleaned_chunk_dict (nested dictionary). Recall the nested dictionary is uses the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value.
 ```aider
 in chunk_to_md.py, modify compile_clean_text(state: PDFToMarkdownState):
  Modify the description to accurately reflect what this function does: """Combine cleaned chunks into the final cleaned text."""
@@ -274,15 +278,13 @@ Modify the function to take the nested dictionary from state (state['cleaned_chu
 Modify the return statement to return the cleaned_text as a dictionary, with the file name as the key and the cleaned text as the value. You will need to correct this return statement: return {"cleaned_text": state['cleaned_text']}
 ```
 
-14. Modify the save_final_markdown function to be able to first save the final markdown file, and second place the file in the appropriate folder.
+15. Modify the save_final_markdown function to be able to first save the final markdown file, and second place the file in the appropriate folder.
 ```aider
 in chunk_to_md.py, modify the save_final_markdown function:
-
 Create a new function that will itterate through the cleaned_text dictionary and retrieve the file name and the cleaned text. Use the file name to find the corresponding filepath in the files_dict. Pass the filepath and the cleaned text to the save_md function to save the markdown file.
 ```
 
-
-15. remove PDFToMarkdownOutputState
+16. remove PDFToMarkdownOutputState
 ```aider
 remove class PDFToMarkdownOutputState(TypedDict):
     cleaned_text: str
