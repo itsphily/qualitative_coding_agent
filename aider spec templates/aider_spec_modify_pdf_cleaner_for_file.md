@@ -11,6 +11,7 @@
 - Modify the graph nodes, edges and functions to be able to handle a directory being passed as filepath rather than a single file.
 
 ## Implementation Notes
+- Always properly comment the code you write, comment the function using proper docstrings using pep8 style.
 - in langgraph the state is passed as an input to the function, the function will modify the state and return it. Make sure to follow this design pattern when updating the functions.
 - See below for an example of how to use the send API. In that example, the send API is used to send each subject contained in the state["subjects"] list to the generate_joke node.
 - Carefully review each low-level task for exact code changes
@@ -117,7 +118,6 @@ Remove
 Add  pdf_state = PDFToMarkdownInputState(
         filepath=filepath,
         qa_loop_limit=qa_loop_limit
-        files_dict = Dict
     )
     The rest of the main function should be the same.
 ```
@@ -145,7 +145,7 @@ store returned dictionnary in state['chunks_dict'], and since we are processing 
  return {"chunks_dict": state['chunks_dict']}
 ```
 
-5. Modify the send_to_clean_node function to be able to handle the new chunks_dict.
+5. Modify the send_to_clean_node function to be able to itterate over the chunks_dict.
 ```aider
 in chunk_to_md.py, modify the send_to_clean_node(state: PDFToMarkdownState):
 
@@ -162,20 +162,29 @@ modify     return [
         Send(
             "clean_text",
             {
-                "inner_chunk_dict": inner_chunk_dict,
+                "chunk_name": file_name,
+                "chunk_number": chunk_number,
+                "chunk_text": chunk_text,
                 "qa_loop_limit": state['qa_loop_limit'],
                 "chunk_feedback_application_counter": 0
             }
         )
-        use a for loop (for inner_chunk_dict ...) to itterate through state['chunks_dict'], recall the structure of chunks_dict in the example of nested dictionary, I want the inner dictionnary (the for loop will itterate through the filenames and retrieve this inner dictionnary: {
-        "chunk_number_1": "chunk_text_1",
-        "chunk_number_2": "chunk_text_2",
-        "chunk_number_3": "chunk_text_3"
-    })
-    ]
+        use a for loop to itterate through state['chunks_dict'], recall chunks_dict is a dictionary of dictionaries, the outer dictionary is the file name, and the inner dictionary is the chunk number and the chunk text.
+        {
+            "file_name_1": {
+                "chunk_number_1": "chunk_text_1",
+                "chunk_number_2": "chunk_text_2",
+                "chunk_number_3": "chunk_text_3"
+            },
+            "file_name_2": {
+                "chunk_number_1": "chunk_text_1",
+                "chunk_number_2": "chunk_text_2",
+                "chunk_number_3": "chunk_text_3"
+            }
+        }
+        the for loop will itterate through the dictionnary to extract file_name, chunk_number and chunk_text.
+]
 ```
-
-So far I modifed the code instead of sending each chunk to it's own subgraph, we are sending each file to it's own subgraph.
 
 
 6. Create a new function that will take the inner_chunk_dict and send it to the restructure_chunk_node node.
