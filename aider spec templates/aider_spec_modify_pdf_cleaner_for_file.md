@@ -50,17 +50,34 @@ def continue_to_jokes(state: OverallState):
     return [Send("generate_joke", {"subject": s}) for s in state["subjects"]]
 </send API example>
 
+<example of nested dictionary>
+{
+    "file_name_1": {
+        "chunk_number_1": "chunk_text_1",
+        "chunk_number_2": "chunk_text_2",
+        "chunk_number_3": "chunk_text_3"
+    },
+    "file_name_2": {
+        "chunk_number_1": "chunk_text_1",
+        "chunk_number_2": "chunk_text_2",
+        "chunk_number_3": "chunk_text_3"
+    }
+}
+</example of nested dictionary>
+
 ## Context
 
 ### Beginning context
 - /src/pdf_extraction/chunk_to_md.py
-- /src/utils.py
+- /src/pdf_extraction/chunk_state.py
+- /src/pdf_extraction/chunk_utils.py
 - /src/prompt.py (readonly)
 - requirements.txt
 
 ### Ending context  
 - /src/pdf_extraction/chunk_to_md.py
-- /src/utils.py
+- /src/pdf_extraction/chunk_state.py
+- /src/pdf_extraction/chunk_utils.py
 - /src/prompt.py (readonly)
 - requirements.txt
 
@@ -100,36 +117,38 @@ Remove
 Add  pdf_state = PDFToMarkdownInputState(
         filepath=filepath,
         qa_loop_limit=qa_loop_limit
+        files_dict = Dict
     )
     The rest of the main function should be the same.
 ```
 
-
-MODIFY THIS FUNCTION and MERGE THIS FUNCTION WITH THE CHUNK FILE NODE FUNCTION, WILL NEED to CHANGE THE RETURN STATEMENT
-3. Create a new function that will take filepath argument form the PDFToMarkdownInputState and use the send api to send each file in the directory to the chunk_file_node
+3. Create a new function that will take filepath argument form the PDFToMarkdownInputState and store the path and name of each file in a dictionary
 ```aider
 in chunk_to_md.py, create function retrieve_files_in_directory(PDFToMarkdownState):
 
-    - write a function that will look inside the directory at filepath, if there are subdirectories it will look inside all of them as well and retrieve all text files in the directory and its subdirectories.
+    - write a function that will look inside the directory at filepath, if there are subdirectories (search recursively) it will look inside all of them as well and retrieve all text files in the directory and its subdirectories. The text files usually have the .md extension.
     
-    append the text of the file and the name of the file to the files_dict dictionary, using the name of the file as the key and the text of the file as the value.
+    append the filepaths to the files_dict dictionary, using the name of the file as the key and the path to the file as the value.
 
-    return [send "chunk_file_node", {"filepath": filepath} for filepath in files_dict.keys()]
+    return the files_dict dictionary
 ```
 
 
-
-
-
-
-
-2. [Second task - what is the second task?]
+4.  Modify chunk_file_node used to receive a filepath as an argument, but now it will receive files_dict {file_name: filepath}. Instead of using the filepath from the state, it will use the filepath from the files_dict stored in the state.
 ```aider
-What prompt would you run to complete this task?
-What file do you want to CREATE or UPDATE?
-What function do you want to CREATE or UPDATE?
-What are details you want to add to drive the code changes?
+in chunk_to_md.py, modify the chunk_file_node(state: PDFToMarkdownState):
+"""Itterate over the files_dict and chunk each of the files separately, stored the extracted text into a dictionary of chunks."""
+loop over the files_dict and apply the chunk_file function to each of the files.
+Note: chunk_file Returns a dictionary with: {Keys: Integer chunk numbers (starting from 1), Values: String chunks of text}
+
+store returned dictionnary in state['chunks_dict'], and since we are processing multiple files, the keys of the dictionary should be the file_name and the values will be the dictionary returned by chunk_file. see example of nested dictionary for reference
+
+ return {"chunks_dict": state['chunks_dict']}
 ```
+
+
+
+
 3. [Third task - what is the third task?]
 ```aider
 What prompt would you run to complete this task?
