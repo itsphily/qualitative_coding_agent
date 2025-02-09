@@ -54,3 +54,5 @@ src/final_markdown_files/
 src/final_markdown_files/*
 debug/
 debug/*
+final_markdown_files/
+final_markdown_files/*
