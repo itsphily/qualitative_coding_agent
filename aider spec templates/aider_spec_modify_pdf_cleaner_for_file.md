@@ -133,7 +133,6 @@ in chunk_to_md.py, create function retrieve_files_in_directory(PDFToMarkdownStat
     return the files_dict dictionary
 ```
 
-
 4.  Modify chunk_file_node used to receive a filepath as an argument, but now it will receive files_dict {file_name: filepath}. Instead of using the filepath from the state, it will use the filepath from the files_dict stored in the state.
 ```aider
 in chunk_to_md.py, modify the chunk_file_node(state: PDFToMarkdownState):
@@ -146,6 +145,44 @@ store returned dictionnary in state['chunks_dict'], and since we are processing 
  return {"chunks_dict": state['chunks_dict']}
 ```
 
+5. Modify the send_to_clean_node function to be able to handle the new chunks_dict.
+```aider
+in chunk_to_md.py, modify the send_to_clean_node(state: PDFToMarkdownState):
+
+modify logger.info("Sending files to cleaner -- in progress")
+remove """
+    total_words = 0
+    for chunk_number, chunk_text in state['chunks_dict'].items():
+        word_count = len(chunk_text.split())
+        total_words += word_count
+        logger.info(f"Chunk {chunk_number}: {word_count} words")
+    logger.info(f"Total words across all chunks: {total_words}")
+"""
+modify     return [
+        Send(
+            "clean_text",
+            {
+                "inner_chunk_dict": inner_chunk_dict,
+                "qa_loop_limit": state['qa_loop_limit'],
+                "chunk_feedback_application_counter": 0
+            }
+        )
+        use a for loop (for inner_chunk_dict ...) to itterate through state['chunks_dict'], recall the structure of chunks_dict in the example of nested dictionary, I want the inner dictionnary (the for loop will itterate through the filenames and retrieve this inner dictionnary: {
+        "chunk_number_1": "chunk_text_1",
+        "chunk_number_2": "chunk_text_2",
+        "chunk_number_3": "chunk_text_3"
+    })
+    ]
+```
+
+So far I modifed the code instead of sending each chunk to it's own subgraph, we are sending each file to it's own subgraph.
+
+
+6. Create a new function that will take the inner_chunk_dict and send it to the restructure_chunk_node node.
+```aider
+
+```
+
 
 
 
@@ -156,3 +193,12 @@ What file do you want to CREATE or UPDATE?
 What function do you want to CREATE or UPDATE?
 What are details you want to add to drive the code changes?
 ```
+
+
+
+send_to_clean_node Takes chunks of text (stored in state['chunks_dict']) and prepares them to be sent for cleaning/processing
+
+I have to change this logic from sending each chunk with it's number to each file with the dictionnary of chunk number: chunk name
+
+
+instead of having subgraphs based on chunk number, we will have subgraphs based on file name.
