@@ -99,13 +99,14 @@ def get_qa_feedback(state: ChunktoMarkdownState):
     return {"chunk_qa_feedback": state['chunk_qa_feedback']}
 
 def apply_qa_feedback(state: ChunktoMarkdownState):
-    """Apply the QA feedback to the cleaned chunk using the original chunk as reference."""
-    logger.info(f"Applying QA feedback for chunk {state['chunk_number']} -- in progress")
+    """
+    Apply QA feedback to update the cleaned text.
+    """
+    logger.info(f"Applying QA feedback for file {state['chunk_name']}, chunk {state['chunk_number']} -- in progress")
     
     original_text = state["chunk_text"]
-    current_cleaned = state["cleaned_chunk_dict"][state["chunk_number"]]
+    current_cleaned = state["chunk_cleaned_text"]
 
-    # LLM call
     result = llm.invoke([
         SystemMessage(content=apply_qa_feedback_prompt),
         HumanMessage(content=f"""
@@ -121,14 +122,13 @@ def apply_qa_feedback(state: ChunktoMarkdownState):
         """)
     ])
 
-    # Apply feedback directly back into cleaned_chunk_dict
-    state["cleaned_chunk_dict"][state["chunk_number"]] = result.content
+    state["chunk_cleaned_text"] = result.content
     state["chunk_feedback_application_counter"] += 1
 
-    logger.info(f"Applied QA feedback for chunk {state['chunk_number']} "
+    logger.info(f"Applied QA feedback for file {state['chunk_name']}, chunk {state['chunk_number']} "
           f"-- iteration: {state['chunk_feedback_application_counter']}")
     return {
-        "cleaned_chunk_dict": state["cleaned_chunk_dict"],
+        "chunk_cleaned_text": state["chunk_cleaned_text"],
         "chunk_feedback_application_counter": state["chunk_feedback_application_counter"]
     }
 
@@ -166,37 +166,37 @@ chunk_cleaner.add_edge('save_to_cleaned_chunks_dict_node', END)
 # Main graph functions
 
 def chunk_file_node(state: PDFToMarkdownState):
-    """Chunk the extracted text into a dictionary of chunks."""
-    logger.info("Chunking file -- in progress")
-    # Get total word count of file
-
-    state['chunks_dict'] = chunk_file(state['filepath'])
-    logger.info("Chunking file -- done")
+    """
+    Iterate over state['files_dict'] and chunk each file.
+    Store each file’s chunks in state['chunks_dict'] under the file name key.
+    """
+    state['chunks_dict'] = {}
+    for file_name, file_path in state['files_dict'].items():
+        state['chunks_dict'][file_name] = chunk_file(file_path)
     return {"chunks_dict": state['chunks_dict']}
 
 def send_to_clean_node(state: PDFToMarkdownState):
-    """Send each chunk to the chunk cleaner subgraph."""
-    logger.info("Sending chunks to cleaner -- in progress")
-
-    total_words = 0
-    for chunk_number, chunk_text in state['chunks_dict'].items():
-        word_count = len(chunk_text.split())
-        total_words += word_count
-        logger.info(f"Chunk {chunk_number}: {word_count} words")
-    logger.info(f"Total words across all chunks: {total_words}")
-
-    return [
-        Send(
-            "clean_text",
-            {
-                "chunk_number": k,
-                "chunk_text": v,
-                "qa_loop_limit": state['qa_loop_limit'],
-                "chunk_feedback_application_counter": 0
-            }
-        )
-        for k, v in state['chunks_dict'].items()
-    ]
+    """
+    Iterate through state['chunks_dict'] (a nested dict with file names and chunk numbers)
+    and create a Send for each chunk.
+    """
+    logger.info("Sending files to cleaner -- in progress")
+    sends = []
+    for file_name, chunks in state['chunks_dict'].items():
+        for chunk_number, chunk_text in chunks.items():
+            sends.append(
+                Send(
+                    "clean_text",
+                    {
+                        "chunk_name": file_name,
+                        "chunk_number": chunk_number,
+                        "chunk_text": chunk_text,
+                        "qa_loop_limit": state['qa_loop_limit'],
+                        "chunk_feedback_application_counter": 0
+                    }
+                )
+            )
+    return sends
 
 def compile_clean_text(state: PDFToMarkdownState):
     """

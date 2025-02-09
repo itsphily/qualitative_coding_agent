@@ -20,8 +20,6 @@ class PDFToMarkdownInputState(TypedDict):
     filepath: str
     qa_loop_limit: int
 
-class PDFToMarkdownOutputState(TypedDict):
-    cleaned_text: str
 
 class ChunktoMarkdownInputState(TypedDict):
     chunk_name: str
