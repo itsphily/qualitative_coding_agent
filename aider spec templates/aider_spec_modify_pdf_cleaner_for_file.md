@@ -186,28 +186,70 @@ modify     return [
 ]
 ```
 
-
-6. Create a new function that will take the inner_chunk_dict and send it to the restructure_chunk_node node.
+6. modify ChunktoMarkdownInputState to be able to handle the new state.
 ```aider
+class ChunktoMarkdownInputState(TypedDict):
+    chunk_name: str
+    chunk_number: int
+    chunk_text: str
+    qa_loop_limit: int
+    chunk_feedback_application_counter: int
+```
+
+7. modify ChunktoMarkdownState to add a new attribute chunk_cleaned_text
+```aider
+class ChunktoMarkdownState(ChunktoMarkdownInputState, ChunktoMarkdownOutputState):
+    chunk_qa_feedback: str
+    chunk_cleaned_text: str
+```
+
+7. modify restructure_chunk_node to return a nested dictionary with the file name as the key and the chunk number and chunk text as the values.
+```aider
+in chunk_to_md.py, modify the restructure_chunk_node(state: ChunktoMarkdownInputState) ---> ChunktoMarkdownState:
+the function itself will not change. 
+change the logging statement to log the file name, chunk number and chunk text.
+return {"chunk_cleaned_text": state["chunk_cleaned_text"]}
 
 ```
 
-
-
-
-3. [Third task - what is the third task?]
+8. modify the get_qa_feedback function to be able to access the right chunk text since we changed the structure of the cleaned_chunk_dict.
 ```aider
-What prompt would you run to complete this task?
-What file do you want to CREATE or UPDATE?
-What function do you want to CREATE or UPDATE?
-What are details you want to add to drive the code changes?
+in chunk_to_md.py, modify the get_qa_feedback function:
+modify the variable cleaned_text = state["chunk_cleaned_text"]
+everything else will remain the same.
 ```
 
+9. modify the apply_qa_feedback function to access the state["chunk_cleaned_text"]
+```aider
+in chunk_to_md.py, modify the apply_qa_feedback function:
+modify the variable current_cleaned = state["chunk_cleaned_text"]
+
+re-apply the feedback to the chunk_cleaned_text
+change  this: state["cleaned_chunk_dict"][state["chunk_number"]] = result.content, to that: state["chunk_cleaned_text"] = result.content
+
+return {
+    "chunk_cleaned_text": state["chunk_cleaned_text"],
+    "chunk_feedback_application_counter": state["chunk_feedback_application_counter"]
+}
+```
+
+10. 
 
 
-send_to_clean_node Takes chunks of text (stored in state['chunks_dict']) and prepares them to be sent for cleaning/processing
+What is chunks_dict ? 
+it's the initial dictionary that contains the file name as the key and the chunk number and chunk text as the values.
+        {
+            "file_name_1": {
+                "chunk_number_1": "chunk_text_1",
+                "chunk_number_2": "chunk_text_2",
+                "chunk_number_3": "chunk_text_3"
+            },
+            "file_name_2": {
+                "chunk_number_1": "chunk_text_1",
+                "chunk_number_2": "chunk_text_2",
+                "chunk_number_3": "chunk_text_3"
+            }
+        }
 
-I have to change this logic from sending each chunk with it's number to each file with the dictionnary of chunk number: chunk name
 
-
-instead of having subgraphs based on chunk number, we will have subgraphs based on file name.
+change the return statement to return a nested dictionary with the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value as in the example of nested dictionary.
