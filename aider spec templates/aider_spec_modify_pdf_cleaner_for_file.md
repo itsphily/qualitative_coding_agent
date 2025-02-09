@@ -17,6 +17,7 @@
 - Carefully review each low-level task for exact code changes
 - When creating or modifying a function for the graph, follow the convention shown in the example (node function example below).
 - always update the requirements.txt file when you update the dependencies
+- throughout these instructions I will refer to the nested dictionary, i have provided the example of the nested dictionary below.
 - Here are mandatory urls you need to consult before starting to code this project:
     - https://langchain-ai.github.io/langgraph/how-tos/
     - https://langchain-ai.github.io/langgraph/concepts/#langgraph-platform
@@ -250,20 +251,39 @@ return {nested_dict: state['cleaned_chunk_dict']}
 ```
 
 
-What is chunks_dict ? 
-it's the initial dictionary that contains the file name as the key and the chunk number and chunk text as the values.
-        {
-            "file_name_1": {
-                "chunk_number_1": "chunk_text_1",
-                "chunk_number_2": "chunk_text_2",
-                "chunk_number_3": "chunk_text_3"
-            },
-            "file_name_2": {
-                "chunk_number_1": "chunk_text_1",
-                "chunk_number_2": "chunk_text_2",
-                "chunk_number_3": "chunk_text_3"
-            }
-        }
+12. modify PDFToMarkdownState(TypedDict):
+```aider
+class PDFToMarkdownState(TypedDict):
+    extracted_text: str 
+    filepath: str 
+    cleaned_text: Dict[str, str]
+    chunks_dict: Dict[str, Dict[int, str]]
+    cleaned_chunk_dict: Annotated[Dict[str, Dict[int, str]], merge_dicts]
+    files_dict: Dict[str, str]
+    qa_loop_limit: int
+
+```
+
+13. Previously the compile_clean_text function's input was a dictionary with the chunk number as the keys and chunk text as the values, we need to modify it to be able to handle the new structure of the cleaned_chunk_dict (nested dictionary). Recall the nested dictionary is uses the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value.
+```aider
+in chunk_to_md.py, modify compile_clean_text(state: PDFToMarkdownState):
+ Modify the description to accurately reflect what this function does: """Combine cleaned chunks into the final cleaned text."""
+
+Modify the function to take the nested dictionary from state (state['cleaned_chunk_dict']) and itterate through it to compile the cleaned text. The text has to be grouped by file name, and the chunks have to be appended to each other in order of the chunk number.
+
+Modify the return statement to return the cleaned_text as a dictionary, with the file name as the key and the cleaned text as the value. You will need to correct this return statement: return {"cleaned_text": state['cleaned_text']}
+```
+
+14. Modify the save_final_markdown function to be able to first save the final markdown file, and second place the file in the appropriate folder.
+```aider
+in chunk_to_md.py, modify the save_final_markdown function:
+
+Create a new function that will itterate through the cleaned_text dictionary and retrieve the file name and the cleaned text. Use the file name to find the corresponding filepath in the files_dict. Pass the filepath and the cleaned text to the save_md function to save the markdown file.
+```
 
 
-change the return statement to return a nested dictionary with the file name as the key for the first tier, and the chunk number as the key for the second tier, and chunk text as the value as in the example of nested dictionary.
+15. remove PDFToMarkdownOutputState
+```aider
+remove class PDFToMarkdownOutputState(TypedDict):
+    cleaned_text: str
+```
