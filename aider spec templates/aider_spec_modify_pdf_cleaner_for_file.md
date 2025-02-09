@@ -72,10 +72,11 @@ def continue_to_jokes(state: OverallState):
 ```aider
 in chunk_state.py, class PDFToMarkdownState(TypedDict):
     filepath: str 
-    cleaned_text: Annotated[Dict[int, str], merge_dicts]
-    chunks_dict: Dict
+    cleaned_text: Annotated[Dict, merge_dicts]
+    chunks_dict: Dict[str, Dict[int, str]]
     cleaned_chunk_dict: Annotated[Dict[int, str], merge_dicts]
     qa_loop_limit: int
+    files_dict: Dict[str, str]
 """
 
 
@@ -96,19 +97,32 @@ Remove
         qa_loop_limit=qa_loop_limit
     )
 """
-
-
+Add  pdf_state = PDFToMarkdownInputState(
+        filepath=filepath,
+        qa_loop_limit=qa_loop_limit
+    )
+    The rest of the main function should be the same.
 ```
 
 
-
-1. Create a new function that will take the directory as the --filepath argument passed in the CLI and use the send api to send each file in the directory to the chunk_file_node
+MODIFY THIS FUNCTION and MERGE THIS FUNCTION WITH THE CHUNK FILE NODE FUNCTION, WILL NEED to CHANGE THE RETURN STATEMENT
+3. Create a new function that will take filepath argument form the PDFToMarkdownInputState and use the send api to send each file in the directory to the chunk_file_node
 ```aider
 in chunk_to_md.py, create function retrieve_files_in_directory(PDFToMarkdownState):
 
-    - use the send api to send each file in the directory to the chunk_file_node
+    - write a function that will look inside the directory at filepath, if there are subdirectories it will look inside all of them as well and retrieve all text files in the directory and its subdirectories.
     
+    append the text of the file and the name of the file to the files_dict dictionary, using the name of the file as the key and the text of the file as the value.
+
+    return [send "chunk_file_node", {"filepath": filepath} for filepath in files_dict.keys()]
 ```
+
+
+
+
+
+
+
 2. [Second task - what is the second task?]
 ```aider
 What prompt would you run to complete this task?
