@@ -9,7 +9,7 @@ load_dotenv()
 class PDFToMarkdownState(TypedDict):
     extracted_text: str 
     filepath: str 
-    cleaned_text: str 
+    cleaned_text: Dict[str, str]
     chunks_dict: Dict[str, Dict[int, str]]
     cleaned_chunk_dict: Annotated[Dict[str, Dict[int, str]], merge_dicts]
     files_dict: Dict[str, str]
@@ -24,15 +24,17 @@ class PDFToMarkdownOutputState(TypedDict):
     cleaned_text: str
 
 class ChunktoMarkdownInputState(TypedDict):
+    chunk_name: str
     chunk_number: int
     chunk_text: str
     qa_loop_limit: int
     chunk_feedback_application_counter: int
 
 class ChunktoMarkdownOutputState(TypedDict):
-    cleaned_chunk_dict: Dict
+    cleaned_chunk_dict: Dict[str, Dict[int, str]]
 
 # Merge input + output + optional internal keys
 class ChunktoMarkdownState(ChunktoMarkdownInputState, ChunktoMarkdownOutputState):
     chunk_qa_feedback: str
+    chunk_cleaned_text: str
 

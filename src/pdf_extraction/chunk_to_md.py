@@ -58,9 +58,11 @@ llm_json_mode.bind(response_format={"type": "json_object"})
 # Define functions for the chunk cleaner subgraph
 
 def restructure_chunk_node(state: ChunktoMarkdownInputState):
-    """Clean the chunk by reconstructing fragmented sentences, removing page labels, and identifying potential boilerplate."""
-    
-    logger.info(f"Cleaning chunk {state['chunk_number']} -- in progress")
+    """
+    Clean the chunk by reconstructing text.
+    Logs the file name, chunk number, and chunk text.
+    """
+    logger.info(f"Cleaning file {state['chunk_name']}, chunk {state['chunk_number']}")
     text_to_reformat_prompt_formatted = text_to_reformat_prompt.format(
         text_to_be_cleaned=state['chunk_text']
     )
@@ -68,27 +70,19 @@ def restructure_chunk_node(state: ChunktoMarkdownInputState):
         SystemMessage(content=restructure_text_prompt),
         HumanMessage(content=text_to_reformat_prompt_formatted)
     ])
-    # Log chunk number and word count
-    word_count = len(state['chunk_text'].split())
-    logger.info(f"Chunk {state['chunk_number']} word count: {word_count}")
-    
-    
-    if "cleaned_chunk_dict" not in state:
-        state["cleaned_chunk_dict"] = {}     
-
-    state["cleaned_chunk_dict"][state["chunk_number"]] = result.content
-
-    logger.info(f"Cleaning chunk {state['chunk_number']} -- done")
-    return {"cleaned_chunk_dict": state["cleaned_chunk_dict"]}
+    # Save cleaned text to new attribute
+    state["chunk_cleaned_text"] = result.content
+    return {"chunk_cleaned_text": state["chunk_cleaned_text"]}
 
 def get_qa_feedback(state: ChunktoMarkdownState):
-    """Provide QA feedback comparing the cleaned chunk to the original chunk."""
-    logger.info(f"QA feedback for chunk {state['chunk_number']} -- in progress")
+    """
+    Provide QA feedback comparing the original chunk to the cleaned chunk.
+    """
+    logger.info(f"QA feedback for file {state['chunk_name']}, chunk {state['chunk_number']} -- in progress")
     
     original_text = state["chunk_text"]
-    cleaned_text  = state["cleaned_chunk_dict"][state["chunk_number"]]
+    cleaned_text  = state["chunk_cleaned_text"]
     
-    # LLM call
     result = llm.invoke([
         SystemMessage(content=qa_feedback_prompt),
         HumanMessage(content=f"""
@@ -101,7 +95,7 @@ def get_qa_feedback(state: ChunktoMarkdownState):
     ])
     
     state['chunk_qa_feedback'] = result.content
-    logger.info(f"QA feedback for chunk {state['chunk_number']} -- done")
+    logger.info(f"QA feedback for file {state['chunk_name']}, chunk {state['chunk_number']} -- done")
     return {"chunk_qa_feedback": state['chunk_qa_feedback']}
 
 def apply_qa_feedback(state: ChunktoMarkdownState):
@@ -147,8 +141,14 @@ def continue_qa_feedback_node(state: ChunktoMarkdownState) -> Literal['qa_feedba
         return 'save_to_cleaned_chunks_dict_node'
 
 def save_to_cleaned_chunks_dict(state: ChunktoMarkdownState):
-    """Save the cleaned chunk text to the cleaned_chunks_dict."""
-    return {"£": state['cleaned_chunk_dict']}
+    """
+    Save the cleaned chunk text into a nested dictionary: {file_name: {chunk_number: chunk_cleaned_text}}.
+    """
+    # Retrieve current nested structure or create a new one
+    if "cleaned_chunk_dict" not in state:
+        state["cleaned_chunk_dict"] = {}
+    state["cleaned_chunk_dict"].setdefault(state["chunk_name"], {})[state["chunk_number"]] = state["chunk_cleaned_text"]
+    return {"cleaned_chunk_dict": state["cleaned_chunk_dict"]}
 
 # Build the chunk cleaner subgraph
 chunk_cleaner = StateGraph(ChunktoMarkdownState, input=ChunktoMarkdownInputState, output=ChunktoMarkdownOutputState)
@@ -199,17 +199,32 @@ def send_to_clean_node(state: PDFToMarkdownState):
     ]
 
 def compile_clean_text(state: PDFToMarkdownState):
-    """Combine cleaned chunks into the final cleaned text."""
-    sorted_chunks = [state['cleaned_chunk_dict'][key] for key in sorted(state['cleaned_chunk_dict'].keys())]
-    state['cleaned_text'] = '\n\n'.join(sorted_chunks)
+    """
+    Combine the cleaned chunks into the final cleaned texts.
+    For each file, concatenate its chunks (sorted by chunk number).
+    Store the result in state['cleaned_text'] as {file_name: compiled_text}
+    """
+    compiled = {}
+    for file_name, chunks in state['cleaned_chunk_dict'].items():
+        # Sort chunks by chunk number (assuming integer keys)
+        ordered_chunks = [chunks[num] for num in sorted(chunks)]
+        compiled[file_name] = "\n\n".join(ordered_chunks)
+    state['cleaned_text'] = compiled
     return {"cleaned_text": state['cleaned_text']}
 
 def save_final_markdown(state: PDFToMarkdownState):
-    """Save the cleaned text to the appropriate folder."""
-    logger.info("Saving final markdown...")
-    
-    save_md(state['filepath'], state['cleaned_text'])
-    logger.info("Final markdown saved.")
+    """
+    For each file in the cleaned_text dictionary, use its file name to retrieve the path
+    from state['files_dict'] and save the cleaned markdown using save_md.
+    """
+    for file_name, text in state['cleaned_text'].items():
+        # Retrieve original file path; you may adjust the logic if needed.
+        file_path = state['files_dict'].get(file_name)
+        if file_path:
+            save_md(file_path, text)
+            logger.info(f"Final markdown saved for {file_name} at {file_path}.")
+        else:
+            logger.error(f"File path not found for {file_name}.")
 
 # Build the main graph
 main_graph = StateGraph(PDFToMarkdownState, input=PDFToMarkdownInputState, output=PDFToMarkdownOutputState)
@@ -226,6 +241,22 @@ main_graph.add_edge('save_final_markdown', END)
 
 main_graph = main_graph.compile()
 
+def retrieve_files_in_directory(state: PDFToMarkdownState):
+    """
+    Recursively search the directory specified in state['filepath'] for text files (.md)
+    and store them in state['files_dict'] where the key is the file name and the value is its path.
+    """
+    import os
+    from glob import glob
+    directory = state["filepath"]
+    files = {}
+    for root, _, filenames in os.walk(directory):
+        for name in filenames:
+            if name.lower().endswith(".md"):
+                files[name] = os.path.join(root, name)
+    state["files_dict"] = files
+    return {"files_dict": state["files_dict"]}
+
 def main():
     parser = argparse.ArgumentParser(description='Process PDF to Markdown with chunking.')
     parser.add_argument('--filepath', type=str, required=True, help='Path to the extracted text file.')
@@ -235,14 +266,7 @@ def main():
     filepath = args.filepath
     qa_loop_limit = args.qa_loop_limit
 
-    logger.info(f"Starting processing of file: {filepath}")
-    logger.info(f"QA loop limit set to: {qa_loop_limit}")
-
-    with open(filepath, "r", encoding="utf-8") as f:
-        extracted_text = f.read()
-
     pdf_state = PDFToMarkdownInputState(
-        extracted_text=extracted_text,
         filepath=filepath,
         qa_loop_limit=qa_loop_limit
     )
