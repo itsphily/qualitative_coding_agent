@@ -6,16 +6,11 @@ import os
 from dotenv import load_dotenv
 import getpass
 from langchain_openai import OpenAIEmbeddings
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import Chroma
 from uuid import uuid4
 from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import Chroma
 
-
-
-folder_path = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/final_markdown_files/01_GiveDirectly"
-folder = folder_path.split("/")[-1]
 # Load environment variables from .env file
 load_dotenv()
 
@@ -23,19 +18,6 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 if not OPENAI_API_KEY:
     raise ValueError("OPENAI_API_KEY not found in .env file")
-
-embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
-
-text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-    chunk_size=1000, chunk_overlap=200
-)
-
-vector_store = Chroma.from_documents(
-    documents=doc_splits,
-    collection_name="vector_store{}".format(folder),
-    embedding_function=embeddings,
-    persist_directory="./chroma_langchain_db",  # Where to save data locally, remove if not necessary
-)
 
 def get_markdown_filepaths(base_directory):
     """
@@ -150,9 +132,58 @@ def write_structure_to_file(base_directory, output_file):
     """
     print_organized_documents(base_directory, output_file)
 
+def process_documents(folder_path):
+    """
+    Process documents from a folder and create a vector store.
+    
+    Args:
+        folder_path (str): Path to the folder containing markdown files
+    """
+    folder = folder_path.split("/")[-1]
+    
+    # Initialize embeddings
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+    
+    # Initialize text splitter
+    text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+        chunk_size=1000, chunk_overlap=200
+    )
+    
+    # Load and process documents
+    all_docs = []
+    md_files = list(Path(folder_path).rglob("*.md"))
+    for file_path in md_files:
+        with open(file_path, "r", encoding="utf-8") as f:
+            text = f.read()
+        all_docs.append(Document(page_content=text, metadata={"source": str(file_path)}))
+    
+    # Split documents
+    doc_splits = text_splitter.split_documents(all_docs)
+    
+    # Create persist directory if it doesn't exist
+    persist_dir = "./chroma_db"
+    os.makedirs(persist_dir, exist_ok=True)
+    
+    # Initialize and persist Chroma store
+    vector_store = Chroma.from_documents(
+        documents=doc_splits,
+        embedding=embeddings,
+        persist_directory=persist_dir,
+        collection_name=f"vector_store_{folder}"
+    )
+    
+    # Create retriever
+    retriever = vector_store.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 5}
+    )
+    
+    return retriever
+
 if __name__ == "__main__":
     # Example usage with the specified directory
     base_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/final_markdown_files"
+    folder_path = f"{base_dir}/01_GiveDirectly"
     
     # Get documents organized by main directory
     docs_by_directory = get_documents_by_main_directory(base_dir)
@@ -164,3 +195,15 @@ if __name__ == "__main__":
         print("Files:")
         for file in files:
             print(f"  - {file}")
+    
+    # Process documents and create retriever
+    retriever = process_documents(folder_path)
+    
+    # Test the retriever
+    question = "how to estimate the ROI from cash transfers"
+    retrieved_docs = retriever.get_relevant_documents(question)
+    
+    print(f"\nNumber of retrieved texts: {len(retrieved_docs)}\n")
+    for i, doc in enumerate(retrieved_docs, start=1):
+        print(f"Document {i}:\n{doc.page_content}\n{'-' * 40}\n")
+
