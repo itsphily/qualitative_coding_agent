@@ -59,7 +59,7 @@ llm_o3 = ChatOpenAI(
 
 # Define functions for the chunk cleaner subgraph
 
-def restructure_chunk_node(state: ChunktoMarkdownInputState):
+def restructure_chunk_node(state: ChunktoMarkdownInputState) -> ChunktoMarkdownState:
     """
     Clean the chunk by reconstructing text.
     Logs the file name, chunk number, and chunk text.
@@ -149,8 +149,13 @@ def save_to_cleaned_chunks_dict(state: ChunktoMarkdownState) -> ChunktoMarkdownO
     # Retrieve current nested structure or create a new one
     if "cleaned_chunk_dict" not in state:
         state["cleaned_chunk_dict"] = {}
-    state["cleaned_chunk_dict"].setdefault(state["chunk_name"], {})[state["chunk_number"]] = state["chunk_cleaned_text"]
-    return {"cleaned_chunk_dict": state["cleaned_chunk_dict"]}
+    return {
+        "cleaned_chunk_dict": {
+            state["chunk_name"]: {
+                state["chunk_number"]: state["chunk_cleaned_text"]
+            }
+        }
+    }
 
 # Build the chunk cleaner subgraph
 chunk_cleaner = StateGraph(ChunktoMarkdownState, input=ChunktoMarkdownInputState, output=ChunktoMarkdownOutputState)
