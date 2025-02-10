@@ -38,7 +38,9 @@ from coding_state_new import (
     CodingAgentState,
     CodingAgentOutputState,
     InvokePromptPerCodeState,
-    StructuredOutputPerCode
+    StructuredOutputPerCode,
+    CodingAgentInputState,
+    InvokePromptOutputState
 )
 from coding_utils import (
     path_to_text,
@@ -106,20 +108,19 @@ llm_o3_with_tools = llm_o3_with_tools.bind_tools(tools, tool_choice="any")
 llm_o3_with_structured_output = llm_o3_with_tools.with_structured_output(StructuredOutputPerCode)
 
 
-def fill_info_prompt(state: CodingAgentState):
+def fill_info_prompt(state: CodingAgentInputState):
     """
     This function takes the generic prompt header and fills it with the research question.
     """
-    code_and_research_question_prompt_variable = combine_code_and_research_question_prompt.format(
-        research_question=state['research_question']
-    )
-    return {"code_and_research_question_prompt_variable": code_and_research_question_prompt_variable}
 
-def continue_to_invoke_subgraph_research_question(state: CodingAgentState):
+def continue_to_invoke_subgraph_research_question(state: CodingAgentInputState) -> CodingAgentState:
     """
     This function sends the formatted prompt to the subgraph to invoke the prompt per code per document.
     """
-    code_and_research_question_prompt_variable = state['code_and_research_question_prompt_variable']
+
+    code_and_research_question_prompt_variable = combine_code_and_research_question_prompt.format(
+        research_question=state['research_question']
+    )
 
     return [
         Send(
@@ -180,7 +181,7 @@ def continue_invoke_research_question(state: InvokePromptState):
         for d in doc_path_list
     ]
 
-def invoke_prompt(state:InvokePromptPerCodeState):
+def invoke_prompt(state:InvokePromptPerCodeState) -> InvokePromptOutputState:
     """
     This function invokes the LLM with the prepared prompt for each document.
     """
@@ -226,7 +227,7 @@ def invoke_prompt(state:InvokePromptPerCodeState):
 
 
 
-def output_to_markdown(state: CodingAgentState) -> CodingAgentOutputState:
+def output_to_markdown(state: CodingAgentState):
     """
     This function generates the markdown output from the collected results.
     """
@@ -237,7 +238,7 @@ def output_to_markdown(state: CodingAgentState) -> CodingAgentOutputState:
     return {"markdown_output": markdown_doc}
 
 # Define the subgraph
-invoke_subgraph = StateGraph(InvokePromptState, input=InvokePromptInputState)
+invoke_subgraph = StateGraph(InvokePromptState, input=InvokePromptInputState, output=InvokePromptOutputState)
 invoke_subgraph.add_node("combine_code_and_research_question_prompt_node", combine_code_and_research_question_function)
 invoke_subgraph.add_node("invoke_research_question_prompt_node", invoke_prompt)
 
@@ -251,7 +252,7 @@ invoke_subgraph.add_edge("invoke_research_question_prompt_node", END)
 
 
 # Define the main graph
-main_graph = StateGraph(CodingAgentState, output=CodingAgentOutputState)
+main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState, output=CodingAgentOutputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
 main_graph.add_node('output_to_markdown_node', output_to_markdown)
@@ -272,10 +273,11 @@ def main():
     # Hardcode the CodingAgentInputState
     charity_id = 'GiveDirectly'
     charity_overview = "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'."
-    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly"
+    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly_short"
     research_question = "What operational processes enable charities to be cost effective?"
     code_list = [
-        "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location."
+        "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.",
+        "Pre-intervention data collection: Collecting information about the charitable cause before implementing the charity’s intervention."
     ]
 
     input_state = {

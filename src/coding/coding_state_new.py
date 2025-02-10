@@ -5,17 +5,22 @@ from typing_extensions import Annotated
 from langchain_core.tools import tool
 from coding_utils import merge_lists
 
-class CodingAgentState(TypedDict):
+class CodingAgentInputState(TypedDict):
     charity_id: str
     charity_directory: str
     research_question: str
     code_list: List[str]
-    code_and_research_question_prompt_variable: str
     prompt_per_code_results: Annotated[list, merge_lists]
-    unprocessed_documents: Annotated[list, merge_lists]  # ADD THIS LINE
+    unprocessed_documents: Annotated[list, merge_lists] 
+
+class CodingAgentState(TypedDict):
+    prompt_per_code_results: Annotated[list, merge_lists]
+    unprocessed_documents: Annotated[list, merge_lists] 
 
 class CodingAgentOutputState(TypedDict):
     markdown_output: str
+    prompt_per_code_results: Annotated[list, merge_lists]
+    unprocessed_documents: Annotated[list, merge_lists] 
 
 class InvokePromptInputState(TypedDict):
     code_and_research_question_prompt_variable: str
@@ -31,6 +36,9 @@ class InvokePromptState(TypedDict):
     research_question_with_code: str
     prompt_per_code_results: Annotated[list, merge_lists]
 
+class InvokePromptOutputState(TypedDict):
+    prompt_per_code_results: Annotated[list, merge_lists]
+
 class InvokePromptPerCodeState(TypedDict):
     prompt_per_code:str
     code:str
@@ -39,18 +47,6 @@ class InvokePromptPerCodeState(TypedDict):
     doc_path:str
     doc_text:str
     invoke_results: Annotated[any, operator.add]
-
-class InvokePromptOutputState(TypedDict):
-    code: str
-    charity_id: str
-    quote: str
-    reasoning: str
-
-class StructuredOutputPerCode(BaseModel):
-    quote: str = Field(description="The quote that was extracted from the document")
-    reasoning: str = Field(description="The reasoning that was used to extract the information")
-    document_importance: str = Field(description="The importance of the document to the research question, either 'important to read', 'worth reading', or 'not worth reading")
-
 
 class QuoteReasoningPair(BaseModel):
     quote: str = Field(..., description="The quote that was extracted from the document")
