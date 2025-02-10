@@ -47,12 +47,21 @@ Thumbs.db
 
 # Project specific
 storage/
+storage/**/*
 .aider*
 outputs/
-outputs/*
+outputs/**/*
 src/final_markdown_files/
-src/final_markdown_files/*
+src/final_markdown_files/**/*
 debug/
-debug/*
+debug/**/*
 final_markdown_files/
-final_markdown_files/*
+final_markdown_files/**/*
+debug_cleaner/
+debug_cleaner/**/*
+
+# Logs
+*.log
+
+# Large files
+*.pdf
