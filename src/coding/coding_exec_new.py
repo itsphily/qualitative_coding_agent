@@ -8,6 +8,7 @@ from langgraph.constants import Send
 import json
 import logging
 from datetime import datetime
+from langgraph.checkpoint.memory import MemorySaver
 
 # Create debug directory if it doesn't exist
 debug_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/debug"
@@ -62,35 +63,8 @@ from langgraph.prebuilt import ToolNode
 # Load environment variables from .env file
 load_dotenv()
 
-model = "deepseek-reasoner"
 tools = [StructuredOutputPerCode]
 model_openai = "o3-mini"
-
-# initialize the LLM
-llm = ChatOpenAI(
-    model=model,
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url="https://api.deepseek.com/v1",
-    temperature=0.0
-)
-# This is the LLM with JSON mode
-llm_json_mode = ChatOpenAI(
-    model=model,
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url="https://api.deepseek.com/v1",
-    temperature=0.0
-)
-
-# This is the LLM with tools
-llm_with_tools = ChatOpenAI(
-    model=model,
-    api_key=os.getenv("DEEPSEEK_API_KEY"),
-    base_url="https://api.deepseek.com/v1",
-    temperature=0.0
-)
-
-llm_with_tools = llm_with_tools.with_structured_output(StructuredOutputPerCode)
-
 
 llm_o3 = ChatOpenAI(
     model = model_openai,
@@ -287,7 +261,8 @@ main_graph.add_conditional_edges(
 main_graph.add_edge('invoke_subgraph_node', 'output_to_markdown_node')
 main_graph.add_edge('output_to_markdown_node', END)
 
-main_graph = main_graph.compile()
+checkpointer = MemorySaver()
+main_graph = main_graph.compile(checkpointer=checkpointer)
 
 
 def main():
@@ -310,11 +285,19 @@ def main():
         'code_list': code_list  # Replace with actual code list
     }
 
+    # set the thread id to be able to retrieve the final state
+    config = {"configurable": {"thread_id": "1"}}
 
     # Visualize the graph
     visualize_graph(main_graph, "coding_graph")
     # Run the main graph
-    main_graph.invoke(input_state)
+    main_graph.invoke(input_state, config = config)
+
+    # retrieve the final state 
+    final_state = main_graph.get_state(config)
+    final_state_dict = dict(zip(['markdown_output', 'prompt_per_code_results', 'unprocessed_documents'], final_state))
+    print(final_state_dict["markdown_output"])
+
 
 
 
