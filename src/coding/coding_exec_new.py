@@ -70,27 +70,34 @@ from langgraph.prebuilt import ToolNode
 # Load environment variables from .env file
 load_dotenv()
 
-tools = [StructuredOutputPerCode]
+# Define model and tools
 model_openai = "o3-mini"
+tools = [StructuredOutputPerCode]
+tools_qa = [QAStructuredOutputPerCode]
 
+# Base LLM without tools
 llm_o3 = ChatOpenAI(
-    model = model_openai,
+    model=model_openai,
     reasoning_effort="high"
 )
 
+# LLM with tools for coding agent
 llm_o3_with_tools = ChatOpenAI(
-    model= model_openai,
+    model=model_openai, 
     reasoning_effort="high"
-)
+).bind_tools(tools, tool_choice="any")
 
+llm_o3_with_structured_output = llm_o3_with_tools.with_structured_output(StructuredOutputPerCode, 
+                                                                         method="function_calling")
 
-llm_o3_with_tools = llm_o3_with_tools.bind_tools(tools, tool_choice="any")
+# LLM with tools for QA agent
+llm_o3_with_tools_qa = ChatOpenAI(
+    model=model_openai,
+    reasoning_effort="high"
+).bind_tools(tools_qa, tool_choice="any")
 
-# structured output for the coding agent
-llm_o3_with_structured_output = llm_o3_with_tools.with_structured_output(StructuredOutputPerCode)
-
-# structured output for the qa agent
-llm_o3_with_structured_output_qa = llm_o3_with_tools.with_structured_output(QAStructuredOutputPerCode)
+llm_o3_with_structured_output_qa = llm_o3_with_tools_qa.with_structured_output(QAStructuredOutputPerCode,
+                                                                               method="function_calling")
 
 
 def fill_info_prompt(state: CodingAgentInputState):

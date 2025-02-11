@@ -96,7 +96,7 @@ class QAValuePerCode(BaseModel):
     )
 
 class QAStructuredOutputPerCode(BaseModel):
-    output: dict[int, QAValuePerCode] = Field(
+    qa_results: dict[int, QAValuePerCode] = Field(
         ...,
         description=(
             "Dictionary mapping integer indices to QA values per code. Each QAValuePerCode contains: "
