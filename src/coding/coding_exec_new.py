@@ -227,15 +227,36 @@ def invoke_prompt(state:InvokePromptPerCodeState) -> InvokePromptOutputState:
 
 
 
+def qa_quote_reasoning_pairs(state: CodingAgentState):
+    """
+    This function sends the quote-reasoning pairs to the LLM to evaluate whether they are relevant to the research question.
+    """
+    
+
+    
+
 def output_to_markdown(state: CodingAgentState):
     """
-    This function generates the markdown output from the collected results.
+    This function generates the markdown output from the collected results and saves separate files for each code.
     """
-    markdown_doc = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
-    # Save the output to a markdown file
-    save_final_markdown('final_output.md', markdown_doc)
+    markdown_output = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
     
-    return {"markdown_output": markdown_doc}
+    # Save separate files for each code
+    for code, markdown_content in markdown_output.items():
+        # Get first two words of the code for the filename
+        code_words = code.split()[:2]
+        code_first_2 = '_'.join(code_words).lower()
+        # Replace any special characters that might cause issues in filenames
+        code_first_2 = ''.join(c if c.isalnum() or c == '_' else '_' for c in code_first_2)
+        
+        # Save the markdown content to a separate file
+        filename = f'final_output_{code_first_2}.md'
+        save_final_markdown(filename, markdown_content)
+    
+    return {"markdown_output": markdown_output}
+
+
+
 
 # Define the subgraph
 invoke_subgraph = StateGraph(InvokePromptState, input=InvokePromptInputState, output=InvokePromptOutputState)
@@ -277,7 +298,7 @@ def main():
     research_question = "What operational processes enable charities to be cost effective?"
     code_list = [
         "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.",
-        "Pre-intervention data collection: Collecting information about the charitable cause before implementing the charity’s intervention."
+        "Pre-intervention data collection: Collecting information about the charitable cause before implementing the charity's intervention."
     ]
 
     input_state = {

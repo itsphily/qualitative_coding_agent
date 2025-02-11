@@ -39,38 +39,47 @@ def merge_lists(list_a: list, list_b: list) -> list:
 
 def generate_markdown(documents, unprocessed_documents):
     """
-    Generate a Markdown string with three sections:
-    1) Document Evidence: Grouped by code (#), charity_id (##), and doc_name - document_importance (###) with the list of quote–reasoning pairs.
+    Generate a dictionary of Markdown strings, one for each code.
+    Each markdown string has three sections:
+    1) Document Evidence: Grouped by charity_id (##), and doc_name - document_importance (###) with the list of quote–reasoning pairs.
        Only includes documents that have quote-reasoning pairs.
     2) Important Documents: Under a fixed title "Important documents" with document_importance (##) and list of document names.
     3) Unprocessed Documents: Under a fixed title "Unprocessed documents" with a list of document names.
+    
+    Returns:
+        dict[str, str]: A dictionary where keys are codes and values are markdown formatted strings
     """
-    markdown_sections = []
-
-    # Section 1: Document Evidence
-    evidence_lines = []
-    # Group by code -> charity_id -> doc_name with document importance (displayed next to doc_name)
-    grouped = {}
+    # Group documents by code first
+    docs_by_code = {}
     for doc in documents:
-        # Skip documents without quote-reasoning pairs
         if not doc["quote"] or not doc["reasoning"]:
             continue
-            
         code = doc["code"]
-        charity_id = doc["charity_id"]
-        key = (code, charity_id)
-        if key not in grouped:
-            grouped[key] = {}
-        # Each doc_name with its document importance and a list of quote-reasoning pairs
-        doc_key = f'{doc["doc_name"]} - {doc["document_importance"]}'
-        if doc_key not in grouped[key]:
-            grouped[key][doc_key] = []
-        grouped[key][doc_key].append((doc["quote"], doc["reasoning"]))
+        if code not in docs_by_code:
+            docs_by_code[code] = []
+        docs_by_code[code].append(doc)
 
-    # Only add section 1 if there are documents with quote-reasoning pairs
-    if grouped:
-        for (code, charity_id), docs in grouped.items():
-            evidence_lines.append(f"# {code}")
+    markdown_output = {}
+    
+    for code, code_documents in docs_by_code.items():
+        markdown_sections = []
+        
+        # Section 1: Document Evidence
+        evidence_lines = []
+        # Group by charity_id -> doc_name with document importance
+        grouped = {}
+        for doc in code_documents:
+            charity_id = doc["charity_id"]
+            if charity_id not in grouped:
+                grouped[charity_id] = {}
+            # Each doc_name with its document importance and a list of quote-reasoning pairs
+            doc_key = f'{doc["doc_name"]} - {doc["document_importance"]}'
+            if doc_key not in grouped[charity_id]:
+                grouped[charity_id][doc_key] = []
+            grouped[charity_id][doc_key].append((doc["quote"], doc["reasoning"]))
+
+        # Generate evidence section
+        for charity_id, docs in grouped.items():
             evidence_lines.append(f"## {charity_id}")
             for doc_key, pairs in docs.items():
                 evidence_lines.append(f"### {doc_key}")
@@ -89,34 +98,37 @@ def generate_markdown(documents, unprocessed_documents):
                 evidence_lines.append("")  # Add extra blank line between documents
             evidence_lines.append("")  # Blank line after each charity group
 
-        markdown_sections.append("\n".join(evidence_lines))
+        if evidence_lines:
+            markdown_sections.append("\n".join(evidence_lines))
 
-    # Section 2: Important Documents
-    important_docs = {}
-    for doc in documents:
-        imp = doc["document_importance"]
-        if imp not in important_docs:
-            important_docs[imp] = set()
-        important_docs[imp].add(doc["doc_name"])
-    # Order the importance categories as specified.
-    importance_order = ["important to read", "worth reading", "not worth reading"]
-    important_lines = ["# Important documents"]
-    for imp in importance_order:
-        if imp in important_docs:
-            important_lines.append(f"## {imp}")
-            for doc_name in sorted(important_docs[imp]):
-                important_lines.append(f"- {doc_name}")
-    markdown_sections.append("\n".join(important_lines))
+        # Section 2: Important Documents for this code
+        important_docs = {}
+        for doc in code_documents:
+            imp = doc["document_importance"]
+            if imp not in important_docs:
+                important_docs[imp] = set()
+            important_docs[imp].add(doc["doc_name"])
+        
+        # Order the importance categories as specified
+        importance_order = ["important to read", "worth reading", "not worth reading"]
+        important_lines = ["# Important documents"]
+        for imp in importance_order:
+            if imp in important_docs:
+                important_lines.append(f"## {imp}")
+                for doc_name in sorted(important_docs[imp]):
+                    important_lines.append(f"- {doc_name}")
+        markdown_sections.append("\n".join(important_lines))
 
-    # Section 3: Unprocessed Documents
-    unprocessed_lines = ["# Unprocessed documents"]
-    for doc_name in unprocessed_documents:
-        unprocessed_lines.append(f"- {doc_name}")
-    markdown_sections.append("\n".join(unprocessed_lines))
+        # Section 3: Unprocessed Documents
+        unprocessed_lines = ["# Unprocessed documents"]
+        for doc_name in unprocessed_documents:
+            unprocessed_lines.append(f"- {doc_name}")
+        markdown_sections.append("\n".join(unprocessed_lines))
 
-    # Join sections with a separator line.
-    markdown_doc = ("\n\n----\n\n").join(markdown_sections)
-    return markdown_doc
+        # Join sections with a separator line and store in output dict
+        markdown_output[code] = ("\n\n----\n\n").join(markdown_sections)
+
+    return markdown_output
 
 def save_final_markdown(filepath: str, cleaned_text: str):
     """

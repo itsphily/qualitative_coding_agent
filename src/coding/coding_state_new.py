@@ -14,11 +14,12 @@ class CodingAgentInputState(TypedDict):
     unprocessed_documents: Annotated[list, merge_lists] 
 
 class CodingAgentState(TypedDict):
+    markdown_output: dict[str, str]
     prompt_per_code_results: Annotated[list, merge_lists]
     unprocessed_documents: Annotated[list, merge_lists] 
 
 class CodingAgentOutputState(TypedDict):
-    markdown_output: str
+    markdown_output: dict[str, str]
     prompt_per_code_results: Annotated[list, merge_lists]
     unprocessed_documents: Annotated[list, merge_lists] 
 
