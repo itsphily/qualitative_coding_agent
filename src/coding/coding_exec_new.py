@@ -50,7 +50,8 @@ from coding_utils import (
     visualize_graph,
     save_final_markdown,
     path_to_doc_name,
-    generate_markdown
+    generate_markdown, 
+    format_results_to_json
 )
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import (
@@ -58,7 +59,8 @@ from coding_prompt import (
     coding_agent_prompt,
     text_to_code_prompt,
     coding_agent_prompt_footer,
-    quality_control_prompt
+    quality_control_prompt,
+    quote_reasoning_pairs_prompt
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -214,15 +216,15 @@ def qa_quote_reasoning_pairs(state: CodingAgentState, config):
     """
     research_question = config["configurable"].get("research_question")
 
-    system_message = SystemMessage(content=state['prompt_per_code'])
-    human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
-    data_list = []
-    unprocessed_documents = []    
+    # Convert results to JSON string
+    json_quote_reasoning_pairs_string = format_results_to_json(state['prompt_per_code_results'])
+
+    system_message = SystemMessage(content=quality_control_prompt.format(research_question=research_question))
+    human_message = HumanMessage(content=quote_reasoning_pairs_prompt.format(text=json_quote_reasoning_pairs_string))
     
     result = llm_o3_with_structured_output_qa.invoke([system_message, human_message])
 
-    print(research_question)
-    
+    print(result)
 
     
 

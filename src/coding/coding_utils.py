@@ -1,6 +1,7 @@
 import os
 from collections import defaultdict
 from langchain_core.runnables.graph import MermaidDrawMethod
+import json
 
 def path_to_text(path):
     """
@@ -136,3 +137,30 @@ def save_final_markdown(filepath: str, cleaned_text: str):
     """
     with open(filepath, 'w', encoding='utf-8') as file:
         file.write(cleaned_text)
+
+
+def format_results_to_json(prompt_per_code_results: list) -> str:
+    """
+    Convert prompt_per_code_results into a formatted JSON string.
+    
+    Args:
+        prompt_per_code_results (list): List of dictionaries containing coding results
+        
+    Returns:
+        str: Formatted JSON string with proper indentation
+    """
+
+    
+    formatted_results = []
+    for item in prompt_per_code_results:
+        formatted_item = {
+            "charity_id": item["charity_id"],
+            "code": item["code"],
+            "doc_name": item["doc_name"],
+            "document_importance": item["document_importance"],
+            "quote": item["quote"] if item["quote"] else "Empty string",
+            "reasoning": item["reasoning"] if item["reasoning"] else "Empty string"
+        }
+        formatted_results.append(formatted_item)
+    
+    return json.dumps(formatted_results, indent=2)

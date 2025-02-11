@@ -209,5 +209,6 @@ __all__ = [
     'text_to_code_prompt',
     'combine_code_and_research_question_prompt',
     'coding_agent_prompt',
-    'quality_control_prompt'
+    'quality_control_prompt',
+    'quote_reasoning_pairs_prompt'
 ]
