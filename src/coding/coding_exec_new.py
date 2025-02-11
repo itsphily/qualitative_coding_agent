@@ -41,7 +41,9 @@ from coding_state_new import (
     InvokePromptPerCodeState,
     StructuredOutputPerCode,
     CodingAgentInputState,
-    InvokePromptOutputState
+    InvokePromptOutputState,
+    QAStructuredOutputPerCode,
+    QAValuePerCode
 )
 from coding_utils import (
     path_to_text,
@@ -55,7 +57,8 @@ from coding_prompt import (
     combine_code_and_research_question_prompt,
     coding_agent_prompt,
     text_to_code_prompt,
-    coding_agent_prompt_footer
+    coding_agent_prompt_footer,
+    quality_control_prompt
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -79,7 +82,11 @@ llm_o3_with_tools = ChatOpenAI(
 
 llm_o3_with_tools = llm_o3_with_tools.bind_tools(tools, tool_choice="any")
 
+# structured output for the coding agent
 llm_o3_with_structured_output = llm_o3_with_tools.with_structured_output(StructuredOutputPerCode)
+
+# structured output for the qa agent
+llm_o3_with_structured_output_qa = llm_o3_with_tools.with_structured_output(QAStructuredOutputPerCode)
 
 
 def fill_info_prompt(state: CodingAgentInputState):
@@ -201,10 +208,20 @@ def invoke_prompt(state:InvokePromptPerCodeState) -> InvokePromptOutputState:
 
 
 
-def qa_quote_reasoning_pairs(state: CodingAgentState):
+def qa_quote_reasoning_pairs(state: CodingAgentState, config):
     """
     This function sends the quote-reasoning pairs to the LLM to evaluate whether they are relevant to the research question.
     """
+    research_question = config["configurable"].get("research_question")
+
+    system_message = SystemMessage(content=state['prompt_per_code'])
+    human_message = HumanMessage(content=text_to_code_prompt.format(text=state['doc_text']))
+    data_list = []
+    unprocessed_documents = []    
+    
+    result = llm_o3_with_structured_output_qa.invoke([system_message, human_message])
+
+    print(research_question)
     
 
     
@@ -230,8 +247,6 @@ def output_to_markdown(state: CodingAgentState):
     return {"markdown_output": markdown_output}
 
 
-
-
 # Define the subgraph
 invoke_subgraph = StateGraph(InvokePromptState, input=InvokePromptInputState, output=InvokePromptOutputState)
 invoke_subgraph.add_node("combine_code_and_research_question_prompt_node", combine_code_and_research_question_function)
@@ -245,13 +260,12 @@ invoke_subgraph.add_conditional_edges(
 )
 invoke_subgraph.add_edge("invoke_research_question_prompt_node", END)
 
-
 # Define the main graph
 main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState, output=CodingAgentOutputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
 main_graph.add_node('output_to_markdown_node', output_to_markdown)
-
+main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
 main_graph.add_edge(START, 'fill_info_prompt_node')
 main_graph.add_conditional_edges(
     'fill_info_prompt_node',
@@ -259,7 +273,8 @@ main_graph.add_conditional_edges(
     ['invoke_subgraph_node']
 )
 main_graph.add_edge('invoke_subgraph_node', 'output_to_markdown_node')
-main_graph.add_edge('output_to_markdown_node', END)
+main_graph.add_edge('output_to_markdown_node', 'qa_quote_reasoning_pairs_node')
+main_graph.add_edge('qa_quote_reasoning_pairs_node', END)
 
 checkpointer = MemorySaver()
 main_graph = main_graph.compile(checkpointer=checkpointer)
@@ -285,8 +300,9 @@ def main():
         'code_list': code_list  # Replace with actual code list
     }
 
-    # set the thread id to be able to retrieve the final state
-    config = {"configurable": {"thread_id": "1"}}
+    # Define the config that includes the research question
+    config = {"configurable": {"thread_id": "1", 
+                            "research_question": "What operational processes enable charities to be cost effective?"}}
 
     # Visualize the graph
     visualize_graph(main_graph, "coding_graph")
@@ -296,7 +312,6 @@ def main():
     # retrieve the final state 
     final_state = main_graph.get_state(config)
     final_state_dict = dict(zip(['markdown_output', 'prompt_per_code_results', 'unprocessed_documents'], final_state))
-    print(final_state_dict["markdown_output"])
 
 
 
