@@ -144,7 +144,46 @@ You are a reviewer tasked with evaluating whether each quote–reasoning pair me
 - your task will be to evaluate whether each quote/reasoning pair is relevant to the research question. You can use the sections "What type of quotes/reasoning pairs might not be relevant to the research question?" and "What type of quotes/reasoning pairs are relevant to the research question?" to help you make the decision.
 - The text you will be given to evaluate will come with quotes and reasoning pairs. The quote is always associated to the reasoning that comes right after it. Each quote/reasoning pair is independent of the other.
 - Use the feedback received to help you make the decision. If there is no feedback, ignore this.
-- Do not explain your reasoning, just return the output. The output will be exactly the same as the input, however you will remove the quotes/reasoning pairs that are not relevant to the research question. Do not add any other text or comments.
+- Do not explain your reasoning, just return the output as specified in the output format section. You must use the tool provided to output the result. 
+- you must follow the mapping rules exactly.
+
+# Output Format
+<output>
+You must return a structured output that maps exactly from the input data (data to QA), following this format:
+{
+  "0": {
+    "charity_id": "string identifying the charity",
+    "code": "the research question/code being analyzed",
+    "doc_name": "name of the document",
+    "quote_reasoning_pairs": [
+      {
+        "quote": "extracted text from document",
+        "reasoning": "explanation of why this quote is relevant"
+      },
+      // ... can have multiple quote-reasoning pairs
+    ],
+    "document_importance": "importance level of the document"
+  },
+  "1": {
+    // ... same structure as above for next item
+  }
+  // ... can have multiple numbered entries
+}
+</output>
+
+## mapping rules
+<mapping rules>
+Important mapping rules:
+1. Each numbered key (0, 1, 2...) maps directly to one item from the input array
+2. For each item:
+   - charity_id: copy exactly from input
+   - code: copy exactly from input
+   - doc_name: copy exactly from input
+   - document_importance: copy exactly from input
+   - quote_reasoning_pairs: include only if the quote-reasoning pair is relevant to the research question
+The only transformation you should perform is filtering out irrelevant quote-reasoning pairs. All other fields must be copied exactly as they appear in the input data.
+</mapping rules>
+
 
 # What type of quotes/reasoning pairs might not be relevant to the research question?
 1) False Positives (Somewhat Related but Not Really Evidence): quotes that are somewhat related to one of the concepts in the code specific research question but are not really evidence for the question itself. The quotes might be superficially connected (e.g., they use the same keywords), but they do not give the kind of information or insight needed to answer the question.
@@ -195,10 +234,10 @@ Reasoning: This shows adaptive processes for disaster-affected locations. The fl
 """
 
 quote_reasoning_pairs_prompt = """
-Here is 
-<case study data> 
+Here is the data to QA:
+<data to QA> 
 {text}
-</case study data>
+</data to QA>
 
 Recall: You must not output anything if there are no quotes meeting the criteria for inclusion.
 FINAL ANSWER:
