@@ -67,3 +67,43 @@ class StructuredOutputPerCode(BaseModel):
         ...,
         description="The importance of the document to the research question, either 'important to read', 'worth reading', or 'not worth reading'"
     )
+
+class QAValuePerCode(BaseModel):
+    charity_id: str = Field(
+        ...,
+        description="The ID of the charity"
+    )
+    code: str = Field(
+        ...,
+        description="The research question"
+    )
+    doc_name: str = Field(
+        ...,
+        description="The name of the document"
+    )
+    quote_reasoning_pairs: List[QuoteReasoningPair] = Field(
+        ...,
+        description=(
+            "A list of quote–reasoning pairs. "
+            "If the AI finds one pair, this list will have one element: [(Quote, reasoning)]. "
+            "If it finds three pairs, the list will have three elements: "
+            "[(Quote#1, reasoning#1), (Quote#2, reasoning#2), (Quote#3, reasoning#3)]."
+        )
+    )
+    document_importance: str = Field(
+        ...,
+        description="The importance of the document will have already been set you '"
+    )
+
+class QAStructuredOutputPerCode(BaseModel):
+    output: dict[int, QAValuePerCode] = Field(
+        ...,
+        description=(
+            "Dictionary mapping integer indices to QA values per code. Each QAValuePerCode contains: "
+            "charity_id (str): The ID of the charity, "
+            "code (str): The research question, "
+            "doc_name (str): The name of the document, "
+            "quote_reasoning_pairs (List[QuoteReasoningPair]): List of quote-reasoning pairs, "
+            "document_importance (str): The importance level of the document"
+        )
+    )

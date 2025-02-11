@@ -60,7 +60,9 @@ from coding_prompt import (
     text_to_code_prompt,
     coding_agent_prompt_footer,
     quality_control_prompt,
-    quote_reasoning_pairs_prompt
+    quote_reasoning_pairs_prompt,
+    QA_output_format,
+    QA_feedback_received_format
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -219,7 +221,9 @@ def qa_quote_reasoning_pairs(state: CodingAgentState, config):
     # Convert results to JSON string
     json_quote_reasoning_pairs_string = format_results_to_json(state['prompt_per_code_results'])
 
-    system_message = SystemMessage(content=quality_control_prompt.format(research_question=research_question))
+    system_message = SystemMessage(content=quality_control_prompt.format(research_question=research_question, 
+                                                                         QA_output = QA_output_format,
+                                                                         QA_feedback_received = QA_feedback_received_format))
     human_message = HumanMessage(content=quote_reasoning_pairs_prompt.format(text=json_quote_reasoning_pairs_string))
     
     result = llm_o3_with_structured_output_qa.invoke([system_message, human_message])

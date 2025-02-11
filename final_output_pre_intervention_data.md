@@ -1,35 +1,30 @@
 ## GiveDirectly
+### Paul Niehaus, GiveDirectly, 9-5-2014 (public).md - worth reading
+- **Quote:** At one point, GiveDirectly intentionally slowed enrollment in Kenya in order for researchers to conduct baseline surveys for the GE study.
+
+  **Reasoning:** This quote shows that GiveDirectly altered its operational process—specifically, slowing down enrollment—to ensure that pre-intervention baseline data could be collected. The adjustment highlights how the requirement for pre-intervention data collection can influence operational decisions, a factor that may ultimately contribute to cost-effective program implementation.
+
+
 ### Paul_Niehaus_and_Carolina_Toth_9-7-15_(public).md - worth reading
 - **Quote:** The GE study in Siaya is an example of how research studies can affect GiveDirectly's timeline. In that case, GiveDirectly moved more quickly than anticipated, and so had to delay the token transfers for some of its recipients to give the GE team enough time to conduct its baseline survey, which had to be completed before the token transfers were sent. This was a difficult decision, because GiveDirectly does not want to make recipients wait for their transfers; however, not doing so would have invalidated the randomization for the study, as some community members would have been treated prior to the baseline. The households in Siaya could have been re-randomized, but GiveDirectly had already treated most of them.
 
-  **Reasoning:** This quote shows that GiveDirectly collected baseline data before implementing transfers, and the resulting information directly affected operational decisions (such as delaying token transfers) to preserve the integrity of the intervention. In doing so, the organization adjusted its timeline to maintain the study’s validity—a process that reflects how pre-intervention information collection can inform processes that help sustain cost-effectiveness.
-
-- **Quote:** Modified criteria for eligibility
-  The presence of a thatched roof on a household's dwelling will continue to serve as a proxy test for extreme poverty whenever GiveDirectly enters a new area. However, GiveDirectly is exploring other tests to see whether they perform better at targeting households for cash transfers. In Homa Bay County, thatch is not commonly used, so a different proxy means test is needed.
-
-  **Reasoning:** This excerpt indicates that GiveDirectly gathers contextual data (such as housing features that serve as proxies for extreme poverty) before launching interventions in new areas. By using pre-intervention assessments to choose the appropriate targeting criteria, the organization refines its operational processes, which is integral to achieving cost-effectiveness in its charitable activities.
+  **Reasoning:** This quote illustrates how collecting pre-intervention data—in this case, a baseline survey—is factored into GiveDirectly's operational decisions. The need to complete the survey before initiating transfers influenced the charity's timeline and caused delays, a clear example of how pre-intervention data collection can impact and necessitate adjustments in operational processes that underpin cost effectiveness.
 
 
 ### Paul_Niehaus_Ian_Bassin_Carolina_Toth_02-23-16_(public).md - worth reading
-- **Quote:** The new criteria took into account feedback from focus groups (e.g., feedback about the importance of widows as a particularly vulnerable group), which were conducted before the criteria were fully tested.
+- **Quote:** The new criteria took into account feedback from focus groups (e.g., feedback about the importance of widows as a particularly vulnerable group), which were conducted before the criteria were fully tested. GiveDirectly is not soliciting any explicit feedback on the fairness of the new criteria, and so far has not heard of any issues with fairness in targeting.
 
-  **Reasoning:** This quote demonstrates a pre-intervention data collection process where GiveDirectly gathered qualitative information through focus groups. The feedback obtained was then used to shape the operational targeting criteria, illustrating how collecting pre-intervention information about the charitable cause can inform operational processes that potentially contribute to cost effectiveness.
-
-
-### Cash Transfers _ GiveWell.md - worth reading
-- **Quote:** GiveDirectly's standard model involves transferring $1,000 to poor households, which are identified by their use of thatch roofs.
-
-  **Reasoning:** This quote illustrates how GiveDirectly collects pre-intervention information—using a simple observable marker (thatched roofs) as an indicator of poverty—to efficiently target beneficiaries. By leveraging such clear, cost-effective data prior to implementation, the organization streamlines its operational processes, contributing to its overall cost-effectiveness.
+  **Reasoning:** This quote shows that pre-intervention data – in this case, qualitative feedback from focus groups – was used to shape the targeting criteria before full implementation. The operational process of refining targeting criteria based on such pre-intervention insights can contribute to ensuring that resources are allocated more effectively, which in turn can enhance cost-effectiveness.
 
 
-### Site visit_2012.md - important to read
+### Site visit_2012.md - worth reading
 - **Quote:** Choose areas in which DSW will work using data on diarrhea rates/waterborne disease, prevalence and type of water sources, and population density.
 
-  **Reasoning:** This pre-intervention step explicitly shows that DSW collects contextual information about local health challenges and water source characteristics before implementing the intervention. By selecting areas based on these data, they can target communities where the intervention would have the most impact, thereby supporting cost‐effective operations.
+  **Reasoning:** This quote shows that before any dispensers are installed, DSW uses pre-intervention data (e.g., local health metrics and water source characteristics) to decide where to operate. This data-driven site selection is an operational process that aids in targeting resources to areas of greatest need, potentially enhancing cost-effectiveness.
 
-- **Quote:** For example, at the village meeting prior to installation, DSW plans to demonstrate improved water quality using chlorine-treated and untreated water and a chemical which changes color in the presence of bacterial contamination. DSW will also collect data on what percentage of people who attend that meeting then chlorinate their water.
+- **Quote:** At baseline in one of IPA's studies of chlorine dispensers, 4% of people were treating their water with other chlorination products. In other cases, the baseline fluctuated, but was always below 10%.
 
-  **Reasoning:** This quote illustrates a pre-installation activity where DSW gathers information on community behavior and response. By collecting data on water chlorination uptake at these meetings, the organization can refine its operational processes and strategies, ultimately contributing to more cost-effective intervention deployment.
+  **Reasoning:** This quote presents baseline data collected before the intervention, providing a snapshot of existing water treatment practices. By documenting low pre-intervention usage, it underlines the need for the intervention and informs planning, allowing the charity to allocate resources more efficiently.
 
 
 
@@ -37,12 +32,11 @@
 ----
 
 # Important documents
-## important to read
-- Site visit_2012.md
 ## worth reading
-- Cash Transfers _ GiveWell.md
+- Paul Niehaus, GiveDirectly, 9-5-2014 (public).md
 - Paul_Niehaus_Ian_Bassin_Carolina_Toth_02-23-16_(public).md
 - Paul_Niehaus_and_Carolina_Toth_9-7-15_(public).md
+- Site visit_2012.md
 
 ----
 
