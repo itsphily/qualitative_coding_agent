@@ -282,23 +282,24 @@ QA_output_format = """
 <output>
 You must return a structured output that maps exactly from the input data (data to QA), following this format:
 {
-  "qa_results": {
-    "0": {
+  "qa_results": [
+    {
       "charity_id": "string identifying the charity",
       "code": "the research question/code being analyzed",
       "doc_name": "name of the document",
-      "quote_reasoning_pairs": [
-        {
-          "quote": "extracted text from document",
-          "reasoning": "explanation of why this quote is relevant"
-        }
-      ],
-      "document_importance": "importance level of the document"
+      "quote": "extracted text from document",
+      "reasoning": "explanation of why this quote is relevant",
+      "document_importance": "important to read"
     },
-    "1": {
-      // similar structure for next item
+    {
+      "charity_id": "string identifying the charity",
+      "code": "the research question/code being analyzed",
+      "doc_name": "name of the document",
+      "quote": "extracted text from document",
+      "reasoning": "explanation of why this quote is relevant",
+      "document_importance": "worth reading"
     }
-  }
+  ]
 }
 </output>
 """

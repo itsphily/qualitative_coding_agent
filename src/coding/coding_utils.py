@@ -149,8 +149,6 @@ def format_results_to_json(prompt_per_code_results: list) -> str:
     Returns:
         str: Formatted JSON string with proper indentation
     """
-
-    
     formatted_results = []
     for item in prompt_per_code_results:
         formatted_item = {

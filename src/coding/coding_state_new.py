@@ -1,9 +1,10 @@
-from typing import List, TypedDict
+from typing import List, TypedDict, Literal
 from pydantic import BaseModel, Field
 import operator
 from typing_extensions import Annotated
 from langchain_core.tools import tool
 from coding_utils import merge_lists
+
 
 class CodingAgentInputState(TypedDict):
     charity_id: str
@@ -81,22 +82,21 @@ class QAValuePerCode(BaseModel):
         ...,
         description="The name of the document"
     )
-    quote_reasoning_pairs: List[QuoteReasoningPair] = Field(
+    quote: str = Field(
         ...,
-        description=(
-            "A list of quote–reasoning pairs. "
-            "If the AI finds one pair, this list will have one element: [(Quote, reasoning)]. "
-            "If it finds three pairs, the list will have three elements: "
-            "[(Quote#1, reasoning#1), (Quote#2, reasoning#2), (Quote#3, reasoning#3)]."
-        )
+        description="The quote extracted from the document"
     )
-    document_importance: str = Field(
+    reasoning: str = Field(
+        ..., 
+        description="The reasoning used to extract this quote"
+    )
+    document_importance: Literal["important to read", "worth reading", "not worth reading"] = Field(
         ...,
-        description="The importance of the document will have already been set you '"
+        description="The importance level of the document relative to the research question."
     )
-
+    
 class QAStructuredOutputPerCode(BaseModel):
-    qa_results: dict[int, QAValuePerCode] = Field(
+    qa_results: List[QAValuePerCode] = Field(
         ...,
         description=(
             "Dictionary mapping integer indices to QA values per code. Each QAValuePerCode contains: "
