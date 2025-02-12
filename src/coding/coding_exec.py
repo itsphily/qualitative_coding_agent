@@ -103,26 +103,24 @@ def fill_info_prompt(state: CodingAgentInputState):
     """
 
 def continue_to_invoke_subgraph_research_question(state: CodingAgentInputState) -> CodingAgentState:
-    """
-    This function sends the formatted prompt to the subgraph to invoke the prompt per code per document.
-    """
-
     code_and_research_question_prompt_variable = combine_code_and_research_question_prompt.format(
         research_question=state['research_question']
     )
-
-    return [
-        Send(
-            "invoke_subgraph_node",
-            {
-                "code_and_research_question_prompt_variable": code_and_research_question_prompt_variable + "<code>" + c + "</code>",
-                "charity_id": state['charity_id'],
-                "charity_directory": state['charity_directory'],
-                "code": c,
-            }
-        )
-        for c in state['code_list']
-    ]
+    sends = []
+    for charity in state['charities']:
+        for c in state['code_list']:
+            sends.append(
+                Send(
+                    "invoke_subgraph_node",
+                    {
+                        "code_and_research_question_prompt_variable": code_and_research_question_prompt_variable + "<code>" + c + "</code>",
+                        "charity_id": charity["charity_id"],
+                        "charity_directory": charity["charity_directory"],
+                        "code": c,
+                    }
+                )
+            )
+    return sends
 
 def combine_code_and_research_question_function(state: InvokePromptInputState) -> InvokePromptState:
     """
@@ -274,7 +272,7 @@ invoke_subgraph.add_conditional_edges(
 invoke_subgraph.add_edge("invoke_research_question_prompt_node", END)
 
 # Define the main graph
-main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState, output=CodingAgentOutputState)
+main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
 main_graph.add_node('output_to_markdown_node', output_to_markdown)
