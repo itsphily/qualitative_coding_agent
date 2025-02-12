@@ -51,7 +51,8 @@ from coding_utils import (
     save_final_markdown,
     path_to_doc_name,
     generate_markdown, 
-    format_results_to_json
+    format_results_to_json, 
+    transform_qa_results_to_dict
 )
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import (
@@ -225,15 +226,18 @@ def qa_quote_reasoning_pairs(state: CodingAgentState, config):
     json_quote_reasoning_pairs_string = format_results_to_json(state['prompt_per_code_results'])
 
     system_message = SystemMessage(content=quality_control_prompt.format(research_question=research_question, 
-                                                                         QA_output = QA_output_format,
-                                                                         QA_feedback_received = QA_feedback_received_format))
+                                                                       QA_output = QA_output_format,
+                                                                       QA_feedback_received = QA_feedback_received_format))
     human_message = HumanMessage(content=quote_reasoning_pairs_prompt.format(text=json_quote_reasoning_pairs_string))
     
     result = llm_o3_with_structured_output_qa.invoke([system_message, human_message])
-
-    print(result)
-
     
+    # Transform the list of results into a dictionary
+    qa_results_dict = transform_qa_results_to_dict(result.qa_results)
+    
+    
+    return {"qa_results": qa_results_dict}
+
 
 def output_to_markdown(state: CodingAgentState):
     """
@@ -320,9 +324,20 @@ def main():
 
     # retrieve the final state 
     final_state = main_graph.get_state(config)
-    final_state_dict = dict(zip(['markdown_output', 'prompt_per_code_results', 'unprocessed_documents'], final_state))
+    final_state_dict = final_state.values 
 
 
+    logging.info("Final State:")
+    logging.info(final_state_dict)
+
+    logging.info("Markdown Output:")
+    logging.info(final_state_dict.get("markdown_output"))
+
+    logging.info("Prompt per Code Results:")
+    logging.info(final_state_dict.get("prompt_per_code_results"))
+
+    logging.info("Unprocessed Documents:")
+    logging.info(final_state_dict.get("unprocessed_documents"))
 
 
 if __name__ == "__main__":

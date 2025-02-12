@@ -162,3 +162,31 @@ def format_results_to_json(prompt_per_code_results: list) -> str:
         formatted_results.append(formatted_item)
     
     return json.dumps(formatted_results, indent=2)
+
+def transform_qa_results_to_dict(qa_results_list: list) -> dict:
+    """
+    Transform a list of QAValuePerCode objects into a dictionary with integer keys.
+
+    Args:
+        qa_results_list (list): List of QAValuePerCode objects
+
+    Returns:
+        dict: Dictionary where keys are integers and values are dictionaries containing:
+            - charity_id (str)
+            - code (str)
+            - doc_name (str)
+            - quote (str)
+            - reasoning (str)
+            - document_importance (str)
+    """
+    return {
+        i: {
+            "charity_id": item.charity_id,
+            "code": item.code,
+            "doc_name": item.doc_name,
+            "quote": item.quote,
+            "reasoning": item.reasoning,
+            "document_importance": item.document_importance
+        }
+        for i, item in enumerate(qa_results_list)
+    }
