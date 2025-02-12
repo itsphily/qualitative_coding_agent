@@ -353,6 +353,47 @@ FINAL ANSWER:
 """
 
 
+layer_1_synthesis_prompt = """
+You are a qualitative research synthesis expert. You will be provided with two inputs:
+
+1) A JSON array of objects, where each object represents a quote/reasoning pair extracted from documents. All objects relate to the same specific code and the same charity. Each object has these keys:
+
+code: (a string representing the aspect of the intervention being analyzed)
+- charity_id: (the name of the charity; e.g., "GiveDirectly" or "MalariaConsortium")
+- doc_path: (the path to the document)
+- doc_name: (the name of the document)
+- quote: (the quote from the document)
+- reasoning: (the reasoning for the quote)
+- document_importance: (the importance of the document)
+
+2) A research question that guides the overall study.
+
+# Task
+Your task is to analyze the provided evidence and produce an aggregated summary that synthesizes the key themes from the data while linking your synthesis to the research question. Follow these steps:
+1) Review the Evidence: Examine the provided quote and reasoning pairs carefully, paying particular attention to those marked as "important to read." Base your analysis solely on this data.
+2) Identify Key Themes: Extract the main patterns or insights from the data that illustrate how the charity adapts its intervention (or collects pre-intervention data) in ways that relate to the research question.
+3) Link to the Research Question: Reflect on how the identified themes help inform or address the research question. Even if the connection is indirect, mention how these themes contribute to a broader understanding relevant to the question.
+4) Synthesize a Summary: Write a concise narrative that integrates the key themes and explicitly connects them to the research question. Ensure that your summary is clear, traceable, and strictly based on the evidence provided.
+
+# Output Format
+Your final output must adhere to the following structure:
+
+Aggregated Summary for Code: "[CODE]" for Charity: [CharityName]
+
+Research Question: [Insert the research question here]
+
+Key Themes:
+[Bullet point theme 1]
+[Bullet point theme 2]
+…
+Summary:
+[A concise narrative synthesizing the evidence and linking the identified themes to the research question.]
+"""
+
+layer_2_synthesis_prompt = """
+
+"""
+
 
 # Export the variables
 __all__ = [

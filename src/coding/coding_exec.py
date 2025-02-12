@@ -33,17 +33,15 @@ logging.info(f"Starting script execution. Debug log file: {debug_file}")
 
 from langchain_core.output_parsers import JsonOutputParser
 
-from coding_state_new import (
+from coding_state import (
     InvokePromptInputState,
     InvokePromptState,
     CodingAgentState,
-    CodingAgentOutputState,
     InvokePromptPerCodeState,
     StructuredOutputPerCode,
     CodingAgentInputState,
     InvokePromptOutputState,
-    QAStructuredOutputPerCode,
-    QAValuePerCode
+    QAStructuredOutputPerCode
 )
 from coding_utils import (
     path_to_text,
@@ -312,7 +310,7 @@ def main():
             "charity_directory": "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/final_markdown_files/04_Malaria_Consortium short"
         }
     ]
-    
+
     input_state = {
          "charities": charities,
          "research_question": research_question,
