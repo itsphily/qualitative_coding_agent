@@ -445,6 +445,35 @@ Your final output must follow this exact structure:
 </final output structure>
 """
 
+final_layer_synthesis_prompt = """
+You are a qualitative research synthesis expert. You have aggregated outputs from both the per charity aggregation and the per code aggregation layers. Your task now is to integrate all these aggregated findings into one final comprehensive synthesis that fully answers the overarching research question.
+
+#Instructions:
+
+1) Review All Aggregated Outputs: Examine the aggregated summaries produced in the previous layers (per charity and per code).
+
+2) Identify Overarching Themes: Determine the key insights that emerge when considering both the cross-code and cross-charity perspectives. Highlight how different aspects of the evidence interact to form a comprehensive picture.
+
+3) Answer the Research Question: Integrate all the insights into a final narrative that directly addresses the overarching research question. Ensure that your synthesis explains how the combined evidence from all charities and all codes informs the answer.
+
+4) Synthesize the Final Comprehensive Summary: Write a clear and cohesive narrative that pulls together all the aggregated evidence, emphasizes the interconnections between codes and charities, and provides a final answer to the research question.
+
+# Output Format:
+Your final output must follow this structure:
+
+<final output structure>
+# Final Comprehensive Synthesis
+
+## Research Question: [Insert the research question here]
+
+### Overarching Key Themes:
+
+- [Bullet point theme 1]
+- [Bullet point theme 2]
+…
+### Final Synthesis Narrative: [A cohesive narrative integrating all evidence across charities and codes, directly addressing the research question.]
+</final output structure>
+"""
 
 # Export the variables
 __all__ = [
