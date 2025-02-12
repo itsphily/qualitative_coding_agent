@@ -378,20 +378,71 @@ Your task is to analyze the provided evidence and produce an aggregated summary 
 # Output Format
 Your final output must adhere to the following structure:
 
-Aggregated Summary for Code: "[CODE]" for Charity: [CharityName]
+<final output structure>
+# Aggregated Summary for Code: "[CODE]" for Charity: [CharityName]
 
-Research Question: [Insert the research question here]
+## Research Question: [Insert the research question here]
 
-Key Themes:
-[Bullet point theme 1]
-[Bullet point theme 2]
+### Key Themes:
+- [Bullet point theme 1]
+- [Bullet point theme 2]
 …
-Summary:
+### Summary:
 [A concise narrative synthesizing the evidence and linking the identified themes to the research question.]
+</final output structure>
 """
 
-layer_2_synthesis_prompt = """
+layer_2_code_synthesis_prompt = """
+You are a qualitative research synthesis expert. You have been provided with intermediate aggregated summaries for a single code from multiple charities. Each summary represents how one charity adapts its intervention (or collects pre-intervention data) regarding that code. Your task is to synthesize these summaries into an aggregated output for that code across all charities, emphasizing similarities, differences, and how the collective evidence informs the overarching research question.
 
+# Instructions:
+
+1) Review the Provided Data: Examine each intermediate aggregated summary related to the specific code from different charities.
+
+2) Identify Common and Divergent Themes: Extract the key themes across the different charities. Identify both common patterns and notable differences in how each charity addresses this aspect.
+
+3) Link to the Research Question: Explain how the insights related to this code (across all charities) contribute to answering the research question. Even if the connection is indirect, articulate the role of these operational adaptations or data collection processes in the broader context.
+
+4) Synthesize a Cross-Charity Summary: Write a concise narrative that integrates these insights into a unified summary for the code across charities.
+
+# Output Format: Your final output must follow this structure:
+
+<final output structure>
+# Aggregated Summary for Code: "[CODE]" Across Charities
+
+## Research Question: [Insert the research question here]
+
+### Key Themes Across Charities:
+- [Bullet point theme 1]
+- [Bullet point theme 2]
+…
+### Cross-Charity Summary: [A concise narrative that synthesizes the evidence for this code across all charities and links it to the research question.]
+</final output structure>
+"""
+
+layer_2_charity_synthesis_prompt = """
+You are a qualitative research synthesis expert. You have already generated intermediate aggregated summaries for a single charity—one summary per code—using prior prompts. Now, you are given all these intermediate outputs for one charity. Your task is to synthesize these individual code-level summaries into a comprehensive aggregation for that charity, while explicitly linking the combined insights to the overarching research question.
+
+# Instructions:
+1) Review the Provided Data: Examine each intermediate aggregated summary (each representing a specific code for this charity). These summaries include key themes and concise narratives based on the evidence.
+2) Identify Cross-Code Themes: Extract and list the common themes or insights that emerge across the different codes for this charity. Note any patterns, similarities, or differences that provide a deeper understanding of the charity’s overall approach.
+3) Link to the Research Question: Reflect on how these combined themes relate to the overarching research question. Explain how the charity’s varied operational adaptations (across different codes) contribute to answering the research question.
+4) Synthesize a Comprehensive Summary: Write a concise narrative that integrates the individual code-level insights into one cohesive summary for the charity. Ensure your synthesis is clear, traceable, and directly linked to the research question.
+
+#Output Format:
+Your final output must follow this exact structure:
+<final output structure>
+# Aggregated Summary for Charity: [CharityName]
+
+## Research Question: [Insert the research question here]
+
+### Overall Key Themes Across Codes:
+
+- [Bullet point theme 1]
+- [Bullet point theme 2]
+…
+###Comprehensive Summary: [A cohesive narrative that synthesizes the evidence across all codes for the charity and links the insights to the research question.]
+</final output structure>
 """
 
 
