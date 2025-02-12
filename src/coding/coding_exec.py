@@ -293,27 +293,36 @@ main_graph = main_graph.compile(checkpointer=checkpointer)
 
 def main():
     # Hardcode the CodingAgentInputState
-    charity_id = 'GiveDirectly'
-    charity_overview = "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'."
-    charity_directory = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly_short"
+
     research_question = "What operational processes enable charities to be cost effective?"
     code_list = [
         "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.",
         "Pre-intervention data collection: Collecting information about the charitable cause before implementing the charity's intervention."
     ]
 
+    charities = [
+        {
+            "charity_id": 'GiveDirectly',
+            "charity_overview": "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'.",
+            "charity_directory": "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly_short"
+        },
+        {
+            "charity_id": "MalariaConsortium",
+            "charity_overview": "Its social goal is 'Malaria'. Its intervention is 'Distribution of seasonal malaria chemoprevention'.",
+            "charity_directory": "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/final_markdown_files/04_Malaria_Consortium short"
+        }
+    ]
+    
     input_state = {
-        'charity_id': charity_id,
-        'charity_overview': charity_overview,
-        'charity_directory': charity_directory,
-        'research_question': research_question,
-        'prompt_for_project': '',  # Will be populated later
-        'code_list': code_list  # Replace with actual code list
+         "charities": charities,
+         "research_question": research_question,
+         "code_list": code_list,
     }
 
     # Define the config that includes the research question
     config = {"configurable": {"thread_id": "1", 
-                            "research_question": "What operational processes enable charities to be cost effective?"}}
+                            "research_question": "What operational processes enable charities to be cost effective?"}
+                            }
 
     # Visualize the graph
     visualize_graph(main_graph, "coding_graph")
