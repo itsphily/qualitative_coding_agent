@@ -37,6 +37,7 @@
 - When creating a function for the graph, follow the convention shown in the example (node function example below).
 - Make sure you implement the changes to all the files as stated in the low-level tasks.
 - The directory where the files coding_prompt.py, coding_exec_new.py, coding_utils.py, coding_state_new.py are located is /Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/src/coding
+- Always make sure you have all the necessary imports. Put all the imports at the top of the file.
 - Carefully review each low-level task for exact code changes
 
 <node function example>
@@ -95,6 +96,7 @@ def test_function(p1, p2, p3):
 - coding_exec.py
 - coding_utils.py
 - coding_state.py
+- coding_reducer.py
 
 ## Low-Level Tasks
 > Ordered from start to finish
@@ -208,15 +210,115 @@ def output_to_markdown(state: CodingAgentState):
 
 ```
 
-6. in coding_utils.py, modify the generate_markdown function.
+6. in coding_state.py, modify the CodingAgentState to add a new attribute called synthesis_results.
 ```aider
+in coding_state.py, add a new attribute called synthesis_results to the CodingAgentState.
+class CodingAgentState(TypedDict):
+    markdown_output: dict[str, str]
+    prompt_per_code_results: Annotated[list, merge_lists]
+    unprocessed_documents: Annotated[list, merge_lists] 
+    synthesis_results: Annotated[Dict[str, Dict[int, str]], merge_dicts] (don't forget to: from typing import Dict)
+
 ```
-4. in coding_utils.py, modify the generate_markdown function.
+
+7. import the merge_dicts function from coding_reducer.py
 ```aider
+in coding_state.py, import the merge_dicts function from coding_reducer.py 
+
 ```
-4. in coding_utils.py, modify the generate_markdown function.
+
+8. Create a new file called coding_reducer.py and add the following function:
 ```aider
+def merge_dicts(dict_a: dict, dict_b: dict) -> dict:
+    """
+    Merge dict_b into dict_a. 
+    Returns a new dict, leaving the original dicts unchanged.
+    """
+    merged = dict_a.copy()
+    merged.update(dict_b)
+    return merged
 ```
+
+9. add a synthesis function to the coding agent (per code per charity synthesis)
+```
+in coding_exec.py, add a new function continue_to_synthesis_layer_1(state: CodingAgentState):
+
+Mirror the send API example above to itterate over the state['prompt_per_code_results'] and send all the quote reasoning pairs for each code for each charity to the synthesis_layer_1 node.
+Note: I want all the quote reasoning pairs per code per charity to be sent to the synthesis_layer_1 node. in other words, the synthesis_layer_1 node will receive a subset of dictionnary stored in state['prompt_per_code_results'] that will be formatted as a JSON formated string, each subset will contain the quote reasoning pairs for a specific code for a specific charity.
+
+This is the format of the dictionnary stored in state['prompt_per_code_results']:
+prompt_per_code_results:{
+    - charity_id: str
+    - code: str
+    - doc_name: str
+    - quote: str
+    - reasoning: str
+    - document_importance: Literal["important to read", "worth reading", "not worth reading"]
+}
+
+return [Send("synthesis_layer_1", {"synthesis_layer_1_text": s,
+                                    "synthesis_layer_1_charity_id": s['charity_id'],
+                                    "synthesis_layer_1_code": s['code']
+}) for itterate over each code and charity in the state['prompt_per_code_results']]
+
+```
+
+
+10. Create a synthesis_layer_1 state
+```aider
+in coding_state.py, add a new class called SynthesisLayer1State.
+class SynthesisLayer1State(TypedDict):
+    synthesis_layer_1_text: str
+    synthesis_layer_1_charity_id: str
+    synthesis_layer_1_code: str
+
+```
+
+
+11. in coding_exec.py, add a new function synthesis_layer_1(state: SynthesisLayer1State, config):
+```aider
+
+in coding_exec.py, add a new function synthesis_layer_1(state: CodingAgentState, config):
+system_message = SystemMessage(layer_1_synthesis_prompt.format(research_question=config["configurable"].get("research_question")))
+
+
+human_message = HumanMessage(content=text_to_synthesis_prompt.format(text=state['doc_text']))
+
+result = llm_o3.invoke([system_message, human_message])
+
+FIX THIS
+return {"synthesis_layer_1": result, 
+        "synthesis_layer_1_state": state, 
+        "synthesis_layer_1_config": config}
+
+```
+
+11. add a conditional edge to the main graph to continue to the synthesis_layer_1 node.
+```aider
+main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState)
+main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
+main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
+main_graph.add_node('output_to_markdown_node', output_to_markdown)
+main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
+main_graph.add_edge(START, 'fill_info_prompt_node')
+main_graph.add_conditional_edges(
+    'fill_info_prompt_node',
+    continue_to_invoke_subgraph_research_question,
+    ['invoke_subgraph_node']
+)
+main_graph.add_edge('invoke_subgraph_node', 'output_to_markdown_node')
+main_graph.add_edge('output_to_markdown_node', 'qa_quote_reasoning_pairs_node')
+main_graph.add_edge('qa_quote_reasoning_pairs_node', continue_to_synthesis_layer_1_node, [synthesis_layer_1_node])
+main_graph.add_edge('synthesis_layer_1_node', END)
+
+```
+
+
+
+
+
+
+
 4. in coding_utils.py, modify the generate_markdown function.
 ```aider
 ```

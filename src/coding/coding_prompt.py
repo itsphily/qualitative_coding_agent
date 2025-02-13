@@ -366,6 +366,9 @@ You are a qualitative research synthesis expert. You will be provided with two i
 - document_importance: (the importance of the document)
 
 2) A research question that guides the overall study.
+<research question>
+{research_question}
+</research question>
 
 # Task
 Your task is to analyze the provided evidence and produce an aggregated summary that synthesizes the key themes from the data while linking your synthesis to the research question. Follow these steps:
