@@ -81,32 +81,182 @@ def test_function(p1, p2, p3):
 </proper commenting example>
 
 ### Beginning context
-- [List of files that exist at start - what files exist at start?]
+- requirements.txt
+- .env (readonly)
+- coding_prompt.py (readonly)
+- coding_exec.py
+- coding_utils.py
+- coding_state.py
 
 ### Ending context  
-- [List of files that will exist at end - what files will exist at end?]
+- requirements.txt
+- .env (readonly)
+- coding_prompt.py (readonly)
+- coding_exec.py
+- coding_utils.py
+- coding_state.py
 
 ## Low-Level Tasks
 > Ordered from start to finish
 
-1. [First task - what is the first task?]
+1. In coding_exec.py, modify the main graph to switch the order of the output_to_markdown and qa_quote_reasoning_pairs nodes.
 ```aider
-What prompt would you run to complete this task?
-What file do you want to CREATE or UPDATE?
-What function do you want to CREATE or UPDATE?
-What are details you want to add to drive the code changes?
+Modify the main graph to:
+# Define the main graph
+main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState, output=CodingAgentOutputState)
+main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
+main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
+main_graph.add_node('output_to_markdown_node', output_to_markdown)
+main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
+main_graph.add_edge(START, 'fill_info_prompt_node')
+main_graph.add_conditional_edges(
+    'fill_info_prompt_node',
+    continue_to_invoke_subgraph_research_question,
+    ['invoke_subgraph_node']
+)
+main_graph.add_edge('invoke_subgraph_node', 'qa_quote_reasoning_pairs_node')
+main_graph.add_edge('qa_quote_reasoning_pairs_node', 'output_to_markdown_node')
+main_graph.add_edge('output_to_markdown_node', END)
+
+checkpointer = MemorySaver()
+main_graph = main_graph.compile(checkpointer=checkpointer)
+
 ```
-2. [Second task - what is the second task?]
+2. in coding_exec.py, modify the qa_quote_reasoning_pairs function to overwrite the prompt_per_code_results with the qa_results.
 ```aider
-What prompt would you run to complete this task?
-What file do you want to CREATE or UPDATE?
-What function do you want to CREATE or UPDATE?
-What are details you want to add to drive the code changes?
+def qa_quote_reasoning_pairs(state: CodingAgentState, config):
+    """
+    This function sends the quote-reasoning pairs to the LLM to evaluate whether they are relevant to the research question.
+    """
+    research_question = config["configurable"].get("research_question")
+
+    # Convert results to JSON string
+    json_quote_reasoning_pairs_string = format_results_to_json(state['prompt_per_code_results'])
+
+    system_message = SystemMessage(content=quality_control_prompt.format(research_question=research_question, 
+                                                                       QA_output = QA_output_format,
+                                                                       QA_feedback_received = QA_feedback_received_format))
+    human_message = HumanMessage(content=quote_reasoning_pairs_prompt.format(text=json_quote_reasoning_pairs_string))
+    
+    result = llm_o3_with_structured_output_qa.invoke([system_message, human_message])
+    
+    # Transform the list of results into a dictionary
+    qa_results_dict = transform_qa_results_to_dict(result.qa_results)
+    
+    return {"prompt_per_code_results": qa_results_dict}
 ```
-3. [Third task - what is the third task?]
+
+
+3. in coding_utils.py, modify the generate_markdown function.
 ```aider
-What prompt would you run to complete this task?
-What file do you want to CREATE or UPDATE?
-What function do you want to CREATE or UPDATE?
-What are details you want to add to drive the code changes?
+The function will take a state['prompt_per_code_results'] which is a dictionary with the following keys: data type:
+prompt_per_code_results:{
+    - charity_id: str
+    - code: str
+    - doc_name: str
+    - quote: str
+    - reasoning: str
+    - document_importance: Literal["important to read", "worth reading", "not worth reading"]
+}
+
+Modify the function generate_markdown to generate a markdown string for each charity id, and store these strings in a dictionary named markdown_output with the charity_id as the key and the markdown string as the value.
+
+The markdown string will be generated using the markdown string format (between parenthesis are the values of the dictionary to be used in the markdown string):
+<markdown string format>
+# Charity Id (charity_id)
+
+# Document Importance
+### Important to read
+(list of all the doc_name that have document_importance set to "important to read")
+### Worth reading
+(list of all the doc_name that have document_importance set to "worth reading")
+### Not worth reading
+(list of all the doc_name that have document_importance set to "not worth reading")
+
+## Code (code)
+### Doc Name (doc_name)
+- **Quote:** Quote (quote)
+- **Reasoning:** Reasoning (reasoning)
+(repeat for each quote reasoning pair)
+(repeat this section for each code)
+</markdown string format>
+```
+
+4. in coding_utils.py, modify the save_final_markdown. so that it takes the markdown_output dictionnary as input and saves each value in a separate file 
+```aider
+
+Modify save_final_markdown(markdown_output): 
+    for charity_id, markdown_content in markdown_output.items():
+        filename = f'Coding_output_for_{charity_id}.md'
+        save_final_markdown(filename, markdown_content)
+
+All the files will be saved in the coding_output folder.
+```
+
+
+5. in coding_exec.py, modify the output_to_markdown function to use the generate_markdown function to generate the markdown_output dictionary, and the save_final_markdown function to save the markdown_output dictionary to a separate file for each charity id.
+```aider
+def output_to_markdown(state: CodingAgentState):
+    """
+    This function generates the markdown output from the collected results and saves separate files for each charity id.
+    """
+    markdown_output = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
+    
+    save_final_markdown(filename, markdown_content)
+    
+    return {"markdown_output": markdown_output}
+
+```
+
+6. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
+```
+4. in coding_utils.py, modify the generate_markdown function.
+```aider
 ```
