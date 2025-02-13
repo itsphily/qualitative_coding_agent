@@ -358,9 +358,8 @@ You are a qualitative research synthesis expert. You will be provided with two i
 
 1) A JSON array of objects, where each object represents a quote/reasoning pair extracted from documents. All objects relate to the same specific code and the same charity. Each object has these keys:
 
-code: (a string representing the aspect of the intervention being analyzed)
+- code: (a string representing the aspect of the intervention being analyzed)
 - charity_id: (the name of the charity; e.g., "GiveDirectly" or "MalariaConsortium")
-- doc_path: (the path to the document)
 - doc_name: (the name of the document)
 - quote: (the quote from the document)
 - reasoning: (the reasoning for the quote)
@@ -421,7 +420,7 @@ You are a qualitative research synthesis expert. You have been provided with int
 """
 
 layer_2_charity_synthesis_prompt = """
-You are a qualitative research synthesis expert. You have already generated intermediate aggregated summaries for a single charity—one summary per code—using prior prompts. Now, you are given all these intermediate outputs for one charity. Your task is to synthesize these individual code-level summaries into a comprehensive aggregation for that charity, while explicitly linking the combined insights to the overarching research question.
+You are a qualitative research synthesis expert. You have already generated intermediate aggregated summaries for a single charity one summary per code using prior prompts. Now, you are given all these intermediate outputs for one charity. Your task is to synthesize these individual code-level summaries into a comprehensive aggregation for that charity, while explicitly linking the combined insights to the overarching research question.
 
 # Instructions:
 1) Review the Provided Data: Examine each intermediate aggregated summary (each representing a specific code for this charity). These summaries include key themes and concise narratives based on the evidence.
@@ -445,7 +444,7 @@ Your final output must follow this exact structure:
 </final output structure>
 """
 
-final_layer_synthesis_prompt = """
+final_layer_research_question_prompt = """
 You are a qualitative research synthesis expert. You have aggregated outputs from both the per charity aggregation and the per code aggregation layers. Your task now is to integrate all these aggregated findings into one final comprehensive synthesis that fully answers the overarching research question.
 
 #Instructions:
@@ -483,5 +482,9 @@ __all__ = [
     'quality_control_prompt',
     'quote_reasoning_pairs_prompt',
     'QA_output_format',
-    'QA_feedback_received_format'
+    'QA_feedback_received_format',
+    'layer_1_synthesis_prompt',
+    'layer_2_code_synthesis_prompt',
+    'layer_2_charity_synthesis_prompt',
+    'final_layer_research_question_prompt'
 ]

@@ -61,7 +61,11 @@ from coding_prompt import (
     quality_control_prompt,
     quote_reasoning_pairs_prompt,
     QA_output_format,
-    QA_feedback_received_format
+    QA_feedback_received_format,
+    layer_1_synthesis_prompt,
+    layer_2_code_synthesis_prompt,
+    layer_2_charity_synthesis_prompt,
+    final_layer_research_question_prompt
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
