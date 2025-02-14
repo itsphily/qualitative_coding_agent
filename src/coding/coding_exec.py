@@ -240,23 +240,8 @@ def qa_quote_reasoning_pairs(state: CodingAgentState, config):
 
 
 def output_to_markdown(state: CodingAgentState):
-    """
-    This function generates the markdown output from the collected results and saves separate files for each code.
-    """
     markdown_output = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
-    
-    # Save separate files for each code
-    for code, markdown_content in markdown_output.items():
-        # Get first two words of the code for the filename
-        code_words = code.split()[:2]
-        code_first_2 = '_'.join(code_words).lower()
-        # Replace any special characters that might cause issues in filenames
-        code_first_2 = ''.join(c if c.isalnum() or c == '_' else '_' for c in code_first_2)
-        
-        # Save the markdown content to a separate file
-        filename = f'final_output_{code_first_2}.md'
-        save_final_markdown(filename, markdown_content)
-    
+    save_final_markdown(markdown_output)
     return {"markdown_output": markdown_output}
 
 
