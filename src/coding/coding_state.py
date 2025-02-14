@@ -4,6 +4,7 @@ import operator
 from typing_extensions import Annotated
 from langchain_core.tools import tool
 from coding_utils import merge_lists
+from coding_reducer import merge_dicts
 
 
 class CharityInfo(TypedDict):
@@ -19,7 +20,10 @@ class CodingAgentInputState(TypedDict):
 class CodingAgentState(TypedDict):
     markdown_output: dict[str, str]
     prompt_per_code_results: Annotated[list, merge_lists]
-    unprocessed_documents: Annotated[list, merge_lists] 
+    unprocessed_documents: Annotated[list, merge_lists]
+    synthesis_layer_1: Annotated[dict, merge_dicts]
+    synthesis_layer_2_per_code: Annotated[dict, merge_dicts]
+    synthesis_layer_2_per_charity: Annotated[dict, merge_dicts]
 
 class InvokePromptInputState(TypedDict):
     code_and_research_question_prompt_variable: str
@@ -104,3 +108,13 @@ class QAStructuredOutputPerCode(BaseModel):
             "document_importance (str): The importance level of the document"
         )
     )
+class SynthesisLayer1State(TypedDict):
+    synthesis_layer_1_text: str
+    synthesis_layer_1_charity_id: str
+    synthesis_layer_1_code: str
+class SynthesisLayer2PerCodeState(TypedDict):
+    synthesis_layer_2_all_charity_text: str
+    synthesis_layer_2_code: str
+class SynthesisLayer2PerCharityState(TypedDict):
+    synthesis_layer_2_all_code_text: str
+    synthesis_layer_2_charity_id: str

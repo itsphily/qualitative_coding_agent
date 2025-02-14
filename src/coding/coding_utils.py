@@ -190,3 +190,32 @@ def transform_qa_results_to_dict(qa_results_list: list) -> dict:
         }
         for i, item in enumerate(qa_results_list)
     }
+def synthesis_output_to_markdown(state: CodingAgentState):
+    """
+    Aggregate synthesis_layer_2 outputs and structure as markdown.
+    Calls generate_synthesis_markdown for per charity and per code outputs.
+    """
+    per_charity = state.get("synthesis_layer_2_per_charity", {})
+    per_code = state.get("synthesis_layer_2_per_code", {})
+    synthesis_md_charity = ""
+    for charity, text in per_charity.items():
+        synthesis_md_charity += f"## Charity: {charity}\n{text}\n\n"
+    synthesis_md_code = ""
+    for code, text in per_code.items():
+        synthesis_md_code += f"## Code: {code}\n{text}\n\n"
+    output_charity = generate_synthesis_markdown(synthesis_md_charity, 'synthesis_output_per_charity', 'coding_output')
+    output_code = generate_synthesis_markdown(synthesis_md_code, 'synthesis_output_per_code', 'coding_output')
+    return {"synthesis_output_per_charity": output_charity,
+            "synthesis_output_per_code": output_code}
+def generate_synthesis_markdown(markdown_text, name, output_folder):
+    """
+    Save markdown_text to a file named f"{name}.md" in output_folder.
+    Return the markdown string.
+    """
+    import os
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    filepath = os.path.join(output_folder, f"{name}.md")
+    with open(filepath, 'w', encoding='utf-8') as f:
+        f.write(markdown_text)
+    return markdown_text
