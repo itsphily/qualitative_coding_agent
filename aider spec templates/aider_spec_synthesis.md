@@ -344,7 +344,7 @@ main_graph.add_edge('synthesis_layer_1_node', END)
 
 15. add a synthesis function that will aggregate the results from the synthesis_layer_1 node for a code of all charities. 
 ```aider
-in coding_exec.py, add a new function continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
+in coding_exec.py, add a new function continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
 
 Mirror the send API example above to itterate over the state['synthesis_layer_1'] for all charities and send all the results for a specific code to the synthesis_layer_2_per_charity node. The objective is to aggregate the results for a specific code for all charities.
 
@@ -355,40 +355,85 @@ synthesis_layer_1:{
     - synthesis_layer_1_code: str
 }
 
-return [Send("synthesis_layer_2_per_charity", {"synthesis_layer_2_per_charity_text": s,
-                                               "synthesis_layer_2_per_charity_charity_id": s['synthesis_layer_1_charity_id'],
-                                    "synthesis_layer_2_per_charity_code": s['synthesis_layer_1_code']
-}) for itterate over each code and charity in the state['synthesis_layer_1']]
+return [Send("synthesis_layer_2_per_charity", { "synthesis_layer_2_per_charity_text": s,
+                                                "synthesis_layer_2_per_charity_charity_id": s['synthesis_layer_1_charity_id']
+}) for itterate over each charity for a specific code (repeat for all codes) in the state['synthesis_layer_1']]
+
+note: s is a subset of the dictionnary stored in state['synthesis_layer_1'] for a specific code of all charities turned into a JSON formated string. Each relevant dictionnary values will have to be aggregated for each code of all charities to get s. 
+```
+
+16. Create a synthesis_layer_2_per_code state
+```aider
+in coding_state.py, add a new class called SynthesisLayer2PerCodeState.
+class SynthesisLayer2PerCodeState(TypedDict):
+    synthesis_layer_2_per_code_text: str
+    synthesis_layer_2_per_code_charity_id: str
+```
+
+17. 
+```aider
+in coding_exec.py, add a new function synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeState, config):
+
+system_message = SystemMessage(layer_2_per_code_synthesis_prompt.format(research_question=config["configurable"].get("research_question")))
+
+human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_per_code_text']))
+
+result = llm_o3.invoke([system_message, human_message])
+
+return {synthesis_layer_2_per_code:{"synthesis_layer_2_per_code_result": result,
+        "synthesis_layer_2_per_code_charity_id": state['synthesis_layer_2_per_code_charity_id']}}
 
 ```
 
-
-TO DELETE AFTER
-9. add a synthesis function to the coding agent (per code per charity synthesis)
+18. Modify CodingAgentState to add a new attribute called synthesis_layer_2_per_code and synthesis_layer_2_per_charity.
+```aider
+in coding_state.py Modify CodingAgentStateCodingAgentState(TypedDict):
+    markdown_output: dict[str, str]
+    prompt_per_code_results: Annotated[list, merge_lists]
+    unprocessed_documents: Annotated[list, merge_lists] 
+    synthesis_layer_1: Annotated[Dict[str, str], merge_dicts]
+    synthesis_layer_2_per_code: Annotated[Dict[str, str], merge_dicts]
+    synthesis_layer_2_per_charity: Annotated[Dict[str, str], merge_dicts]
 ```
-in coding_exec.py, add a new function continue_to_synthesis_layer_1(state: CodingAgentState):
 
-Mirror the send API example above to itterate over the state['prompt_per_code_results'] and send all the quote reasoning pairs for each code for each charity to the synthesis_layer_1 node.
-Note: I want all the quote reasoning pairs per code per charity to be sent to the synthesis_layer_1 node. in other words, the synthesis_layer_1 node will receive a subset of dictionnary stored in state['prompt_per_code_results'] that will be formatted as a JSON formated string, each subset will contain the quote reasoning pairs for a specific code for a specific charity.
 
-This is the format of the dictionnary stored in state['prompt_per_code_results']:
-prompt_per_code_results:{
-    - charity_id: str
-    - code: str
-    - doc_name: str
-    - quote: str
-    - reasoning: str
-    - document_importance: Literal["important to read", "worth reading", "not worth reading"]
+19. add a synthesis function that will aggregate the results from the synthesis_layer_1 node for a charity of all codes. 
+```aider
+in coding_exec.py, add a new function continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
+
+Mirror the send API example above to itterate over the state['synthesis_layer_1'] for all codes and send all the results for a specific charity to the synthesis_layer_2_per_code node. The objective is to aggregate the results for a specific charity of all codes.
+
+state['synthesis_layer_1'] is a dictionnary with the following keys:
+synthesis_layer_1:{
+    - synthesis_layer_1_result: str
+    - synthesis_layer_1_charity_id: str
+    - synthesis_layer_1_code: str
 }
 
-return [Send("synthesis_layer_2_per_charity", {"synthesis_layer_2_per_charity_text": s,
-                                    "synthesis_layer_2_per_charity_charity_id": s
-                                    "synthesis_layer_2_per_charity_code": s['synthesis_layer_1_code']
-}) for itterate over each code and charity in the state['synthesis_layer_1']]
+return [Send("synthesis_layer_2_per_code", {    "synthesis_layer_2_per_code_text": s,
+                                                "synthesis_layer_2_per_code_charity_id": s['synthesis_layer_1_charity_id']
+}) for itterate over each code for a specific charity (repeat for all charities) in the state['synthesis_layer_1']]
+
+note: s is a subset of the dictionnary stored in state['synthesis_layer_1'] for a specific charity of all codes turned into a JSON formated string. Each relevant dictionnary values will have to be aggregated for each charity of all codes to get s. 
+```
+
+20. 
+```aider
+in coding_exec.py, add a new function synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityState, config):
+
+system_message = SystemMessage(layer_2_per_charity_synthesis_prompt.format(research_question=config["configurable"].get("research_question")))
+
+human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_per_code_text']))
+
+result = llm_o3.invoke([system_message, human_message])
+
+return {synthesis_layer_2_per_charity:{"synthesis_layer_2_per_charity_result": result,
+        "synthesis_layer_2_per_charity_charity_id": state['synthesis_layer_2_per_code_charity_id']}}
 
 ```
 
 
+NEED TO REVIEW THE STATES
 4. in coding_utils.py, modify the generate_markdown function.
 ```aider
 ```

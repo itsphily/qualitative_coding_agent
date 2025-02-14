@@ -394,6 +394,13 @@ Your final output must adhere to the following structure:
 </final output structure>
 """
 
+text_to_synthesis_prompt = """
+Here is the data to synthesize:
+<data to synthesize> 
+{text}
+</data to synthesize>
+"""
+
 layer_2_code_synthesis_prompt = """
 You are a qualitative research synthesis expert. You have been provided with intermediate aggregated summaries for a single code from multiple charities. Each summary represents how one charity adapts its intervention (or collects pre-intervention data) regarding that code. Your task is to synthesize these summaries into an aggregated output for that code across all charities, emphasizing similarities, differences, and how the collective evidence informs the overarching research question.
 
@@ -424,6 +431,10 @@ You are a qualitative research synthesis expert. You have been provided with int
 
 layer_2_charity_synthesis_prompt = """
 You are a qualitative research synthesis expert. You have already generated intermediate aggregated summaries for a single charity one summary per code using prior prompts. Now, you are given all these intermediate outputs for one charity. Your task is to synthesize these individual code-level summaries into a comprehensive aggregation for that charity, while explicitly linking the combined insights to the overarching research question.
+
+<research question>
+{research_question}
+</research question>
 
 # Instructions:
 1) Review the Provided Data: Examine each intermediate aggregated summary (each representing a specific code for this charity). These summaries include key themes and concise narratives based on the evidence.
@@ -477,6 +488,13 @@ Your final output must follow this structure:
 </final output structure>
 """
 
+text_to_synthesis_layer_2_prompt = """
+Here are all the intermediate aggregated summaries:
+<intermediate aggregated summaries>
+{intermediate_aggregated_summaries}
+</intermediate aggregated summaries>
+"""
+
 # Export the variables
 __all__ = [
     'text_to_code_prompt',
@@ -489,5 +507,7 @@ __all__ = [
     'layer_1_synthesis_prompt',
     'layer_2_code_synthesis_prompt',
     'layer_2_charity_synthesis_prompt',
-    'final_layer_research_question_prompt'
+    'final_layer_research_question_prompt',
+    'text_to_synthesis_prompt',
+    'text_to_synthesis_layer_2_prompt'
 ]
