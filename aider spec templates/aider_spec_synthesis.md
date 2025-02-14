@@ -7,14 +7,42 @@
 
 ## Mid-Level Objective
 
--  To add the synthesis layer, we will modify the last two nodes of the current graph (invert the order to the output_to_markdown node, and qa_quote_reasoning_pairs node)
-- Modify the output of the qa_quote_reasoning_pairs node to overwrite the prompt_per_code_results. 
-- Modify the output_to_markdown node functions: generate_markdown (uses the prompt_per_code_results as input) and save_final_markdown to respectively generate the markdown of each quote reasoning pair per directory (charity id) and save the markdown to a file. 
-- Add a synthesis layer to the coding agent. To add the synthesis layer we willl need to create several new nodes and edges to the graph. This layer will have 4 parts:
-    - Layer 1: first, create a node to do per charity per code synthesis. Create a new node that will use the layer_1_synthesis_prompt to generate a synthesis for each charity per code. This node will use the send API to send each quote reasoning pairs grouped by charity and code to the layer_1_synthesis node.
-    - Layer 2 (per charity synthesis): second, create a node to do per charity synthesis. Create a new node that will use the layer_2_charity_synthesis_prompt to generate a synthesis for all codes for each charity. This node will use the output from the previous layer (per charity per code synthesis), aggregate the results per charity (aggregate the results for each code per charity) and then use the send API to send the aggregated results to the layer_2_charity_synthesis node, this will be done in parallel for each charity.
-    - Layer 2 (per code synthesis): third, create a node to do per code synthesis. Create a new node that will use the layer_2_code_synthesis_prompt to generate a synthesis for all charities for each code. This node will use the output from the previous layer (per charity per code synthesis), aggregate the results per code (aggregate the results for each charity per code) and then use the send API to send the aggregated results to the layer_2_code_synthesis node, this will be done in parallel for each code.
-    - Final layer: fourth, create a node to do final synthesis. Create a new node that will use the final_layer_research_question_prompt to generate a comprehensive answer to the research question based on the aggregation from the previous layer (layer 2). This node will use the output from the previous layer (per charity synthesis and per code synthesis), as well as the final_layer_research_question_prompt to invoke an LLM call to generate the final output.
+1) Reorder and Update Existing Nodes
+- Graph Reordering: In the main graph, invert the order of the last two nodes so that the qa_quote_reasoning_pairs node precedes the output_to_markdown node. Update the edge definitions accordingly.
+- QA Results Update: Modify the qa_quote_reasoning_pairs function so that its output overwrites the existing prompt_per_code_results state key with the QA-evaluated results.
+
+2) Enhance Markdown Generation and Saving
+- Generate Markdown per Charity: Update the generate_markdown function to process the prompt_per_code_results data by grouping quote–reasoning pairs by charity (using charity_id) and further organizing them by document importance and code.
+- Save Files per Charity: Modify the save_final_markdown function so that for each charity, the generated markdown string is saved as a separate file (e.g., Coding_output_for_{charity_id}.md) in the designated output folder (e.g., coding_output).
+
+3) Implement a Multi-Layer Synthesis Process
+To provide a comprehensive synthesis that addresses both per-code and per-charity perspectives—and ultimately answers the research question—introduce the following synthesis layers:
+
+- Synthesis Layer 1 – Per Charity Per Code Synthesis:
+Create a new node (synthesis_layer_1) that groups all quote–reasoning pairs for each unique combination of charity and code.
+Use the layer_1_synthesis_prompt to generate a synthesis for each group.
+Utilize the send API to dispatch each grouped (and JSON-formatted) payload to the synthesis_layer_1 node.
+
+- Synthesis Layer 2 – Aggregation:
+Implement two parallel aggregation nodes:
+Per Charity Aggregation:
+Create a node (synthesis_layer_2_per_charity) that aggregates all synthesis results from Layer 1 for each charity (i.e., combining results across all codes for a given charity).
+This node uses the layer_2_charity_synthesis_prompt and sends the aggregated results via the send API.
+Per Code Aggregation:
+Create a node (synthesis_layer_2_per_code) that aggregates all synthesis results from Layer 1 for each code (i.e., combining results across all charities for a given code).
+This node uses the layer_2_code_synthesis_prompt and also employs the send API.
+Final Synthesis – Comprehensive Report Generation:
+
+- Create a final synthesis node (final_report) that takes as input both the per-charity and per-code aggregated results.
+- Use the final_layer_research_question_prompt to generate a comprehensive answer to the research question.
+- This node should produce a final markdown report (via an LLM call) that is then saved to the output folder.
+
+4) Update State and Utility Integrations
+- State Updates:
+Modify CodingAgentState to add new attributes for synthesis data, including (but not limited to) synthesis_layer_1, synthesis_layer_2_per_code, synthesis_layer_2_per_charity, synthesis_output_per_charity, and synthesis_output_per_code.
+- Define corresponding TypedDict types (e.g., SynthesisLayer1State, SynthesisLayer2PerCodeState, etc.) to enforce proper data structures.
+- Utility Imports:
+Ensure that all necessary helper functions (such as merge_dicts) are imported and used consistently to merge state data as required.
 
 
 ## Implementation Notes
@@ -163,71 +191,109 @@ prompt_per_code_results:{
 
 Modify the function generate_markdown to generate a markdown string for each charity id, and store these strings in a dictionary named markdown_output with the charity_id as the key and the markdown string as the value.
 
+Markdown Generation Clarification:
+
+For each charity (identified by charity_id), generate a separate markdown string (and file) that is organized as follows:
+- Charity Header: The top of the markdown should display the charity's ID.
+- Document Importance Section: Under a "Document Importance" header, list the names of all documents (using their doc_name) grouped into three sub-sections: Important to read, Worth reading, Not worth reading
+
+- Code-Specific Sections: For each code associated with that charity, create a separate section that includes:
+A header with the code. For each document under that code, a sub-header with the document name, followed by a list of all quote–reasoning pairs extracted from that document.
+
 The markdown string will be generated using the markdown string format (between parenthesis are the values of the dictionary to be used in the markdown string):
+
 <markdown string format>
-# Charity Id (charity_id)
+# Charity Id: <charity_id>
 
 # Document Importance
 ### Important to read
-(list of all the doc_name that have document_importance set to "important to read")
+(list of all doc_name with document_importance = "important to read")
 ### Worth reading
-(list of all the doc_name that have document_importance set to "worth reading")
+(list of all doc_name with document_importance = "worth reading")
 ### Not worth reading
-(list of all the doc_name that have document_importance set to "not worth reading")
+(list of all doc_name with document_importance = "not worth reading")
 
-## Code (code)
-### Doc Name (doc_name)
-- **Quote:** Quote (quote)
-- **Reasoning:** Reasoning (reasoning)
-(repeat for each quote reasoning pair)
-(repeat this section for each code)
+## Code: <code>
+### Doc Name: <doc_name>
+- **Quote:** <quote>
+- **Reasoning:** <reasoning>
+(repeat for each quote–reasoning pair)
+(repeat the "Doc Name" section for each document under the code)
+(repeat the "Code" section for each code)
 </markdown string format>
 ```
 
 4. in coding_utils.py, modify the save_final_markdown. so that it takes the markdown_output dictionnary as input and saves each value in a separate file 
 ```aider
 
-Modify save_final_markdown(markdown_output): 
+Task Description:
+Modify the save_final_markdown function so that it:
+Accepts a dictionary (markdown_output) where each key is a charity_id and each value is the corresponding markdown string.
+Explicitly defines the output folder as "coding_output".
+Checks if the coding_output folder exists; if not, it creates the folder.
+Iterates over the markdown_output dictionary, and for each charity:
+Constructs a filename in the format Coding_output_for_<charity_id>.md.
+Saves the markdown content to that file within the coding_output folder using os.path.join().
+
+def save_final_markdown(markdown_output: dict):
+    """
+    This function takes a dictionary where each key is a charity_id and each value is the corresponding markdown string.
+    It saves each markdown string into a separate file named 'Coding_output_for_<charity_id>.md' in the 'coding_output' folder.
+    
+    :param markdown_output: Dictionary with charity_id as keys and markdown content as values.
+    """
+    import os
+
+    # Define the output folder
+    output_folder = "coding_output"
+    
+    # Create the output folder if it doesn't exist
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    # Iterate over the dictionary and save each markdown string to a file in the output folder
     for charity_id, markdown_content in markdown_output.items():
         filename = f'Coding_output_for_{charity_id}.md'
-        save_final_markdown(filename, markdown_content)
+        filepath = os.path.join(output_folder, filename)
+        with open(filepath, 'w', encoding='utf-8') as file:
+            file.write(markdown_content)
 
-All the files will be saved in the coding_output folder.
 ```
 
 
 5. in coding_exec.py, modify the output_to_markdown function to use the generate_markdown function to generate the markdown_output dictionary, and the save_final_markdown function to save the markdown_output dictionary to a separate file for each charity id.
 ```aider
+
+Task Description:
+Modify the output_to_markdown function so that it:
+Uses the generate_markdown function to create the markdown_output dictionary from the state.
+Directly calls the updated save_final_markdown function with the markdown_output dictionary, ensuring that each markdown file is saved in the coding_output folder.
+Returns the updated state including the markdown_output dictionary.
+
+
 def output_to_markdown(state: CodingAgentState):
     """
-    This function generates the markdown output from the collected results and saves separate files for each charity id.
+    This function generates the markdown output from the collected results and saves separate files for each charity id
+    in the 'coding_output' folder.
     """
+    # Generate the markdown output dictionary by grouping results per charity
     markdown_output = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
     
-    save_final_markdown(filename, markdown_content)
+    # Save the markdown files in the 'coding_output' folder
+    save_final_markdown(markdown_output)
     
+    # Return the updated state with the markdown output
     return {"markdown_output": markdown_output}
 
 ```
 
-6. in coding_state.py, modify the CodingAgentState to add a new attribute called synthesis_results.
-```aider
-in coding_state.py, add a new attribute called synthesis_results to the CodingAgentState.
-class CodingAgentState(TypedDict):
-    markdown_output: dict[str, str]
-    prompt_per_code_results: Annotated[list, merge_lists]
-    unprocessed_documents: Annotated[list, merge_lists] 
-    synthesis_results: Annotated[Dict[str, Dict[int, str]], merge_dicts] (don't forget to: from typing import Dict)
-
-```
-
-7. import the merge_dicts function from coding_reducer.py
+6. import the merge_dicts function from coding_reducer.py
 ```aider
 in coding_state.py, import the merge_dicts function from coding_reducer.py 
 
 ```
 
-8. Create a new file called coding_reducer.py and add the following function:
+7. Create a new file called coding_reducer.py and add the following function:
 ```aider
 def merge_dicts(dict_a: dict, dict_b: dict) -> dict:
     """
@@ -239,12 +305,12 @@ def merge_dicts(dict_a: dict, dict_b: dict) -> dict:
     return merged
 ```
 
-9. add a synthesis function to the coding agent (per code per charity synthesis)
+8. add a synthesis function to the coding agent (per code per charity synthesis)
 ```
 in coding_exec.py, add a new function continue_to_synthesis_layer_1(state: CodingAgentState):
 
-Mirror the send API example above to itterate over the state['prompt_per_code_results'] and send all the quote reasoning pairs for each code for each charity to the synthesis_layer_1 node.
-Note: I want all the quote reasoning pairs per code per charity to be sent to the synthesis_layer_1 node. in other words, the synthesis_layer_1 node will receive a subset of dictionnary stored in state['prompt_per_code_results'] that will be formatted as a JSON formated string, each subset will contain the quote reasoning pairs for a specific code for a specific charity.
+Mirror the send API example above to iterate over the state['prompt_per_code_results'] and send all the quote reasoning pairs for each code for each charity to the synthesis_layer_1 node.
+Note: I want to group all entries with the same charity_id and code into one dictionary, then convert that group to JSON formatted string and send it to the synthesis_layer_1 node. in other words, the synthesis_layer_1 node will receive a subset of dictionnary stored in state['prompt_per_code_results'] that will be formatted as a JSON formated string, each subset will contain the quote reasoning pairs for a specific code for a specific charity.
 
 This is the format of the dictionnary stored in state['prompt_per_code_results']:
 prompt_per_code_results:{
@@ -256,17 +322,19 @@ prompt_per_code_results:{
     - document_importance: Literal["important to read", "worth reading", "not worth reading"]
 }
 
+
+
 return [Send("synthesis_layer_1", {"synthesis_layer_1_text": s,
                                     "synthesis_layer_1_charity_id": s['charity_id'],
                                     "synthesis_layer_1_code": s['code']
-}) for itterate over each code and charity in the state['prompt_per_code_results'] get s, s['charity_id'], s['code']]
+}) to get s iterate over each code and charity in the state['prompt_per_code_results'] , s['charity_id'], s['code']]
 
 note: s is a subset of the dictionnary stored in state['prompt_per_code_results'] for a specific code for a specific charity turned into a JSON formated string.
 
 ```
 
 
-10. Create a synthesis_layer_1 state
+9. Create a synthesis_layer_1 state
 ```aider
 in coding_state.py, add a new class called SynthesisLayer1State.
 class SynthesisLayer1State(TypedDict):
@@ -276,7 +344,7 @@ class SynthesisLayer1State(TypedDict):
 
 ```
 
-11. Modify CodingAgentState to add a new attribute called synthesis_layer_1.
+10. Modify CodingAgentState to add a new attribute called synthesis_layer_1.
 ```aider
 in coding_state.py Modify CodingAgentStateCodingAgentState(TypedDict):
     markdown_output: dict[str, str]
@@ -286,7 +354,7 @@ in coding_state.py Modify CodingAgentStateCodingAgentState(TypedDict):
 ```
 
 
-12. in coding_exec.py, add a new function synthesis_layer_1(state: SynthesisLayer1State, config):
+11. in coding_exec.py, add a new function synthesis_layer_1(state: SynthesisLayer1State, config):
 ```aider
 
 in coding_exec.py, add a new function synthesis_layer_1(state: CodingAgentState, config):
@@ -302,7 +370,7 @@ return {synthesis_layer_1:{"synthesis_layer_1_result": result,
 
 ```
 
-13. add a conditional edge to the main graph to continue_to_synthesis_layer_1 node.
+12. add a conditional edge to the main graph to continue_to_synthesis_layer_1 node.
 ```aider
 main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
@@ -317,11 +385,11 @@ main_graph.add_conditional_edges(
 )
 main_graph.add_edge('invoke_subgraph_node', 'output_to_markdown_node')
 main_graph.add_edge('output_to_markdown_node', 'qa_quote_reasoning_pairs_node')
-main_graph.add_edge('qa_quote_reasoning_pairs_node', continue_to_synthesis_layer_1_node, [synthesis_layer_1_node])
+main_graph.add_edge('qa_quote_reasoning_pairs_node', continue_to_synthesis_layer_1, [synthesis_layer_1_node])
 main_graph.add_edge('synthesis_layer_1_node', END)
 ```
 
-14. add a the node and edge to the main graph for the synthesis_layer_1_node.
+13. add a the node and edge to the main graph for the synthesis_layer_1_node.
 ```aider
 main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
@@ -342,11 +410,11 @@ main_graph.add_edge('qa_quote_reasoning_pairs_node', continue_to_synthesis_layer
 main_graph.add_edge('synthesis_layer_1_node', END)
 ```
 
-15. add a synthesis function that will aggregate the results from the synthesis_layer_1 node for a code of all charities. 
+14. add a synthesis function that will aggregate the results from the synthesis_layer_1 node for a code of all charities. 
 ```aider
 in coding_exec.py, add a new function continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
 
-Mirror the send API example above to itterate over the state['synthesis_layer_1'] for all charities and send all the results for a specific code to the synthesis_layer_2_per_charity node. The objective is to aggregate the results for a specific code for all charities.
+Mirror the send API example above to iterate over the state['synthesis_layer_1'] for all charities and send all the results for a specific code to the synthesis_layer_2_per_charity node. The objective is to aggregate the results for a specific code for all charities.
 
 state['synthesis_layer_1'] is a dictionnary with the following keys:
 synthesis_layer_1:{
@@ -357,12 +425,12 @@ synthesis_layer_1:{
 
 return [Send("synthesis_layer_2_per_charity", { "synthesis_layer_2_all_charity_text": s,
                                                 "synthesis_layer_2_code": s['synthesis_layer_1_code']
-}) for itterate over each charity for a specific code (repeat for all codes) in the state['synthesis_layer_1']]
+}) for iterate over each charity for a specific code (repeat for all codes) in the state['synthesis_layer_1']]
 
 note: s is a subset of the dictionnary stored in state['synthesis_layer_1'] for a specific code of all charities turned into a JSON formated string. Each relevant dictionnary values will have to be aggregated for each code of all charities to get s. 
 ```
 
-16. Create a synthesis_layer_2_per_code state
+15. Create a synthesis_layer_2_per_code state
 ```aider
 in coding_state.py, add a new class called SynthesisLayer2PerCodeState.
 class SynthesisLayer2PerCodeState(TypedDict):
@@ -370,13 +438,13 @@ class SynthesisLayer2PerCodeState(TypedDict):
     synthesis_layer_2_code: str
 ```
 
-17. 
+16. 
 ```aider
 in coding_exec.py, add a new function synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeState, config):
 
 system_message = SystemMessage(layer_2_per_code_synthesis_prompt.format(research_question=config["configurable"].get("research_question")))
 
-human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_per_code_text']))
+human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_charity_text']))
 
 result = llm_o3.invoke([system_message, human_message])
 
@@ -385,7 +453,7 @@ return {synthesis_layer_2_per_code:{"synthesis_layer_2_per_code_result": result,
 
 ```
 
-18. Modify CodingAgentState to add a new attribute called synthesis_layer_2_per_code and synthesis_layer_2_per_charity.
+17. Modify CodingAgentState to add a new attribute called synthesis_layer_2_per_code and synthesis_layer_2_per_charity.
 ```aider
 in coding_state.py Modify CodingAgentStateCodingAgentState(TypedDict):
     markdown_output: dict[str, str]
@@ -397,11 +465,11 @@ in coding_state.py Modify CodingAgentStateCodingAgentState(TypedDict):
 ```
 
 
-19. add a synthesis function that will aggregate the results from the synthesis_layer_1 node for a charity of all codes. 
+18. add a synthesis function that will aggregate the results from the synthesis_layer_1 node for a charity of all codes. 
 ```aider
 in coding_exec.py, add a new function continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
 
-Mirror the send API example above to itterate over the state['synthesis_layer_1'] for all codes and send all the results for a specific charity to the synthesis_layer_2_per_code node. The objective is to aggregate the results for a specific charity of all codes.
+Mirror the send API example above to iterate over the state['synthesis_layer_1'] for all codes and send all the results for a specific charity to the synthesis_layer_2_per_code node. The objective is to aggregate the results for a specific charity of all codes.
 
 state['synthesis_layer_1'] is a dictionnary with the following keys:
 synthesis_layer_1:{
@@ -412,12 +480,12 @@ synthesis_layer_1:{
 
 return [Send("synthesis_layer_2_per_code", {    "synthesis_layer_2_all_code_text": s,
                                                 "synthesis_layer_2_charity_id": s['synthesis_layer_1_charity_id']
-}) for itterate over each code for a specific charity (repeat for all charities) in the state['synthesis_layer_1']]
+}) for iterate over each code for a specific charity (repeat for all charities) in the state['synthesis_layer_1']]
 
 note: s is a subset of the dictionnary stored in state['synthesis_layer_1'] for a specific charity of all codes turned into a JSON formated string. Each relevant dictionnary values will have to be aggregated for each charity of all codes to get s. 
 ```
 
-20. Create a synthesis_layer_2_per_charity state
+19. Create a synthesis_layer_2_per_charity state
 ```aider
 in coding_state.py, add a new class called SynthesisLayer2PerCharityState.
 class SynthesisLayer2PerCharityState(TypedDict):
@@ -425,13 +493,13 @@ class SynthesisLayer2PerCharityState(TypedDict):
     synthesis_layer_2_charity_id: str
 ```
 
-21. 
+20. 
 ```aider
 in coding_exec.py, add a new function synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityState, config):
 
 system_message = SystemMessage(layer_2_per_charity_synthesis_prompt.format(research_question=config["configurable"].get("research_question")))
 
-human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_per_code_text']))
+human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_code_text']))
 
 result = llm_o3.invoke([system_message, human_message])
 
@@ -440,7 +508,7 @@ return {synthesis_layer_2_per_charity:{"synthesis_layer_2_per_charity_result": r
 
 ```
 
-22. Add the synthesis output to markdown function to the main graph. This function will take the state[synthesis_layer_2_per_code] and state[synthesis_layer_2_per_charity] from the codingagentstate and structure the texts as markdown and save them to a file (.md extension) in the coding_output folder.
+21. Add the synthesis output to markdown function to the main graph. This function will take the state[synthesis_layer_2_per_code] and state[synthesis_layer_2_per_charity] from the codingagentstate and structure the texts as markdown and save them to a file (.md extension) in the coding_output folder.
 ```aider
 in coding_utils.py, add a new function synthesis_output_to_markdown(state: CodingAgentState):
 
@@ -451,7 +519,7 @@ This function will take the state['synthesis_layer_2_per_charity'] and state['sy
     synthesis_layer_2_per_charity: Annotated[Dict[str, str], merge_dicts]
 ```
 
-23. Create a new function called generate_synthesis_markdown to structure the synthesis output as markdown and save it to a file.
+22. Create a new function called generate_synthesis_markdown to structure the synthesis output as markdown and save it to a file.
 ```aider
 
 in coding_utils.py, add a new function generate_synthesis_markdown(markdown_text, name, output_folder):
@@ -462,7 +530,7 @@ return the markdown string.
 
 ```
 
-24. modify the codingagentstate to add a new attribute called synthesis_output_per_charity and synthesis_output_per_code.
+23. modify the codingagentstate to add a new attribute called synthesis_output_per_charity and synthesis_output_per_code.
 ```aider
 in coding_state.py Modify CodingAgentStateCodingAgentState(TypedDict):
     markdown_output: dict[str, str]
@@ -475,7 +543,7 @@ in coding_state.py Modify CodingAgentStateCodingAgentState(TypedDict):
     synthesis_output_per_code: str
 ```
 
-25. Create a new function called synthesis_output_to_markdown(state: CodingAgentState):
+24. Create a new function called synthesis_output_to_markdown(state: CodingAgentState):
 ```aider
 
 Note: make sure to import the generate_synthesis_markdown function from coding_utils.py.
@@ -493,7 +561,7 @@ return {"synthesis_output_per_charity": synthesis_output_per_charity,
         "synthesis_output_per_code": synthesis_output_per_code}
 ```
 
-26. add nodes and edges to the main graph for the synthesis_layer_2_per_code, synthesis_layer_2_per_charity, and the synthesis_output_to_markdown node.
+25. add nodes and edges to the main graph for the synthesis_layer_2_per_code, synthesis_layer_2_per_charity, and the synthesis_output_to_markdown node.
 ```aider
 main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
@@ -520,9 +588,7 @@ main_graph.add_edge('synthesis_layer_2_per_charity_node', 'synthesis_output_to_m
 main_graph.add_edge('synthesis_output_to_markdown_node', END)
 ```
 
-
-
-27. Add the final report synthesis function to the main graph.
+26. Add the final report synthesis function to the main graph.
 ```aider
 
 in coding_exec.py, add a new function final_report(state: CodingAgentState, config):
