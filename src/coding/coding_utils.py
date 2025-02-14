@@ -40,95 +40,65 @@ def merge_lists(list_a: list, list_b: list) -> list:
 
 def generate_markdown(documents, unprocessed_documents):
     """
-    Generate a dictionary of Markdown strings, one for each code.
-    Each markdown string has three sections:
-    1) Document Evidence: Grouped by charity_id (##), and doc_name - document_importance (###) with the list of quote–reasoning pairs.
-       Only includes documents that have quote-reasoning pairs.
-    2) Important Documents: Under a fixed title "Important documents" with document_importance (##) and list of document names.
-    3) Unprocessed Documents: Under a fixed title "Unprocessed documents" with a list of document names.
-    
-    Returns:
-        dict[str, str]: A dictionary where keys are codes and values are markdown formatted strings
+    Generate a dictionary of Markdown strings, one for each charity.
+    For each charity (identified by charity_id), the markdown is structured as follows:
+      - Charity Header: "# Charity Id: <charity_id>"
+      - Document Importance Section: Under "Document Importance", list each doc_name grouped by:
+           "Important to read", "Worth reading", and "Not worth reading".
+      - Code-Specific Sections: For each code associated with that charity:
+           "## Code: <code>"
+             "### Doc Name: <doc_name>"
+               - **Quote:** <quote>
+               - **Reasoning:** <reasoning>
+      - Unprocessed Documents Section: List any unprocessed document names.
+    Returns a dictionary where keys are charity_id and values are the corresponding markdown strings.
     """
-    # Group documents by code first
-    docs_by_code = {}
-    for doc in documents:
-        if not doc["quote"] or not doc["reasoning"]:
-            continue
-        code = doc["code"]
-        if code not in docs_by_code:
-            docs_by_code[code] = []
-        docs_by_code[code].append(doc)
-
     markdown_output = {}
+    # Group input documents by charity_id.
+    charities = {}
+    for doc in documents:
+        charity = doc["charity_id"]
+        charities.setdefault(charity, []).append(doc)
     
-    for code, code_documents in docs_by_code.items():
-        markdown_sections = []
-        
-        # Section 1: Document Evidence
-        evidence_lines = []
-        # Group by charity_id -> doc_name with document importance
-        grouped = {}
-        for doc in code_documents:
-            charity_id = doc["charity_id"]
-            if charity_id not in grouped:
-                grouped[charity_id] = {}
-            # Each doc_name with its document importance and a list of quote-reasoning pairs
-            doc_key = f'{doc["doc_name"]} - {doc["document_importance"]}'
-            if doc_key not in grouped[charity_id]:
-                grouped[charity_id][doc_key] = []
-            grouped[charity_id][doc_key].append((doc["quote"], doc["reasoning"]))
+    for charity_id, docs in charities.items():
+        sections = []
+        # Charity Header
+        sections.append(f"# Charity Id: {charity_id}")
+        sections.append("")
 
-        # Generate evidence section
-        for charity_id, docs in grouped.items():
-            evidence_lines.append(f"## {charity_id}")
-            for doc_key, pairs in docs.items():
-                evidence_lines.append(f"### {doc_key}")
-                for quote, reasoning in pairs:
-                    # Format multi-line quote by indenting subsequent lines
-                    quote_lines = quote.split('\n')
-                    formatted_quote = quote_lines[0]
-                    if len(quote_lines) > 1:
-                        for line in quote_lines[1:]:
-                            formatted_quote += f"\n  {line}"
-                    
-                    evidence_lines.append(f"- **Quote:** {formatted_quote}")
-                    evidence_lines.append("")  # Add blank line between quote and reasoning
-                    evidence_lines.append(f"  **Reasoning:** {reasoning}")
-                    evidence_lines.append("")  # Add blank line after each quote-reasoning pair
-                evidence_lines.append("")  # Add extra blank line between documents
-            evidence_lines.append("")  # Blank line after each charity group
-
-        if evidence_lines:
-            markdown_sections.append("\n".join(evidence_lines))
-
-        # Section 2: Important Documents for this code
-        important_docs = {}
-        for doc in code_documents:
+        # Document Importance Section: group docs by importance.
+        imp_groups = {"important to read": set(), "worth reading": set(), "not worth reading": set()}
+        for doc in docs:
             imp = doc["document_importance"]
-            if imp not in important_docs:
-                important_docs[imp] = set()
-            important_docs[imp].add(doc["doc_name"])
-        
-        # Order the importance categories as specified
-        importance_order = ["important to read", "worth reading", "not worth reading"]
-        important_lines = ["# Important documents"]
-        for imp in importance_order:
-            if imp in important_docs:
-                important_lines.append(f"## {imp}")
-                for doc_name in sorted(important_docs[imp]):
-                    important_lines.append(f"- {doc_name}")
-        markdown_sections.append("\n".join(important_lines))
+            imp_groups[imp].add(doc["doc_name"])
+        imp_lines = ["# Document Importance"]
+        for imp in ["important to read", "worth reading", "not worth reading"]:
+            imp_lines.append(f"### {imp.capitalize()}")
+            for doc_name in sorted(imp_groups[imp]):
+                imp_lines.append(f"- {doc_name}")
+        sections.append("\n".join(imp_lines))
 
-        # Section 3: Unprocessed Documents
-        unprocessed_lines = ["# Unprocessed documents"]
-        for doc_name in unprocessed_documents:
-            unprocessed_lines.append(f"- {doc_name}")
-        markdown_sections.append("\n".join(unprocessed_lines))
+        # Code-Specific Sections: group docs by code, then by doc_name.
+        code_groups = {}
+        for doc in docs:
+            code = doc["code"]
+            code_groups.setdefault(code, {}).setdefault(doc["doc_name"], []).append((doc["quote"], doc["reasoning"]))
+        for code, docs_by_name in code_groups.items():
+            sections.append("")
+            sections.append(f"## Code: {code}")
+            for doc_name, pairs in docs_by_name.items():
+                sections.append(f"### Doc Name: {doc_name}")
+                for quote, reasoning in pairs:
+                    sections.append(f"- **Quote:** {quote}")
+                    sections.append(f"  **Reasoning:** {reasoning}")
+        # Unprocessed Documents Section
+        if unprocessed_documents:
+            sections.append("")
+            sections.append("# Unprocessed Documents")
+            for d in unprocessed_documents:
+                sections.append(f"- {d}")
 
-        # Join sections with a separator line and store in output dict
-        markdown_output[code] = ("\n\n----\n\n").join(markdown_sections)
-
+        markdown_output[charity_id] = "\n\n".join(sections)
     return markdown_output
 
 def save_final_markdown(filepath: str, cleaned_text: str):
