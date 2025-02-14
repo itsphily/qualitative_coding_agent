@@ -279,15 +279,13 @@ main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
 main_graph.add_node('output_to_markdown_node', output_to_markdown)
 main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
-main_graph.add_edge(START, 'fill_info_prompt_node')
-main_graph.add_conditional_edges(
-    'fill_info_prompt_node',
-    continue_to_invoke_subgraph_research_question,
-    ['invoke_subgraph_node']
-)
-main_graph.add_edge('invoke_subgraph_node', 'output_to_markdown_node')
-main_graph.add_edge('output_to_markdown_node', 'qa_quote_reasoning_pairs_node')
-main_graph.add_edge('qa_quote_reasoning_pairs_node', END)
+main_graph.add_edge('invoke_subgraph_node', continue_to_synthesis_layer_1, [synthesis_layer_1_node])
+main_graph.add_node('synthesis_layer_1_node', synthesis_layer_1)
+main_graph.add_edge('synthesis_layer_1_node', 'synthesis_layer_2_per_code_node')
+main_graph.add_edge('synthesis_layer_2_per_code_node', 'synthesis_layer_2_per_charity_node')
+main_graph.add_edge('synthesis_layer_2_per_charity_node', 'synthesis_output_to_markdown_node')
+main_graph.add_edge('synthesis_output_to_markdown_node', 'final_report_node')
+main_graph.add_edge('final_report_node', END)
 
 checkpointer = MemorySaver()
 main_graph = main_graph.compile(checkpointer=checkpointer)
