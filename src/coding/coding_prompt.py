@@ -458,10 +458,21 @@ Your final output must follow this exact structure:
 </final output structure>
 """
 
-final_layer_research_question_prompt = """
-You are a qualitative research synthesis expert. You have aggregated outputs from both the per charity aggregation and the per code aggregation layers. Your task now is to integrate all these aggregated findings into one final comprehensive synthesis that fully answers the overarching research question.
+text_to_synthesis_layer_2_prompt = """
+Here are all the intermediate aggregated summaries:
+<intermediate aggregated summaries>
+{intermediate_aggregated_summaries}
+</intermediate aggregated summaries>
+"""
 
-#Instructions:
+final_layer_research_question_prompt = """
+You are a qualitative research synthesis expert. You have aggregated outputs from both the per charity aggregation and the per code aggregation layers. Your task now is to integrate all these aggregated findings into one final comprehensive research report that fully answers the overarching research question.
+
+<research question>
+{research_question}
+</research question>
+
+# Instructions:
 
 1) Review All Aggregated Outputs: Examine the aggregated summaries produced in the previous layers (per charity and per code).
 
@@ -471,28 +482,19 @@ You are a qualitative research synthesis expert. You have aggregated outputs fro
 
 4) Synthesize the Final Comprehensive Summary: Write a clear and cohesive narrative that pulls together all the aggregated evidence, emphasizes the interconnections between codes and charities, and provides a final answer to the research question.
 
-# Output Format:
-Your final output must follow this structure:
-
-<final output structure>
-# Final Comprehensive Synthesis
-
-## Research Question: [Insert the research question here]
-
-### Overarching Key Themes:
-
-- [Bullet point theme 1]
-- [Bullet point theme 2]
-…
-### Final Synthesis Narrative: [A cohesive narrative integrating all evidence across charities and codes, directly addressing the research question.]
-</final output structure>
+5) Format your output as markdown.
 """
 
-text_to_synthesis_layer_2_prompt = """
-Here are all the intermediate aggregated summaries:
-<intermediate aggregated summaries>
-{intermediate_aggregated_summaries}
-</intermediate aggregated summaries>
+text_to_synthesis_final_report_prompt = """
+Here are the aggregated outputs from the per charity aggregation layer.
+<per charity aggregated outputs>
+{per_charity_aggregated_outputs}
+</per charity aggregated outputs>
+
+Here are the aggregated outputs from the per code aggregation layer.
+<per code aggregated outputs>
+{per_code_aggregated_outputs}
+</per code aggregated outputs>
 """
 
 # Export the variables
@@ -509,5 +511,6 @@ __all__ = [
     'layer_2_charity_synthesis_prompt',
     'final_layer_research_question_prompt',
     'text_to_synthesis_prompt',
-    'text_to_synthesis_layer_2_prompt'
+    'text_to_synthesis_layer_2_prompt',
+    'text_to_synthesis_final_report_prompt'
 ]

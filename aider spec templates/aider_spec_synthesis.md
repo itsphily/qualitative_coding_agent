@@ -64,7 +64,7 @@ Ensure that all necessary helper functions (such as merge_dicts) are imported an
 - in langgraph the state is passed as an input to the function, the function will modify the state and return it. Make sure to follow this design pattern when updating the functions.
 - When creating a function for the graph, follow the convention shown in the example (node function example below).
 - Make sure you implement the changes to all the files as stated in the low-level tasks.
-- The directory where the files coding_prompt.py, coding_exec_new.py, coding_utils.py, coding_state_new.py are located is /Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/src/coding
+- The directory where the files coding_prompt.py, coding_exec.py, coding_utils.py, coding_state.py are located is /Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/src/coding
 - Always make sure you have all the necessary imports. Put all the imports at the top of the file.
 - Carefully review each low-level task for exact code changes
 
@@ -179,15 +179,15 @@ def qa_quote_reasoning_pairs(state: CodingAgentState, config):
 
 3. in coding_utils.py, modify the generate_markdown function.
 ```aider
-The function will take a state['prompt_per_code_results'] which is a dictionary with the following keys: data type:
-prompt_per_code_results:{
+The function will take a state['prompt_per_code_results'] which is a nested dictionary with an int as the key and a dictionary as the value with the following structure:
+prompt_per_code_results: {int {
     - charity_id: str
     - code: str
     - doc_name: str
     - quote: str
     - reasoning: str
     - document_importance: Literal["important to read", "worth reading", "not worth reading"]
-}
+}}
 
 Modify the function generate_markdown to generate a markdown string for each charity id, and store these strings in a dictionary named markdown_output with the charity_id as the key and the markdown string as the value.
 

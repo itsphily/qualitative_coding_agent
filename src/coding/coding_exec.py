@@ -41,7 +41,10 @@ from coding_state import (
     StructuredOutputPerCode,
     CodingAgentInputState,
     InvokePromptOutputState,
-    QAStructuredOutputPerCode
+    QAStructuredOutputPerCode,
+    SynthesisLayer1State,
+    SynthesisLayer2PerCodeState,
+    SynthesisLayer2PerCharityState
 )
 from coding_utils import (
     path_to_text,
@@ -50,7 +53,8 @@ from coding_utils import (
     path_to_doc_name,
     generate_markdown, 
     format_results_to_json, 
-    transform_qa_results_to_dict
+    transform_qa_results_to_dict,
+    generate_synthesis_markdown
 )
 from coding_utils import path_to_text, visualize_graph, save_final_markdown
 from coding_prompt import (
@@ -65,7 +69,10 @@ from coding_prompt import (
     layer_1_synthesis_prompt,
     layer_2_code_synthesis_prompt,
     layer_2_charity_synthesis_prompt,
-    final_layer_research_question_prompt
+    final_layer_research_question_prompt,
+    text_to_synthesis_prompt,
+    text_to_synthesis_layer_2_prompt,
+    text_to_synthesis_final_report_prompt
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
@@ -244,6 +251,146 @@ def output_to_markdown(state: CodingAgentState):
     save_final_markdown(markdown_output)
     return {"markdown_output": markdown_output}
 
+def continue_to_synthesis_layer_1(state: CodingAgentState):
+    """
+    Iterate over state['prompt_per_code_results'], group by charity_id and code,
+    then send each grouped JSON string to the synthesis_layer_1 node.
+    """
+    import json
+    groups = {}
+    for item in state["prompt_per_code_results"]:
+        key = (item["charity_id"], item["code"])
+        groups.setdefault(key, []).append(item)
+    sends = []
+    for (charity, code), group in groups.items():
+        group_json = json.dumps(group, indent=2)
+        sends.append(
+            Send("synthesis_layer_1", {
+                "synthesis_layer_1_text": group_json,
+                "synthesis_layer_1_charity_id": charity,
+                "synthesis_layer_1_code": code,
+            })
+        )
+    return sends
+
+def synthesis_layer_1(state: SynthesisLayer1State, config):
+    """
+    Invoke LLM to do per-code per-charity synthesis.
+    """
+    system_message = SystemMessage(content=layer_1_synthesis_prompt.format(
+        research_question=config["configurable"].get("research_question")
+    ))
+    human_message = HumanMessage(content=text_to_synthesis_prompt.format(text=state['synthesis_layer_1_text']))
+    result = llm_o3.invoke([system_message, human_message])
+    return {"synthesis_layer_1": {
+                "synthesis_layer_1_result": result,
+                "synthesis_layer_1_charity_id": state['synthesis_layer_1_charity_id'],
+                "synthesis_layer_1_code": state['synthesis_layer_1_code']
+           }}
+
+def continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
+    """
+    Iterate over state['synthesis_layer_1'] to group and send per-code across charities.
+    """
+    import json
+    groups = {}
+    for key, val in state.get("synthesis_layer_1", {}).items():
+        group_key = val["synthesis_layer_1_code"]
+        groups.setdefault(group_key, []).append(val)
+    sends = []
+    for code, group in groups.items():
+        group_json = json.dumps(group, indent=2)
+        sends.append(
+            Send("synthesis_layer_2_per_code", {
+                "synthesis_layer_2_all_charity_text": group_json,
+                "synthesis_layer_2_code": code
+            })
+        )
+    return sends
+
+def synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeState, config):
+    system_message = SystemMessage(content=layer_2_code_synthesis_prompt.format(
+        research_question=config["configurable"].get("research_question")
+    ))
+    human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_charity_text']))
+    result = llm_o3.invoke([system_message, human_message])
+    return {"synthesis_layer_2_per_code": {
+                "synthesis_layer_2_per_code_result": result,
+                "synthesis_layer_2_per_code_charity_id": state.get('synthesis_layer_2_code', '')
+           }}
+
+def continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
+    """
+    Iterate over state['synthesis_layer_1'] grouping by charity,
+    then send aggregated JSON string to synthesis_layer_2_per_charity node.
+    """
+    import json
+    groups = {}
+    for key, val in state.get("synthesis_layer_1", {}).items():
+        charity = val["synthesis_layer_1_charity_id"]
+        groups.setdefault(charity, []).append(val)
+    sends = []
+    for charity, group in groups.items():
+        group_json = json.dumps(group, indent=2)
+        sends.append(
+            Send("synthesis_layer_2_per_charity", {
+                "synthesis_layer_2_all_code_text": group_json,
+                "synthesis_layer_2_charity_id": charity
+            })
+        )
+    return sends
+
+def synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityState, config):
+    system_message = SystemMessage(content=layer_2_charity_synthesis_prompt.format(
+        research_question=config["configurable"].get("research_question")
+    ))
+    human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_code_text']))
+    result = llm_o3.invoke([system_message, human_message])
+    return {"synthesis_layer_2_per_charity": {
+                "synthesis_layer_2_per_charity_result": result,
+                "synthesis_layer_2_per_charity_code": state['synthesis_layer_2_charity_id']
+           }}
+
+def synthesis_output_to_markdown(state):
+    """
+    Aggregate synthesis_layer_2 outputs and structure as markdown.
+    Calls generate_synthesis_markdown for per charity and per code outputs.
+    """
+    per_charity = state.get("synthesis_layer_2_per_charity", {})
+    per_code = state.get("synthesis_layer_2_per_code", {})
+    synthesis_md_charity = ""
+    for charity, text in per_charity.items():
+        synthesis_md_charity += f"## Charity: {charity}\n{text}\n\n"
+    synthesis_md_code = ""
+    for code, text in per_code.items():
+        synthesis_md_code += f"## Code: {code}\n{text}\n\n"
+    output_charity = generate_synthesis_markdown(synthesis_md_charity, 'synthesis_output_per_charity', 'coding_output')
+    output_code = generate_synthesis_markdown(synthesis_md_code, 'synthesis_output_per_code', 'coding_output')
+    return {"synthesis_output_per_charity": output_charity,
+            "synthesis_output_per_code": output_code}
+
+
+def generate_synthesis_output(state: CodingAgentState):
+    synthesis_outputs = synthesis_output_to_markdown(state)
+    return synthesis_outputs
+
+def final_report(state: CodingAgentState, config):
+    """
+    Generate a final comprehensive synthesis report.
+    """
+    system_message = SystemMessage(content=final_layer_research_question_prompt.format(
+        research_question=config["configurable"].get("research_question")
+    ))
+    human_message = HumanMessage(content=text_to_synthesis_final_report_prompt.format(
+        per_charity_aggregated_outputs=state['synthesis_output_per_charity'],
+        per_code_aggregated_outputs=state['synthesis_output_per_code']
+    ))
+    result = llm_o3.invoke([system_message, human_message])
+    final_md = generate_synthesis_markdown(result, 'final_report', 'coding_output')
+    return {"final_report_result": final_md}
+
+
+
 
 # Define the subgraph
 invoke_subgraph = StateGraph(InvokePromptState, input=InvokePromptInputState, output=InvokePromptOutputState)
@@ -262,10 +409,25 @@ invoke_subgraph.add_edge("invoke_research_question_prompt_node", END)
 main_graph = StateGraph(CodingAgentState, input = CodingAgentInputState)
 main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
-main_graph.add_node('output_to_markdown_node', output_to_markdown)
 main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
-main_graph.add_edge('invoke_subgraph_node', continue_to_synthesis_layer_1, [synthesis_layer_1_node])
+main_graph.add_node('output_to_markdown_node', output_to_markdown)
+main_graph.add_node('synthesis_output_to_markdown_node', synthesis_output_to_markdown)
 main_graph.add_node('synthesis_layer_1_node', synthesis_layer_1)
+main_graph.add_node('synthesis_layer_2_per_code_node', synthesis_layer_2_per_code)
+main_graph.add_node('synthesis_layer_2_per_charity_node', synthesis_layer_2_per_charity)
+main_graph.add_node('final_report_node', final_report)
+
+# Define the edges
+main_graph.add_edge(START, 'fill_info_prompt_node')
+main_graph.add_conditional_edges(
+    'fill_info_prompt_node',
+    continue_to_invoke_subgraph_research_question,
+    ['invoke_subgraph_node']
+)
+main_graph.add_edge('invoke_subgraph_node', 'qa_quote_reasoning_pairs_node')
+main_graph.add_edge('qa_quote_reasoning_pairs_node', 'output_to_markdown_node')
+
+main_graph.add_conditional_edges('output_to_markdown_node', continue_to_synthesis_layer_1, ['synthesis_layer_1_node'])
 main_graph.add_edge('synthesis_layer_1_node', 'synthesis_layer_2_per_code_node')
 main_graph.add_edge('synthesis_layer_2_per_code_node', 'synthesis_layer_2_per_charity_node')
 main_graph.add_edge('synthesis_layer_2_per_charity_node', 'synthesis_output_to_markdown_node')
@@ -334,114 +496,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-def continue_to_synthesis_layer_1(state: CodingAgentState):
-    """
-    Iterate over state['prompt_per_code_results'], group by charity_id and code,
-    then send each grouped JSON string to the synthesis_layer_1 node.
-    """
-    import json
-    groups = {}
-    for item in state["prompt_per_code_results"]:
-        key = (item["charity_id"], item["code"])
-        groups.setdefault(key, []).append(item)
-    sends = []
-    for (charity, code), group in groups.items():
-        group_json = json.dumps(group, indent=2)
-        sends.append(
-            Send("synthesis_layer_1", {
-                "synthesis_layer_1_text": group_json,
-                "synthesis_layer_1_charity_id": charity,
-                "synthesis_layer_1_code": code,
-            })
-        )
-    return sends
-def synthesis_layer_1(state: SynthesisLayer1State, config):
-    """
-    Invoke LLM to do per-code per-charity synthesis.
-    """
-    system_message = SystemMessage(content=layer_1_synthesis_prompt.format(
-        research_question=config["configurable"].get("research_question")
-    ))
-    human_message = HumanMessage(content=text_to_synthesis_prompt.format(text=state['synthesis_layer_1_text']))
-    result = llm_o3.invoke([system_message, human_message])
-    return {"synthesis_layer_1": {
-                "synthesis_layer_1_result": result,
-                "synthesis_layer_1_charity_id": state['synthesis_layer_1_charity_id'],
-                "synthesis_layer_1_code": state['synthesis_layer_1_code']
-           }}
-def continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
-    """
-    Iterate over state['synthesis_layer_1'] to group and send per-code across charities.
-    """
-    import json
-    groups = {}
-    for key, val in state.get("synthesis_layer_1", {}).items():
-        group_key = val["synthesis_layer_1_code"]
-        groups.setdefault(group_key, []).append(val)
-    sends = []
-    for code, group in groups.items():
-        group_json = json.dumps(group, indent=2)
-        sends.append(
-            Send("synthesis_layer_2_per_code", {
-                "synthesis_layer_2_all_charity_text": group_json,
-                "synthesis_layer_2_code": code
-            })
-        )
-    return sends
-def synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeState, config):
-    system_message = SystemMessage(content=layer_2_code_synthesis_prompt.format(
-        research_question=config["configurable"].get("research_question")
-    ))
-    human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_charity_text']))
-    result = llm_o3.invoke([system_message, human_message])
-    return {"synthesis_layer_2_per_code": {
-                "synthesis_layer_2_per_code_result": result,
-                "synthesis_layer_2_per_code_charity_id": state.get('synthesis_layer_2_code', '')
-           }}
-def continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
-    """
-    Iterate over state['synthesis_layer_1'] grouping by charity,
-    then send aggregated JSON string to synthesis_layer_2_per_charity node.
-    """
-    import json
-    groups = {}
-    for key, val in state.get("synthesis_layer_1", {}).items():
-        charity = val["synthesis_layer_1_charity_id"]
-        groups.setdefault(charity, []).append(val)
-    sends = []
-    for charity, group in groups.items():
-        group_json = json.dumps(group, indent=2)
-        sends.append(
-            Send("synthesis_layer_2_per_charity", {
-                "synthesis_layer_2_all_code_text": group_json,
-                "synthesis_layer_2_charity_id": charity
-            })
-        )
-    return sends
-def synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityState, config):
-    system_message = SystemMessage(content=layer_2_charity_synthesis_prompt.format(
-        research_question=config["configurable"].get("research_question")
-    ))
-    human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_code_text']))
-    result = llm_o3.invoke([system_message, human_message])
-    return {"synthesis_layer_2_per_charity": {
-                "synthesis_layer_2_per_charity_result": result,
-                "synthesis_layer_2_per_charity_code": state['synthesis_layer_2_charity_id']
-           }}
-def generate_synthesis_output(state: CodingAgentState):
-    synthesis_outputs = synthesis_output_to_markdown(state)
-    return synthesis_outputs
-def final_report(state: CodingAgentState, config):
-    """
-    Generate a final comprehensive synthesis report.
-    """
-    system_message = SystemMessage(content=final_layer_research_question_prompt.format(
-        research_question=config["configurable"].get("research_question")
-    ))
-    human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(
-        per_charity_aggregated_outputs=state['synthesis_output_per_charity'],
-        per_code_aggregated_outputs=state['synthesis_output_per_code']
-    ))
-    result = llm_o3.invoke([system_message, human_message])
-    final_md = generate_synthesis_markdown(result, 'final_report', 'coding_output')
-    return {"final_report_result": final_md}
+
