@@ -38,68 +38,101 @@ def merge_lists(list_a: list, list_b: list) -> list:
     merged.extend(list_b)
     return merged
 
-def generate_markdown(documents, unprocessed_documents):
+def generate_markdown(prompt_per_code_results: list, unprocessed_documents: list) -> dict:
     """
-    Generate a dictionary of Markdown strings, one for each charity.
-    For each charity (identified by charity_id), the markdown is structured as follows:
-      - Charity Header: "# Charity Id: <charity_id>"
-      - Document Importance Section: Under "Document Importance", list each doc_name grouped by:
-           "Important to read", "Worth reading", and "Not worth reading".
-      - Code-Specific Sections: For each code associated with that charity:
-           "## Code: <code>"
-             "### Doc Name: <doc_name>"
-               - **Quote:** <quote>
-               - **Reasoning:** <reasoning>
-      - Unprocessed Documents Section: List any unprocessed document names.
-    Returns a dictionary where keys are charity_id and values are the corresponding markdown strings.
-    """
-    markdown_output = {}
-    # Group input documents by charity_id.
-    charities = {}
-    for doc in documents:
-        charity = doc["charity_id"]
-        charities.setdefault(charity, []).append(doc)
+    Generate markdown strings organized by charity_id.
     
-    for charity_id, docs in charities.items():
-        sections = []
-        # Charity Header
-        sections.append(f"# Charity Id: {charity_id}")
-        sections.append("")
-
-        # Document Importance Section: group docs by importance.
-        imp_groups = {"important to read": set(), "worth reading": set(), "not worth reading": set()}
-        for doc in docs:
-            imp = doc["document_importance"]
-            imp_groups[imp].add(doc["doc_name"])
-        imp_lines = ["# Document Importance"]
-        for imp in ["important to read", "worth reading", "not worth reading"]:
-            imp_lines.append(f"### {imp.capitalize()}")
-            for doc_name in sorted(imp_groups[imp]):
-                imp_lines.append(f"- {doc_name}")
-        sections.append("\n".join(imp_lines))
-
-        # Code-Specific Sections: group docs by code, then by doc_name.
-        code_groups = {}
-        for doc in docs:
-            code = doc["code"]
-            code_groups.setdefault(code, {}).setdefault(doc["doc_name"], []).append((doc["quote"], doc["reasoning"]))
-        for code, docs_by_name in code_groups.items():
-            sections.append("")
-            sections.append(f"## Code: {code}")
-            for doc_name, pairs in docs_by_name.items():
-                sections.append(f"### Doc Name: {doc_name}")
-                for quote, reasoning in pairs:
-                    sections.append(f"- **Quote:** {quote}")
-                    sections.append(f"  **Reasoning:** {reasoning}")
-        # Unprocessed Documents Section
-        if unprocessed_documents:
-            sections.append("")
-            sections.append("# Unprocessed Documents")
-            for d in unprocessed_documents:
-                sections.append(f"- {d}")
-
-        markdown_output[charity_id] = "\n\n".join(sections)
-    return markdown_output
+    Args:
+        prompt_per_code_results: List of documents, each containing charity data
+        unprocessed_documents: List of unprocessed documents
+        
+    Returns:
+        dict: Dictionary with charity_id as key and markdown string as value
+    """
+    print("Debug - Type of prompt_per_code_results:", type(prompt_per_code_results))
+    print("Debug - First item:", prompt_per_code_results[0] if prompt_per_code_results else None)
+    
+    # Initialize storage for organizing data by charity
+    charity_data = {}
+    
+    try:
+        # First pass: Organize data by charity
+        for doc in prompt_per_code_results:
+            print(f"Debug - Processing document type: {type(doc)}")
+            print(f"Debug - Document content: {doc}")
+            
+            # Skip if doc is not a dictionary
+            if not isinstance(doc, dict):
+                print(f"Warning: Expected dictionary but got {type(doc)}: {doc}")
+                continue
+            
+            charity_id = doc.get("charity_id")
+            if not charity_id:
+                print(f"Warning: No charity_id found for document")
+                continue
+            
+            if charity_id not in charity_data:
+                charity_data[charity_id] = {
+                    "codes": {},
+                    "documents": {
+                        "important to read": [],
+                        "worth reading": [],
+                        "not worth reading": []
+                    }
+                }
+            
+            # Rest of the function remains the same...
+            doc_importance = doc.get("document_importance", "").lower()
+            if doc_importance and doc.get("doc_name") not in charity_data[charity_id]["documents"][doc_importance]:
+                charity_data[charity_id]["documents"][doc_importance].append(doc.get("doc_name"))
+            
+            code = doc.get("code")
+            if code and code not in charity_data[charity_id]["codes"]:
+                charity_data[charity_id]["codes"][code] = {}
+            
+            if code and doc.get("doc_name") not in charity_data[charity_id]["codes"][code]:
+                charity_data[charity_id]["codes"][code][doc.get("doc_name")] = []
+            
+            if (doc.get("quote") and doc.get("reasoning") and 
+                doc.get("quote") != "Empty string" and 
+                doc.get("reasoning") != "Empty string"):
+                charity_data[charity_id]["codes"][code][doc.get("doc_name")].append({
+                    "quote": doc.get("quote"),
+                    "reasoning": doc.get("reasoning")
+                })
+        
+        # Second pass: Generate markdown (this part stays exactly the same)
+        markdown_output = {}
+        
+        for charity_id, data in charity_data.items():
+            markdown_sections = [f"# Charity Id: {charity_id}\n"]
+            
+            markdown_sections.append("# Document Importance")
+            for importance in ["important to read", "worth reading", "not worth reading"]:
+                markdown_sections.append(f"### {importance.title()}")
+                for doc_name in data["documents"][importance]:
+                    markdown_sections.append(f"- {doc_name}")
+                markdown_sections.append("")
+            
+            for code, documents in data["codes"].items():
+                markdown_sections.append(f"## Code: {code}")
+                for doc_name, pairs in documents.items():
+                    if pairs:
+                        markdown_sections.append(f"### Doc Name: {doc_name}")
+                        for pair in pairs:
+                            markdown_sections.append(f"- **Quote:** {pair['quote']}")
+                            markdown_sections.append(f"- **Reasoning:** {pair['reasoning']}\n")
+            
+            markdown_output[charity_id] = "\n".join(markdown_sections)
+        
+        return markdown_output
+        
+    except Exception as e:
+        print(f"Error in generate_markdown: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
+        raise
 
 def save_final_markdown(filepath: str, cleaned_text: str):
     """
