@@ -134,22 +134,40 @@ def generate_markdown(prompt_per_code_results: list, unprocessed_documents: list
         print(f"Traceback: {traceback.format_exc()}")
         raise
 
-def save_final_markdown(filepath: str, cleaned_text: str):
+def save_final_markdown(filepath: str, cleaned_text: dict):
     """
-    This function takes the cleaned_text and the filepath as arguments and saves the cleaned_text to a .md file.
+    This function takes a base filepath string and a dictionary (cleaned_text) containing markdown content.
+    For each key in the dictionary, it builds a new file path by appending an underscore and the key name
+    to the base filename. For example, if filepath is 'quote_reasoning_output.md' and a key is 'GiveDirectly',
+    then the final filepath becomes 'quote_reasoning_output_GiveDirectly.md'. The function then writes the
+    corresponding markdown content to that file.
+    
+    Args:
+        filepath (str): The base file path (e.g., "quote_reasoning_output.md").
+        cleaned_text (dict): A dictionary whose keys determine file name suffixes and whose values are
+                             the markdown content to be saved.
     """
+    import os
+    
     output_dir = "coding_output"
     
-    # Create the directory if it doesn't exist
+    # Create the output directory if it doesn't exist
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-    # Build the full file path
-    filepath = os.path.join(output_dir, filepath)
+    # Split the base filepath into filename and extension
+    base_filename, base_ext = os.path.splitext(filepath)
+    if not base_ext:
+        base_ext = ".md"  # default extension
     
-    # Save the content to the file
-    with open(filepath, 'w', encoding='utf-8') as file:
-        file.write(cleaned_text)
+    # Iterate over each key-value pair in the cleaned_text dictionary
+    for key, content in cleaned_text.items():
+        final_filename = f"{base_filename}_{key}{base_ext}"
+        final_filepath = os.path.join(output_dir, final_filename)
+        
+        # Save the corresponding markdown content to the file
+        with open(final_filepath, 'w', encoding='utf-8') as file:
+            file.write(content)
 
 
 def format_results_to_json(prompt_per_code_results: list) -> str:
