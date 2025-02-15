@@ -9,6 +9,7 @@ import json
 import logging
 from datetime import datetime
 from langgraph.checkpoint.memory import MemorySaver
+import json
 
 # Create debug directory if it doesn't exist
 debug_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/debug"
@@ -252,27 +253,36 @@ def output_to_markdown(state: CodingAgentState):
     return {"markdown_output": markdown_output}
 
 def continue_to_synthesis_layer_1(state: CodingAgentState):
-    """
-    Iterate over state['prompt_per_code_results'], group by charity_id and code,
-    then send each grouped JSON string to the synthesis_layer_1 node.
-    """
-    import json
     groups = {}
+    # Loop over each result and only process dictionaries
     for item in state["prompt_per_code_results"]:
-        key = (item["charity_id"], item["code"])
+        if not isinstance(item, dict):
+            logging.warning(f"Skipping unexpected item of type {type(item)}: {item}")
+            continue
+        # Group by charity_id and code
+        key = (item.get("charity_id"), item.get("code"))
         groups.setdefault(key, []).append(item)
+    
     sends = []
-    for (charity, code), group in groups.items():
-        group_json = json.dumps(group, indent=2)
+    # For each group, combine the quotes and reasoning
+    for (charity, code), items in groups.items():
+        combined_text = ""
+        for entry in items:
+            quote = entry.get("quote", "").strip()
+            reasoning = entry.get("reasoning", "").strip()
+            # Only add if there is at least some text
+            if quote or reasoning:
+                combined_text += f"Quote: {quote}\nReasoning: {reasoning}\n\n"
+        combined_text = combined_text.strip()  # remove extra whitespace
         sends.append(
-            Send("synthesis_layer_1", {
-                "synthesis_layer_1_text": group_json,
+            Send("synthesis_layer_1_node", {
+                "synthesis_layer_1_text": combined_text,
                 "synthesis_layer_1_charity_id": charity,
                 "synthesis_layer_1_code": code,
             })
         )
     return sends
-
+    
 def synthesis_layer_1(state: SynthesisLayer1State, config):
     """
     Invoke LLM to do per-code per-charity synthesis.
@@ -411,10 +421,10 @@ main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
 main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
 main_graph.add_node('output_to_markdown_node', output_to_markdown)
-main_graph.add_node('synthesis_output_to_markdown_node', synthesis_output_to_markdown)
 main_graph.add_node('synthesis_layer_1_node', synthesis_layer_1)
 main_graph.add_node('synthesis_layer_2_per_code_node', synthesis_layer_2_per_code)
 main_graph.add_node('synthesis_layer_2_per_charity_node', synthesis_layer_2_per_charity)
+main_graph.add_node('synthesis_output_to_markdown_node', synthesis_output_to_markdown)
 main_graph.add_node('final_report_node', final_report)
 
 # Define the edges
