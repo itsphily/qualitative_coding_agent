@@ -461,7 +461,7 @@ Your final output must follow this exact structure:
 text_to_synthesis_layer_2_prompt = """
 Here are all the intermediate aggregated summaries:
 <intermediate aggregated summaries>
-{intermediate_aggregated_summaries}
+{text}
 </intermediate aggregated summaries>
 """
 
