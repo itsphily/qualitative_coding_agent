@@ -56,7 +56,7 @@ from coding_utils import (
     transform_qa_results_to_dict,
     generate_synthesis_markdown
 )
-from coding_utils import path_to_text, visualize_graph, save_final_markdown
+
 from coding_prompt import (
     combine_code_and_research_question_prompt,
     coding_agent_prompt,
@@ -248,7 +248,7 @@ def qa_quote_reasoning_pairs(state: CodingAgentState, config):
 
 def output_to_markdown(state: CodingAgentState):
     markdown_output = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
-    save_final_markdown(markdown_output)
+    save_final_markdown("quote_reasoning_output.md", markdown_output)
     return {"markdown_output": markdown_output}
 
 def continue_to_synthesis_layer_1(state: CodingAgentState):

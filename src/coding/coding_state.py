@@ -25,6 +25,20 @@ class CodingAgentState(TypedDict):
     synthesis_layer_2_per_code: Annotated[dict, merge_dicts]
     synthesis_layer_2_per_charity: Annotated[dict, merge_dicts]
 
+class SynthesisLayer1State(TypedDict):
+    synthesis_layer_1_text: str
+    synthesis_layer_1_charity_id: str
+    synthesis_layer_1_code: str
+
+class SynthesisLayer2PerCodeState(TypedDict):
+    synthesis_layer_2_all_charity_text: str
+    synthesis_layer_2_code: str
+
+class SynthesisLayer2PerCharityState(TypedDict):
+    synthesis_layer_2_all_code_text: str
+    synthesis_layer_2_charity_id: str
+
+
 class InvokePromptInputState(TypedDict):
     code_and_research_question_prompt_variable: str
     charity_id: str
@@ -108,13 +122,3 @@ class QAStructuredOutputPerCode(BaseModel):
             "document_importance (str): The importance level of the document"
         )
     )
-class SynthesisLayer1State(TypedDict):
-    synthesis_layer_1_text: str
-    synthesis_layer_1_charity_id: str
-    synthesis_layer_1_code: str
-class SynthesisLayer2PerCodeState(TypedDict):
-    synthesis_layer_2_all_charity_text: str
-    synthesis_layer_2_code: str
-class SynthesisLayer2PerCharityState(TypedDict):
-    synthesis_layer_2_all_code_text: str
-    synthesis_layer_2_charity_id: str

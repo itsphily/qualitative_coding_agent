@@ -279,6 +279,7 @@ main_graph.add_node('fill_info_prompt_node', fill_info_prompt)
 main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
 main_graph.add_node('output_to_markdown_node', output_to_markdown)
 main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
+
 main_graph.add_edge(START, 'fill_info_prompt_node')
 main_graph.add_conditional_edges(
     'fill_info_prompt_node',

@@ -138,6 +138,16 @@ def save_final_markdown(filepath: str, cleaned_text: str):
     """
     This function takes the cleaned_text and the filepath as arguments and saves the cleaned_text to a .md file.
     """
+    output_dir = "coding_output"
+    
+    # Create the directory if it doesn't exist
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Build the full file path
+    filepath = os.path.join(output_dir, filepath)
+    
+    # Save the content to the file
     with open(filepath, 'w', encoding='utf-8') as file:
         file.write(cleaned_text)
 
