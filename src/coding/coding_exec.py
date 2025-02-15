@@ -292,17 +292,72 @@ def synthesis_layer_1(state: SynthesisLayer1State, config):
     ))
     human_message = HumanMessage(content=text_to_synthesis_prompt.format(text=state['synthesis_layer_1_text']))
     result = llm_o3.invoke([system_message, human_message])
-    return {"synthesis_layer_1": {
+    
+    return {"synthesis_layer_1": [{
                 "synthesis_layer_1_result": result,
                 "synthesis_layer_1_charity_id": state['synthesis_layer_1_charity_id'],
                 "synthesis_layer_1_code": state['synthesis_layer_1_code']
-           }}
+           }]}
+
+
+def synthesis_layer_1_to_markdown(state: CodingAgentState) -> dict:
+    """
+    Aggregates the list of SynthesisLayer1State objects by charity.
+    For each charity, groups the synthesis texts by their code and produces a markdown string of the form:
+    
+    # Code1
+    synthesis_layer_1_text for Code1
+    
+    # Code2
+    synthesis_layer_1_text for Code2
+    
+    Returns:
+        dict: A dictionary with the key "synthesis_layer_1_markdown" mapping to a dict of {charity_id: markdown_string}.
+    """
+    # Retrieve the synthesis_layer_1 list from the state.
+    synthesis_list = state.get("synthesis_layer_1", [])
+    
+    # Create a nested dictionary: charity_id -> code -> aggregated text
+    charity_groups = {}
+    for item in synthesis_list:
+        # Each item is expected to have:
+        # - "synthesis_layer_1_result": the synthesis text
+        # - "synthesis_layer_1_charity_id": the charity identifier
+        # - "synthesis_layer_1_code": the code identifier
+        charity = item.get("synthesis_layer_1_charity_id")
+        code = item.get("synthesis_layer_1_code")
+        result_text = item.get("synthesis_layer_1_result")
+        
+        # Skip items missing any of these
+        if not (charity and code and result_text):
+            continue
+        
+        if charity not in charity_groups:
+            charity_groups[charity] = {}
+        # If the same code appears more than once for the charity, concatenate the texts.
+        if code in charity_groups[charity]:
+            charity_groups[charity][code] += "\n" + result_text
+        else:
+            charity_groups[charity][code] = result_text
+    
+    # Build the markdown string for each charity.
+    markdown_dict = {}
+    for charity, codes in charity_groups.items():
+        md_lines = []
+        for code, combined_text in codes.items():
+            md_lines.append(f"# {code}\n{combined_text}\n")
+        # Join all sections with newlines.
+        markdown_dict[charity] = "\n".join(md_lines).strip()
+    
+    # Save the markdown files using your utility function.
+    save_final_markdown("synthesis_for.md", markdown_dict)
+    
 
 def continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
     """
     Iterate over state['synthesis_layer_1'] to group and send per-code across charities.
     """
-    import json
+    
     groups = {}
     for key, val in state.get("synthesis_layer_1", {}).items():
         group_key = val["synthesis_layer_1_code"]
@@ -310,8 +365,9 @@ def continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
     sends = []
     for code, group in groups.items():
         group_json = json.dumps(group, indent=2)
+
         sends.append(
-            Send("synthesis_layer_2_per_code", {
+            Send("synthesis_layer_2_per_code_node", {
                 "synthesis_layer_2_all_charity_text": group_json,
                 "synthesis_layer_2_code": code
             })
@@ -422,6 +478,7 @@ main_graph.add_node('invoke_subgraph_node', invoke_subgraph.compile())
 main_graph.add_node('qa_quote_reasoning_pairs_node', qa_quote_reasoning_pairs)
 main_graph.add_node('output_to_markdown_node', output_to_markdown)
 main_graph.add_node('synthesis_layer_1_node', synthesis_layer_1)
+main_graph.add_node('synthesis_layer_1_to_markdown_node', synthesis_layer_1_to_markdown)
 main_graph.add_node('synthesis_layer_2_per_code_node', synthesis_layer_2_per_code)
 main_graph.add_node('synthesis_layer_2_per_charity_node', synthesis_layer_2_per_charity)
 main_graph.add_node('synthesis_output_to_markdown_node', synthesis_output_to_markdown)
@@ -438,8 +495,9 @@ main_graph.add_edge('invoke_subgraph_node', 'qa_quote_reasoning_pairs_node')
 main_graph.add_edge('qa_quote_reasoning_pairs_node', 'output_to_markdown_node')
 
 main_graph.add_conditional_edges('output_to_markdown_node', continue_to_synthesis_layer_1, ['synthesis_layer_1_node'])
-main_graph.add_edge('synthesis_layer_1_node', 'synthesis_layer_2_per_code_node')
-main_graph.add_edge('synthesis_layer_2_per_code_node', 'synthesis_layer_2_per_charity_node')
+main_graph.add_edge('synthesis_layer_1_node', 'synthesis_layer_1_to_markdown_node')
+main_graph.add_conditional_edges('synthesis_layer_1_to_markdown_node',continue_to_synthesis_layer_2_per_code, ['synthesis_layer_2_per_code_node'])
+main_graph.add_conditional_edges('synthesis_layer_1_to_markdown_node',continue_to_synthesis_layer_2_per_charity, ['synthesis_layer_2_per_charity_node'])
 main_graph.add_edge('synthesis_layer_2_per_charity_node', 'synthesis_output_to_markdown_node')
 main_graph.add_edge('synthesis_output_to_markdown_node', 'final_report_node')
 main_graph.add_edge('final_report_node', END)
