@@ -47,6 +47,8 @@ Ensure that all necessary helper functions (such as merge_dicts) are imported an
 
 ## Implementation Notes
 
+- All the functions that are added to the file must be added before the if main == "__main__": block.
+- When adding nodes and edges to the graph make sure they are in the appropriate section (there is one section for the nodes and one for the edges). Also make sure to place them in order.
 - Here are mandatory urls you need to consult before starting to code this project:
     - https://langchain-ai.github.io/langgraph/how-tos/
     - https://langchain-ai.github.io/langgraph/concepts/#langgraph-platform
@@ -67,6 +69,7 @@ Ensure that all necessary helper functions (such as merge_dicts) are imported an
 - The directory where the files coding_prompt.py, coding_exec.py, coding_utils.py, coding_state.py are located is /Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/src/coding
 - Always make sure you have all the necessary imports. Put all the imports at the top of the file.
 - Carefully review each low-level task for exact code changes
+- Pay special attention to the return type of the functions. Make sure to return the correct type as specified in the function signature.
 
 <node function example>
 In this example, the node function is generate_joke. It takes the JokeState and returns an attribute(jokes) of the JokeState.
