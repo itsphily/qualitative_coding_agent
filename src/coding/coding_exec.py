@@ -294,7 +294,7 @@ def synthesis_layer_1(state: SynthesisLayer1State, config):
     result = llm_o3.invoke([system_message, human_message])
     
     return {"synthesis_layer_1": [{
-                "synthesis_layer_1_result": result,
+                "synthesis_layer_1_result": result.content,
                 "synthesis_layer_1_charity_id": state['synthesis_layer_1_charity_id'],
                 "synthesis_layer_1_code": state['synthesis_layer_1_code']
            }]}
