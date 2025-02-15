@@ -355,17 +355,15 @@ def synthesis_layer_1_to_markdown(state: CodingAgentState) -> dict:
 
 def continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
     """
-    Iterate over state['synthesis_layer_1'] to group and send per-code across charities.
+    Iterate over state['synthesis_layer_1'] (a list) to group and send per-code across charities.
     """
-    
     groups = {}
-    for key, val in state.get("synthesis_layer_1", {}).items():
+    for val in state.get("synthesis_layer_1", []):
         group_key = val["synthesis_layer_1_code"]
         groups.setdefault(group_key, []).append(val)
     sends = []
     for code, group in groups.items():
         group_json = json.dumps(group, indent=2)
-
         sends.append(
             Send("synthesis_layer_2_per_code_node", {
                 "synthesis_layer_2_all_charity_text": group_json,
@@ -392,7 +390,7 @@ def continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
     """
     import json
     groups = {}
-    for key, val in state.get("synthesis_layer_1", {}).items():
+    for val in state.get("synthesis_layer_1", []):
         charity = val["synthesis_layer_1_charity_id"]
         groups.setdefault(charity, []).append(val)
     sends = []
@@ -499,6 +497,7 @@ main_graph.add_edge('synthesis_layer_1_node', 'synthesis_layer_1_to_markdown_nod
 main_graph.add_conditional_edges('synthesis_layer_1_to_markdown_node',continue_to_synthesis_layer_2_per_code, ['synthesis_layer_2_per_code_node'])
 main_graph.add_conditional_edges('synthesis_layer_1_to_markdown_node',continue_to_synthesis_layer_2_per_charity, ['synthesis_layer_2_per_charity_node'])
 main_graph.add_edge('synthesis_layer_2_per_charity_node', 'synthesis_output_to_markdown_node')
+main_graph.add_edge('synthesis_layer_2_per_code_node', 'synthesis_output_to_markdown_node')
 main_graph.add_edge('synthesis_output_to_markdown_node', 'final_report_node')
 main_graph.add_edge('final_report_node', END)
 
