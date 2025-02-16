@@ -453,9 +453,6 @@ def synthesis_output_to_markdown(state: CodingAgentState):
     return {"synthesis_output_per_charity": output_charity,
             "synthesis_output_per_code": output_code}
 
-def generate_synthesis_output(state: CodingAgentState):
-    synthesis_outputs = synthesis_output_to_markdown(state)
-    return synthesis_outputs
 
 def final_report(state: CodingAgentState, config):
     """
