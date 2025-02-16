@@ -44,8 +44,8 @@ from coding_state import (
     InvokePromptOutputState,
     QAStructuredOutputPerCode,
     SynthesisLayer1State,
-    SynthesisLayer2PerCodeState,
-    SynthesisLayer2PerCharityState
+    SynthesisLayer2PerCodeInputState,
+    SynthesisLayer2PerCharityInputState
 )
 from coding_utils import (
     path_to_text,
@@ -320,10 +320,6 @@ def synthesis_layer_1_to_markdown(state: CodingAgentState) -> dict:
     # Create a nested dictionary: charity_id -> code -> aggregated text
     charity_groups = {}
     for item in synthesis_list:
-        # Each item is expected to have:
-        # - "synthesis_layer_1_result": the synthesis text
-        # - "synthesis_layer_1_charity_id": the charity identifier
-        # - "synthesis_layer_1_code": the code identifier
         charity = item.get("synthesis_layer_1_charity_id")
         code = item.get("synthesis_layer_1_code")
         result_text = item.get("synthesis_layer_1_result")
@@ -372,7 +368,7 @@ def continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
         )
     return sends
 
-def synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeState, config):
+def synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeInputState, config):
     system_message = SystemMessage(content=layer_2_code_synthesis_prompt.format(
         research_question=config["configurable"].get("research_question")
     ))
@@ -380,7 +376,7 @@ def synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeState, config):
     result = llm_o3.invoke([system_message, human_message])
     return {"synthesis_layer_2_per_code": {
                 "synthesis_layer_2_per_code_result": result.content,
-                "synthesis_layer_2_per_code_charity_id": state.get('synthesis_layer_2_code', '')
+                "synthesis_layer_2_code": state['synthesis_layer_2_code']
            }}
 
 def continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
@@ -404,7 +400,7 @@ def continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
         )
     return sends
 
-def synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityState, config):
+def synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityInputState, config):
     system_message = SystemMessage(content=layer_2_charity_synthesis_prompt.format(
         research_question=config["configurable"].get("research_question")
     ))
@@ -412,27 +408,50 @@ def synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityState, config)
     result = llm_o3.invoke([system_message, human_message])
     return {"synthesis_layer_2_per_charity": {
                 "synthesis_layer_2_per_charity_result": result.content,
-                "synthesis_layer_2_per_charity_code": state['synthesis_layer_2_charity_id']
+                "synthesis_layer_2_charity_id": state['synthesis_layer_2_charity_id']
            }}
 
-def synthesis_output_to_markdown(state):
+def synthesis_output_to_markdown(state: CodingAgentState):
     """
     Aggregate synthesis_layer_2 outputs and structure as markdown.
     Calls generate_synthesis_markdown for per charity and per code outputs.
     """
-    per_charity = state.get("synthesis_layer_2_per_charity", {})
-    per_code = state.get("synthesis_layer_2_per_code", {})
+    # Get the lists from state (default to empty lists)
+    per_charity_list = state.get("synthesis_layer_2_per_charity", [])
+    per_code_list = state.get("synthesis_layer_2_per_code", [])
+    
+    # Group the per-charity results by charity_id
+    charity_dict = {}
+    for item in per_charity_list:
+        charity = item.get("synthesis_layer_2_charity_id")
+        result_text = item.get("synthesis_layer_2_per_charity_result", "")
+        if charity:
+            charity_dict.setdefault(charity, "")
+            charity_dict[charity] += "\n" + result_text
+    
+    # Group the per-code results by code
+    code_dict = {}
+    for item in per_code_list:
+        code = item.get("synthesis_layer_2_code")
+        result_text = item.get("synthesis_layer_2_per_code_result", "")
+        if code:
+            code_dict.setdefault(code, "")
+            code_dict[code] += "\n" + result_text
+
+    # Build markdown strings
     synthesis_md_charity = ""
-    for charity, text in per_charity.items():
-        synthesis_md_charity += f"## Charity: {charity}\n{text}\n\n"
+    for charity, text in charity_dict.items():
+        synthesis_md_charity += f"## Charity: {charity}\n{text.strip()}\n\n"
+
     synthesis_md_code = ""
-    for code, text in per_code.items():
-        synthesis_md_code += f"## Code: {code}\n{text}\n\n"
+    for code, text in code_dict.items():
+        synthesis_md_code += f"## Code: {code}\n{text.strip()}\n\n"
+
     output_charity = generate_synthesis_markdown(synthesis_md_charity, 'synthesis_output_per_charity', 'coding_output')
     output_code = generate_synthesis_markdown(synthesis_md_code, 'synthesis_output_per_code', 'coding_output')
+    
     return {"synthesis_output_per_charity": output_charity,
             "synthesis_output_per_code": output_code}
-
 
 def generate_synthesis_output(state: CodingAgentState):
     synthesis_outputs = synthesis_output_to_markdown(state)

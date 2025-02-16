@@ -23,12 +23,20 @@ class SynthesisLayer1State(TypedDict):
     synthesis_layer_1_charity_id: str
     synthesis_layer_1_code: str
 
-class SynthesisLayer2PerCodeState(TypedDict):
+class SynthesisLayer2PerCodeInputState(TypedDict):
     synthesis_layer_2_all_charity_text: str
     synthesis_layer_2_code: str
 
-class SynthesisLayer2PerCharityState(TypedDict):
+class SynthesisLayer2PerCharityInputState(TypedDict):
     synthesis_layer_2_all_code_text: str
+    synthesis_layer_2_charity_id: str
+
+class SynthesisLayer2PerCodeState(TypedDict):
+    synthesis_layer_2_per_code_result: str
+    synthesis_layer_2_code: str
+
+class SynthesisLayer2PerCharityState(TypedDict):
+    synthesis_layer_2_per_charity_result: str
     synthesis_layer_2_charity_id: str
 
 class CodingAgentState(TypedDict):
@@ -36,8 +44,8 @@ class CodingAgentState(TypedDict):
     prompt_per_code_results: Annotated[list, merge_lists]
     unprocessed_documents: Annotated[list, merge_lists]
     synthesis_layer_1: Annotated[List[SynthesisLayer1State], merge_lists]
-    synthesis_layer_2_per_code: Annotated[dict, merge_dicts]
-    synthesis_layer_2_per_charity: Annotated[dict, merge_dicts]
+    synthesis_layer_2_per_code: Annotated[List[SynthesisLayer2PerCodeState], merge_lists]
+    synthesis_layer_2_per_charity: Annotated[List[SynthesisLayer2PerCharityState], merge_lists]
 
 class InvokePromptInputState(TypedDict):
     code_and_research_question_prompt_variable: str
