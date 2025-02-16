@@ -469,6 +469,47 @@ Here are all the intermediate aggregated summaries:
 </intermediate aggregated summaries>
 """
 
+
+
+"""
+You are a Ph.D qualitative researcher. You are provided with two sets of inputs:
+- Charity-Level Aggregated Summaries: This text contains comprehensive aggregated summaries for each charity
+- Code-Level Aggregated Summaries (Across Charities): This text contains comprehensive aggregated summaries for each code across all charities
+
+These two summaries provide all the necessary evidence-based syntheses: one from the perspective of each charity and one from the perspective of each code across charities—to generate a comprehensive, rigorously substantiated final research report.
+
+# Task
+Using these inputs, generate a final, exhaustive, and comprehensive research report that answers the overarching research question. Your report must adhere to the following guidelines:
+
+## Evidence-Based Analysis:
+- Base every conclusion, inference, pattern, and theme exclusively on the provided synthesis outputs. Do not introduce any external data or assumptions.
+
+## Substantiated Findings:
+- Every pattern, similarity, difference, contrast, or overarching theme identified in your report must be explicitly substantiated with references or examples drawn from the provided code-level and charity-level synthesis outputs.
+
+## Comprehensive Coverage:
+Your report should be as detailed and thorough as a research report written by a Ph.D. researcher. It must include:
+- A clear introduction that restates the overarching research question.
+- Detailed sections that synthesize the evidence:
+  - Patterns and Themes: Highlight recurring patterns, similarities, and overarching themes found across both codes and charities.
+  - Contrasts and Differences: Identify and discuss any differences or contrasting evidence among the codes and between the charities.
+  - Integrated Analysis: Draw connections between the code-level and charity-level syntheses, demonstrating how the combined evidence provides a comprehensive answer to the research question.
+- A conclusion that summarizes the key findings and directly addresses the research question based solely on the provided evidence.
+
+## Scholarly Tone:
+Write in a rigorous, scholarly style. Your report should be clear, logically structured, and precise—similar to a high-quality qualitative research report produced at the doctoral level.
+
+## No Hallucinations:
+- Ensure that every inference or conclusion is directly supported by the evidence in the summaries provided. You must not make any unfounded claims or add any extraneous commentary.
+
+## Output:
+Produce a complete research report that integrates and analyzes all the provided evidence, answers the research question in detail, and presents a robust, evidence-based narrative complete with detailed substantiation of every claim made.
+
+"""
+
+
+
+
 final_layer_research_question_prompt = """
 You are a qualitative research synthesis expert. You have aggregated outputs from both the per charity aggregation and the per code aggregation layers. Your task now is to integrate all these aggregated findings into one final comprehensive research report that fully answers the overarching research question.
 
@@ -487,14 +528,14 @@ You are a qualitative research synthesis expert. You have aggregated outputs fro
 
 text_to_synthesis_final_report_prompt = """
 Here are the aggregated outputs from the per charity aggregation layer.
-<per charity aggregated outputs>
+<Charity-Level Aggregated Summaries>
 {per_charity_aggregated_outputs}
-</per charity aggregated outputs>
+</Charity-Level Aggregated Summaries>
 
 Here are the aggregated outputs from the per code aggregation layer.
-<per code aggregated outputs>
+<Code-Level Aggregated Summaries>
 {per_code_aggregated_outputs}
-</per code aggregated outputs>
+</Code-Level Aggregated Summaries>
 """
 
 # Export the variables
