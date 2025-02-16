@@ -469,7 +469,7 @@ def final_report(state: CodingAgentState, config):
         per_code_aggregated_outputs=state['synthesis_output_per_code']
     ))
     result = llm_o3.invoke([system_message, human_message])
-    final_md = generate_synthesis_markdown(result, 'final_report', 'coding_output')
+    final_md = generate_synthesis_markdown(result.content, 'final_report', 'coding_output')
     return {"final_report_result": final_md}
 
 
