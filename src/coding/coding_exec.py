@@ -374,10 +374,10 @@ def synthesis_layer_2_per_code(state: SynthesisLayer2PerCodeInputState, config):
     ))
     human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_charity_text']))
     result = llm_o3.invoke([system_message, human_message])
-    return {"synthesis_layer_2_per_code": {
+    return {"synthesis_layer_2_per_code": [{
                 "synthesis_layer_2_per_code_result": result.content,
                 "synthesis_layer_2_code": state['synthesis_layer_2_code']
-           }}
+           }]}
 
 def continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
     """
@@ -406,10 +406,10 @@ def synthesis_layer_2_per_charity(state: SynthesisLayer2PerCharityInputState, co
     ))
     human_message = HumanMessage(content=text_to_synthesis_layer_2_prompt.format(text=state['synthesis_layer_2_all_code_text']))
     result = llm_o3.invoke([system_message, human_message])
-    return {"synthesis_layer_2_per_charity": {
+    return {"synthesis_layer_2_per_charity": [{
                 "synthesis_layer_2_per_charity_result": result.content,
                 "synthesis_layer_2_charity_id": state['synthesis_layer_2_charity_id']
-           }}
+           }]}
 
 def synthesis_output_to_markdown(state: CodingAgentState):
     """

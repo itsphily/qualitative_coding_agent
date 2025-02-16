@@ -46,6 +46,7 @@ class CodingAgentState(TypedDict):
     synthesis_layer_1: Annotated[List[SynthesisLayer1State], merge_lists]
     synthesis_layer_2_per_code: Annotated[List[SynthesisLayer2PerCodeState], merge_lists]
     synthesis_layer_2_per_charity: Annotated[List[SynthesisLayer2PerCharityState], merge_lists]
+    
 
 class InvokePromptInputState(TypedDict):
     code_and_research_question_prompt_variable: str
