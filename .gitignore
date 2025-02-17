@@ -53,8 +53,6 @@ outputs/
 outputs/**/*
 debug/
 debug/**/*
-final_markdown_files/
-final_markdown_files/**/*
 debug_cleaner/
 debug_cleaner/**/*
 

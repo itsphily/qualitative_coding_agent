@@ -1,0 +1,11 @@
+### Cost-effectiveness
+
+#### We aim to be highly cost-effective at using donor funds to prevent illness and avoid deaths from malaria. We do this in three ways:
+
+First, we have a clear focus on a specific intervention, anti-malaria bednets, and particularly long-lasting insecticidal nets (LUNs). Anti-malaria bednets reduce illness and prevent deaths. This means the potential impact on lives saved and health improved per dollar donated is high. Second, we have an operating model that has proved highly effective: a lean organisational structure, significant leveraging of technology and a pro bono partnership and distribution partner model. This means our costs are exceptionally low. Third, we place great emphasis on the preparation, carrying out and follow up of distributions to ensure the potential impact of distributing nets is realised. We report on this transparently and in detail. The independent charity evaluator GiveWell provide a quantitative estimate of the cost per life saved for AMF distributed nets.
+
+###### Abstract
+
+In this paper, we propose a novel approach to solve the following optimization problem:
+
+\[\left\{\begin{array}[]{ll}\begin{array}[]{ll}\begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}[]{ll} \begin{array}[]{ll} \begin{array}[]{ll} \end{array}\]

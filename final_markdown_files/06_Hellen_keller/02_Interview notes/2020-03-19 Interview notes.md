@@ -1,0 +1,76 @@
+A conversation with David Doledec, Emmanuel d'Harcourt, Dr. Rolf Klemm, and Dr. Jennifer Nielsen, March 19, 2020
+
+## Participants
+
+* David Doledec - Regional Program Manager, Helen Keller International
+* Dr. Emmanuel d'Harcourt - Chief Program and Innovation Officer, Helen Keller International
+* Dr. Rolf Klemm - Vice President, Nutrition, Helen Keller International
+* Dr. Jennifer Nielsen - Senior Nutrition Advisor, Helen Keller International
+* Teryn Mattox - Senior Fellow, GiveWell
+
+**Note:** These notes were compiled by GiveWell and give an overview of the major points made by Mr. Doledec, Mr. d'Harcourt, Dr. Klemm, and Dr. Nielsen.
+
+## Summary
+
+GiveWell spoke with Mr. Doledec, Dr. d'Harcourt, Dr. Klemm, and Dr. Nielsen of Helen Keller International (HKI) as part of its investigation into Community-based Management of Acute Malnutrition (CMAM). HKI's vitamin A supplementation program is a GiveWell top charity. Conversation topics included HKI's experience with CMM, the challenges it has identified with program implementation, mass administration of antibiotics, and funding and cost-effectiveness of the intervention.
+
+## Community-based Management of Acute Malnutrition (CMAM)
+
+Community-based Management of Acute Malnutrition (CMAM) is a strategy to treat moderate and severe acute malnutrition (SAM) involving the timely detection of SAM in the community and provision of treatment for those without medical complications with ready-to-use therapeutic foods or other nutrient-dense foods at home. CMM in its current form consists of the following:
+
+* Malnutrition screenings by community health workers and/or caregivers
+* Referrals to local health centers
+* Outpatient clinic- or home-based treatment for SAM cases with no medical complications, including the provision of ready to use therapeutic food (RUTF), as needed
+* Follow-up visits by community health workers until the child meets criteria for being "recovered", although it is unclear how routinely this component of the intervention is implemented
+
+Malnutrition rates are declining slowly in most countries, but HKI expects there to be a continuing need for malnutrition treatment for at least the next ten years. In most African countries, current CMM programs are achieving only 20-30% coverage. This is especially true in the context of COVID-19 where an increase in child malnutrition is expected, including wasting, due to steep declines in household incomes, changes in the availability and affordability of nutritious foods, and interruptions to health, nutrition, and social protection services
+
+### Helen Keller International's role in CMAM
+
+Helen Keller International (HKI) has been involved in Community-based Management of Acute Malnutrition (CMAM) for over ten years. This work has primarily taken place in French-speaking countries in Africa. CMAM interventions in this region were initially developed as medically-oriented, clinic-based programs, and HKI has observed that children enrolled in these programs are not always followed up with for continued treatment, i.e. continued provision of therapeutic foods. HKI expects integrating CMAM into local health systems will be challenging, as it is currently experiencing a similar difficulty with its vitamin A supplementation program, which is a less complex intervention than CMAM. HKI's approach has been to integrate a preventive component into these programs, as well as to work with existing health systems, especially at the community level, to bring screening and treatment closer to affected communities. As part of this community-based strategy, HKI has organized women's groups to support malnutrition screenings within communities and promote preventive infant and young child feeding practices. HKI has also leveraged existing community health workers to try to build stronger connections between health centers and community members, in an effort to ensure that families visit health centers when necessary. HKI has been more involved with the research side of CMAM than with the direct supply and distribution of treatment, including involvement in randomized controlled trials. HKI did provide a small quantity of lipid-based nutrient supplements for a research study conducted in Mali and Burkina Faso. The study was designed to increase screening for malnutrition and encourage referrals of severely malnourished children to government programs. Less severely malnourished children were given lipid-based nutrient supplements, and their caregivers were provided with educational materials to encourage behavioral change. The study showed a substantial reduction in mortality attributable to the intervention. HKI has also integrated screening for severe acute malnutrition into some of its distribution programs, such as for vitamin A.
+
+### Program challenges
+
+#### Organizational cooperation
+
+One problem with the current structure of malnutrition programs is that treatments for severe acute malnutrition (SAM) and moderate acute malnutrition (MAM) are often supplied by different organizations, which rarely coordinate with one another. This means that a child just above the threshold for SAM may have better or worse access to treatment than a child falling just below the threshold. It is possible that the systems set up to address SAM and MAM could be harmonized in such a way as to eliminate such discrepancies in an effective, evidence-based way, but more research needs to be done in this area. Emerging research indicates that treating acute malnutrition as a single disease yields similar or improved results in terms of recovery.
+
+#### Staffing protocols
+
+Another problem with current malnutrition programs is that staff materials are designed to be used by literate community health workers. These workers are often required to have achieved a certain degree of literacy and education, even though this requirement is not inherent to the intervention (rather, it is due to the use of complex registers and other tools). Evidence suggests that the best strategy for hiring community health workers is to hire for qualities like intelligence, practicality, and work ethic, rather than literacy. By limiting the pool of potential hires to those who are literate, organizations and governments are potentially missing out on the best candidates for the job, especially in very low-income areas, where literacy rates tend to be lowest.
+
+#### Unrealistic modeling
+
+Much of the ineffectiveness of past interventions in this area has stemmed from overly optimistic models of the degree to which intervention efforts will be able to create systemic change in local health systems. HKI wants to be cautious about potentially replicating mistakes made by other organizations in the past, while innovating off their ideas and developing new strategies. For example, there have been some successful implementations of community case management (CCM) programs at a national scale in Rwanda and Sierra Leone that could serve as models for what a successful intervention of this kind can look like.
+
+#### Program structure
+
+One of the major challenges of implementing CMAM is determining the proper balance between external support and local control. Currently, there is a lack of evidence establishing what structure will be most conducive to program success and cost-effectiveness. This is an important problem to solve, because programs that bypass local health systems tend not to be cost-effective and struggle with sustainability. Involvement of local health systems is not sufficient on its own; the quality and manner in which the health system is integrated also affect sustainability in the long term. One possible strategy is to develop a hybrid program, where responsibility for implementing the program is shared between non-government organizations (NGOs), government agencies, local health systems, and community members.
+
+#### NGOs
+
+In current CMAM programs, an NGO will typically partner with local health systems to implement the intervention. The NGO sends staff members to health centers on a regular basis, where they provide training and supervision to local health workers, ensuring that preventive counseling and food supplement provision is occurring as intended. After some period of time, the NGO typically withdraws from its direct role in health centers' work, in the hope that health centers will be able to maintain the program independently. CMAM, like any community intervention, requires oversight from health facility staff. This oversight takes time and effort. It is unclear, in this model, how the oversight is expected to continue without additional resources. Even within a hybrid program, some of the most complex aspects of CMAM will likely always need to be handled by NGOs, such as supply chain management and the patient referral system.
+
+#### Government agencies
+
+One important step toward developing an effective CMAM program is setting up a dedicated office within the target country's Ministry of Health or equivalent government agency. This strategy would integrate CMAM into the existing government structure, while maintaining control over the human resource aspects of the program, so that high-quality hires can be made without undue bureaucratic influence. The next step is to have a government employee (or ideally, a team of employees) devoted to the program who is genuinely interested in its success and who will keep the government accountable for the results of the program. This is a model widely used for e.g. malaria -- integrated malaria control programs are often part of a country's Ministry of Health, but have a separate and more effective accountability structure.
+
+#### Local health systems
+
+Health centers in areas where CMAM is implemented often lack the training and resources necessary to sustain these programs independently. Local health systems often perform well with support from partner organizations, but CMAM programs often fail to be sustainable after these organizations withdraw. Without the resources and motivation to replace an NGO's training and supervision services internally, health systems often revert back to their original practices, especially when health workers that have been trained in CMAM protocols move away and are replaced by untrained counterparts. One of the key remaining questions regarding CMAM is how long health systems need to receive continued support from external partners or from their own Ministry of Health following implementation of the program. Another limitation for local health systems is that they often have low-tech data collection and transmission systems. Much of their information is still transferred via paper documents, and data analysis is not performed at a health center level, so its usefulness for CMAM implementation is limited. Another limitation is that nutrition services tend to be a low priority for local health systems, especially for children without comorbid illnesses, as food is not typically viewed as a form of medicine.
+
+#### Community members
+
+Families that live far away from health centers are discouraged from traveling to bring their children in for clinic visits by the steep opportunity costs of doing so. This prevents many children in need of CMAM services from receiving the benefits of the program. One of HKI's goals is to revise the system so that community health workers can detect and treat uncomplicated cases of malnutrition, which make up the majority of cases, so that most treated children won't have to go to a health facility at all. National policies do not always support the provision of malnutrition services at the community level; there are indications that many countries are willing to consider a more community-based approach, thanks in part to UNICEF's stand on this issue. Some studies have equipped parents with middle upper arm circumference (MUAC) measuring tapes for screening children themselves. This strategy has not been implemented in most areas, but has been documented to be effective. It is one opportunity for improvement.
+
+### Mass administration of antibiotics
+
+Discussions about mass drug administration of antibiotics have been ongoing for a long time, but there is not enough evidence to establish whether it is an effective and safe intervention or not. There is evidence that the administration of amoxicillin as part of a malnutrition treatment protocol results in reduced child mortality from bacterial infections. One potential downside of mass administration of prophylactic amoxicillin is a potential increase in antibiotic resistance in the long term, which is already a growing global problem. Another potential downside is the possibility that amoxicillin could have negative long-term effects on the gastrointestinal health of children who receive it while in a state of nutritional distress. Little is currently known about the potential health complications of this type of intervention. Studies have shown that mass provision of azithromycin reduces mortality rates, but only in high-mortality settings such as Niger, where many children don't have access to existing interventions.
+
+In these contexts, it may make more sense to work on bringing proven treatments for diseases like malaria, rather than divert resources to new interventions. HKI has observed that communities with high rates of malnutrition are also likely to have limited access to infectious disease treatment, which lends some anecdotal plausibility to the idea that antibiotic distributions could be especially effective in communities targeted for CMAM. Mass administration of amoxicillin with CMAM appears to work well in areas where other health interventions are not being implemented, but it's possible that such an intervention would not be necessary and would lose its effectiveness if local health systems were adequately providing basic treatment to children to begin with, as outlined above.
+
+### Funding and cost-effectiveness
+
+Based on the literature and the financials of current programs, HKI estimates the cost of implementing CMAM at approximately $200 per child. HKI believes that a well-run, government-funded version of the program could likely reduce the cost to $100 per child, as many of the associated costs are for staff salaries. Because mortality rates among severely malnourished children are so high, HKI believes CMAM could be a highly cost-effective intervention, despite its relatively high cost per child treated. Mortality for moderately malnourished children is also high, and the marginal cost of treating those children is relatively lower; this could make treatment of moderate malnutrition also potentially highly cost-effective. If HKI received funding for CMAM interventions, it would likely use them to expand work in areas that are currently underserved by large NGOs (which is the vast majority of Africa). _All GiveWell conversations are available at_
+
+_http://www.givewell.org/research/conversations_
