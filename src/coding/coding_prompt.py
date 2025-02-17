@@ -383,6 +383,16 @@ All conclusions, inferences, patterns, insights, and hypotheses must be derived 
 
 # Output
 Write a thorough, detailed, and comprehensive narrative that synthesizes the coding data and directly addresses how the evidence connects to the research question. Your analysis should be exhaustive, ensuring that every relevant aspect of the provided evidence is explored and explained.
+
+## Scholarly Tone:
+Write in a rigorous, scholarly style. Your report should be clear, logically structured, and precise—similar to a high-quality qualitative research report produced at the doctoral level.
+
+## No Hallucinations:
+- Ensure that every inference or conclusion is directly supported by the evidence in the summaries provided. You must not make any unfounded claims or add any extraneous commentary.
+
+## Length and format of the report:
+- Favor longer more detailed and substantive reports.
+- Format the report as markdown.
 """
 
 text_to_synthesis_prompt = """
@@ -426,6 +436,16 @@ Do not incorporate any external assumptions or data; every claim must be clearly
 
 # Output
 Produce an exhaustive, detailed narrative that integrates the individual code-level syntheses into a unified, charity-level understanding, ensuring every insight is explicitly connected to the overarching research question.
+
+## Scholarly Tone:
+Write in a rigorous, scholarly style. Your report should be clear, logically structured, and precise—similar to a high-quality qualitative research report produced at the doctoral level.
+
+## No Hallucinations:
+- Ensure that every inference or conclusion is directly supported by the evidence in the summaries provided. You must not make any unfounded claims or add any extraneous commentary.
+
+## Length and format of the report:
+- Favor longer more detailed and substantive reports.
+- Format the report as markdown.
 """
 
 layer_2_code_synthesis_prompt = """
@@ -460,6 +480,17 @@ Avoid incorporating any external assumptions or data; every claim must be direct
 
 # Output
 Produce an exhaustive, detailed narrative that synthesizes the code-level analyses into a unified understanding of the specific code across all charities, explicitly linking every insight back to the overarching research question and emphasizing both commonalities and divergences.
+
+## Scholarly Tone:
+Write in a rigorous, scholarly style. Your report should be clear, logically structured, and precise—similar to a high-quality qualitative research report produced at the doctoral level.
+
+## No Hallucinations:
+- Ensure that every inference or conclusion is directly supported by the evidence in the summaries provided. You must not make any unfounded claims or add any extraneous commentary.
+
+## Length and format of the report:
+- Favor longer more detailed and substantive reports.
+- Format the report as markdown.
+
 """
 
 text_to_synthesis_layer_2_prompt = """
@@ -468,7 +499,6 @@ Here are all the intermediate aggregated summaries:
 {text}
 </intermediate aggregated summaries>
 """
-
 
 
 final_layer_research_question_prompt = """
