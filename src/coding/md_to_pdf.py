@@ -2,23 +2,19 @@ import os
 import argparse
 import subprocess
 
-def convert_md_to_pdf(input_path, output_path=None):
+def convert_md_to_pdf(input_path, output_path):
     """
     Convert a markdown file to PDF with nice formatting using pandoc and Chrome.
     
     Args:
-        input_path (str): Path to the input markdown file
-        output_path (str, optional): Path for the output PDF file. If not provided,
-                                   will use the same name as input with .pdf extension
+        input_path (str): Path to the input markdown file.
+        output_path (str): Path for the output PDF file.
     """
-    # If no output path specified, create one based on input path
-    if output_path is None:
-        output_path = os.path.splitext(input_path)[0] + '.pdf'
-    
-    # First convert markdown to HTML using pandoc
+    # Create temporary HTML and CSS file paths based on the input markdown file
     html_path = os.path.splitext(input_path)[0] + '.html'
+    css_path = os.path.join(os.path.dirname(input_path), 'style.css')
     
-    # Add CSS for better formatting
+    # CSS content for better formatting
     css_content = """
     body { 
         margin: 40px auto;
@@ -35,26 +31,25 @@ def convert_md_to_pdf(input_path, output_path=None):
     blockquote { border-left: 4px solid #ccc; margin: 0; padding-left: 16px; }
     """
     
-    css_path = os.path.join(os.path.dirname(input_path), 'style.css')
+    # Write the CSS content to a file
     with open(css_path, 'w') as f:
         f.write(css_content)
     
-    # Convert to HTML first
+    # Convert markdown to HTML using pandoc
     cmd_html = [
         'pandoc',
         input_path,
         '-o', html_path,
         '--css', css_path,
         '--self-contained',
-        '-s',  # Standalone document
+        '-s',  # Generate a standalone HTML file
         '--highlight-style=tango'
     ]
     
     try:
-        # Run pandoc command to create HTML
         subprocess.run(cmd_html, check=True, capture_output=True, text=True)
         
-        # Then convert HTML to PDF using Chrome in headless mode
+        # Convert HTML to PDF using Google Chrome in headless mode
         cmd_pdf = [
             '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
             '--headless',
@@ -65,13 +60,13 @@ def convert_md_to_pdf(input_path, output_path=None):
         ]
         subprocess.run(cmd_pdf, check=True, capture_output=True, text=True)
         
-        # Clean up temporary files
+        # Remove temporary HTML and CSS files
         os.remove(html_path)
         os.remove(css_path)
         
         print(f"PDF generated successfully: {output_path}")
     except subprocess.CalledProcessError as e:
-        print(f"Error converting markdown to PDF: {e.stderr}")
+        print(f"Error converting markdown to PDF for {input_path}: {e.stderr}")
         raise
     except FileNotFoundError as e:
         print("Error: Required tools not installed. Please install:")
@@ -80,12 +75,43 @@ def convert_md_to_pdf(input_path, output_path=None):
         raise
 
 def main():
-    parser = argparse.ArgumentParser(description='Convert markdown file to PDF')
-    parser.add_argument('input_path', help='Path to input markdown file')
-    parser.add_argument('--output', '-o', help='Path to output PDF file (optional)')
+    parser = argparse.ArgumentParser(
+        description='Search a directory for all .md files and convert them to PDFs in a folder called coding_output_pdf'
+    )
+    parser.add_argument('input_path', help='Path to a markdown file or directory containing markdown files')
     args = parser.parse_args()
     
-    convert_md_to_pdf(args.input_path, args.output)
+    # Determine the directory to search:
+    # If a directory is provided, use it; if a file is provided, use its directory.
+    if os.path.isdir(args.input_path):
+        search_dir = args.input_path
+    elif os.path.isfile(args.input_path):
+        search_dir = os.path.dirname(args.input_path)
+    else:
+        print("Invalid input path provided.")
+        return
+    
+    # Create output directory named 'coding_output_pdf' inside the search directory
+    output_dir = os.path.join(search_dir, 'coding_output_pdf')
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Get a list of all .md files in the search directory
+    md_files = [f for f in os.listdir(search_dir) if f.lower().endswith('.md')]
+    
+    if not md_files:
+        print("No markdown files found in directory:", search_dir)
+        return
+    
+    # Convert each markdown file to a PDF, saving it in the output directory
+    for md_file in md_files:
+        md_path = os.path.join(search_dir, md_file)
+        pdf_name = os.path.splitext(md_file)[0] + '.pdf'
+        output_pdf_path = os.path.join(output_dir, pdf_name)
+        print(f"Converting {md_path} to {output_pdf_path}...")
+        try:
+            convert_md_to_pdf(md_path, output_pdf_path)
+        except Exception as e:
+            print(f"Failed to convert {md_path}: {e}")
 
 if __name__ == '__main__':
-    main() 
+    main()
