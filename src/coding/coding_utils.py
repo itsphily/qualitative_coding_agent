@@ -194,24 +194,18 @@ def format_results_to_json(prompt_per_code_results: list) -> str:
     
     return json.dumps(formatted_results, indent=2)
 
-def transform_qa_results_to_dict(qa_results_list: list) -> dict:
+def transform_qa_results_to_list(qa_results_list: list) -> list:
     """
-    Transform a list of QAValuePerCode objects into a dictionary with integer keys.
-
-    Args:
-        qa_results_list (list): List of QAValuePerCode objects
-
-    Returns:
-        dict: Dictionary where keys are integers and values are dictionaries containing:
-            - charity_id (str)
-            - code (str)
-            - doc_name (str)
-            - quote (str)
-            - reasoning (str)
-            - document_importance (str)
+    Transform a list of QAValuePerCode objects into a list of dictionaries containing:
+        - charity_id (str)
+        - code (str)
+        - doc_name (str)
+        - quote (str)
+        - reasoning (str)
+        - document_importance (str)
     """
-    return {
-        i: {
+    return [
+        {
             "charity_id": item.charity_id,
             "code": item.code,
             "doc_name": item.doc_name,
@@ -219,8 +213,8 @@ def transform_qa_results_to_dict(qa_results_list: list) -> dict:
             "reasoning": item.reasoning,
             "document_importance": item.document_importance
         }
-        for i, item in enumerate(qa_results_list)
-    }
+        for item in qa_results_list
+    ]
 
 def generate_synthesis_markdown(markdown_text, name, output_folder):
     """

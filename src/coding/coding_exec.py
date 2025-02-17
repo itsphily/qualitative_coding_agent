@@ -32,7 +32,6 @@ logging.basicConfig(
 # Log the start of the script
 logging.info(f"Starting script execution. Debug log file: {debug_file}")
 
-from langchain_core.output_parsers import JsonOutputParser
 
 from coding_state import (
     InvokePromptInputState,
@@ -55,7 +54,7 @@ from coding_utils import (
     path_to_doc_name,
     generate_markdown, 
     format_results_to_json, 
-    transform_qa_results_to_dict,
+    transform_qa_results_to_list,
     generate_synthesis_markdown
 )
 
@@ -224,8 +223,6 @@ def invoke_prompt(state:InvokePromptPerCodeState) -> InvokePromptOutputState:
     return {"prompt_per_code_results": data_list, "unprocessed_documents": unprocessed_documents}
 
 
-
-
 # function to split prompt_per_code_results into subsets via Send
 def continue_to_qa_quote_reasoning_pairs(state: CodingAgentState):
     """
@@ -233,6 +230,9 @@ def continue_to_qa_quote_reasoning_pairs(state: CodingAgentState):
     Each Send sends a subset of quote–reasoning pairs (all results for a given charity and code)
     to the qa_quote_reasoning_pairs_subnode.
     """
+    print("*************************************************")
+    print(state['prompt_per_code_results'])
+    print("*************************************************")
     groups = {}
     for item in state.get("prompt_per_code_results", []):
         key = (item.get("charity_id"), item.get("code"))
@@ -269,7 +269,7 @@ def qa_quote_reasoning_pairs(state: QAQuoteReasoningPairsSubState, config):
     result = llm_o3_with_structured_output_qa.invoke([system_message, human_message])
     
     # Transform the returned list of QAValuePerCode objects into your desired dictionary format.
-    qa_results = transform_qa_results_to_dict(result.qa_results)
+    qa_results = transform_qa_results_to_list(result.qa_results)
     
     # Return the result using an annotated key so that when merged back into the overall state,
     # the lists from each Send are combined without collision.
@@ -277,6 +277,7 @@ def qa_quote_reasoning_pairs(state: QAQuoteReasoningPairsSubState, config):
 
 
 def output_to_markdown(state: CodingAgentState):
+    state['prompt_per_code_results'] = state['qa_results'] 
     markdown_output = generate_markdown(state['prompt_per_code_results'], state['unprocessed_documents'])
     save_final_markdown("quote_reasoning_output.md", markdown_output)
     return {"markdown_output": markdown_output}
