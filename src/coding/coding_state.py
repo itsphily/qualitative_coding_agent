@@ -5,6 +5,7 @@ from typing_extensions import Annotated
 from langchain_core.tools import tool
 from coding_utils import merge_lists
 from coding_reducer import merge_dicts
+from operator import add
 
 
 class CharityInfo(TypedDict):
@@ -48,6 +49,7 @@ class CodingAgentState(TypedDict):
     synthesis_layer_2_per_charity: Annotated[List[SynthesisLayer2PerCharityState], merge_lists]
     synthesis_output_per_charity: str
     synthesis_output_per_code: str
+    qa_results: Annotated[list, merge_lists]
     
 
 class InvokePromptInputState(TypedDict):
@@ -133,3 +135,8 @@ class QAStructuredOutputPerCode(BaseModel):
             "document_importance (str): The importance level of the document"
         )
     )
+
+class QAQuoteReasoningPairsSubState(TypedDict):
+    subset_prompt_per_code_results: List  # list of dicts from your prompt_per_code_results
+    charity_id: str
+    code: str

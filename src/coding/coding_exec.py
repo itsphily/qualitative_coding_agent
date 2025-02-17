@@ -45,7 +45,8 @@ from coding_state import (
     QAStructuredOutputPerCode,
     SynthesisLayer1State,
     SynthesisLayer2PerCodeInputState,
-    SynthesisLayer2PerCharityInputState
+    SynthesisLayer2PerCharityInputState,
+    QAQuoteReasoningPairsSubState
 )
 from coding_utils import (
     path_to_text,
@@ -224,27 +225,55 @@ def invoke_prompt(state:InvokePromptPerCodeState) -> InvokePromptOutputState:
 
 
 
-def qa_quote_reasoning_pairs(state: CodingAgentState, config):
+
+# function to split prompt_per_code_results into subsets via Send
+def continue_to_qa_quote_reasoning_pairs(state: CodingAgentState):
     """
-    This function sends the quote-reasoning pairs to the LLM to evaluate whether they are relevant to the research question.
+    Use the Send API to partition the prompt_per_code_results by charity and code.
+    Each Send sends a subset of quote–reasoning pairs (all results for a given charity and code)
+    to the qa_quote_reasoning_pairs_subnode.
+    """
+    groups = {}
+    for item in state.get("prompt_per_code_results", []):
+        key = (item.get("charity_id"), item.get("code"))
+        groups.setdefault(key, []).append(item)
+    sends = []
+    for (charity_id, code), subset in groups.items():
+        sends.append(
+            Send("qa_quote_reasoning_pairs_node", {
+                "subset_prompt_per_code_results": subset,
+                "charity_id": charity_id,
+                "code": code
+            })
+        )
+    return sends
+
+# QA function to process each subset
+def qa_quote_reasoning_pairs(state: QAQuoteReasoningPairsSubState, config):
+    """
+    This node processes a subset of prompt_per_code_results corresponding to a specific charity and code.
+    It uses the send API to receive only the quote–reasoning pairs for that group.
     """
     research_question = config["configurable"].get("research_question")
-
-    # Convert results to JSON string
-    json_quote_reasoning_pairs_string = format_results_to_json(state['prompt_per_code_results'])
-
-    system_message = SystemMessage(content=quality_control_prompt.format(research_question=research_question, 
-                                                                       QA_output = QA_output_format,
-                                                                       QA_feedback_received = QA_feedback_received_format))
+    # Convert the subset to JSON string using your formatting helper.
+    json_quote_reasoning_pairs_string = format_results_to_json(state["subset_prompt_per_code_results"])
+    
+    system_message = SystemMessage(content=quality_control_prompt.format(
+        research_question=research_question,
+        QA_output=QA_output_format,
+        QA_feedback_received=QA_feedback_received_format
+    ))
     human_message = HumanMessage(content=quote_reasoning_pairs_prompt.format(text=json_quote_reasoning_pairs_string))
     
+    # Invoke the QA LLM with structured output
     result = llm_o3_with_structured_output_qa.invoke([system_message, human_message])
     
-    # Transform the list of results into a dictionary
-    qa_results_dict = transform_qa_results_to_dict(result.qa_results)
+    # Transform the returned list of QAValuePerCode objects into your desired dictionary format.
+    qa_results = transform_qa_results_to_dict(result.qa_results)
     
-    
-    return {"prompt_per_code_results": qa_results_dict}
+    # Return the result using an annotated key so that when merged back into the overall state,
+    # the lists from each Send are combined without collision.
+    return {"qa_results": qa_results}
 
 
 def output_to_markdown(state: CodingAgentState):
@@ -505,7 +534,7 @@ main_graph.add_conditional_edges(
     continue_to_invoke_subgraph_research_question,
     ['invoke_subgraph_node']
 )
-main_graph.add_edge('invoke_subgraph_node', 'qa_quote_reasoning_pairs_node')
+main_graph.add_conditional_edges('invoke_subgraph_node', continue_to_qa_quote_reasoning_pairs, ['qa_quote_reasoning_pairs_node'])
 main_graph.add_edge('qa_quote_reasoning_pairs_node', 'output_to_markdown_node')
 
 main_graph.add_conditional_edges('output_to_markdown_node', continue_to_synthesis_layer_1, ['synthesis_layer_1_node'])
