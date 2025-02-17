@@ -471,18 +471,24 @@ Here are all the intermediate aggregated summaries:
 
 
 
-"""
-You are a Ph.D qualitative researcher. You are provided with two sets of inputs:
+final_layer_research_question_prompt = """
+You are a Ph.D qualitative researcher. You are provided with two sets of inputs and the research question:
 - Charity-Level Aggregated Summaries: This text contains comprehensive aggregated summaries for each charity
 - Code-Level Aggregated Summaries (Across Charities): This text contains comprehensive aggregated summaries for each code across all charities
+- Research Question: 
 
-These two summaries provide all the necessary evidence-based syntheses: one from the perspective of each charity and one from the perspective of each code across charities—to generate a comprehensive, rigorously substantiated final research report.
+<research question>
+{research_question}
+</research question>
+
+These two summaries provide all the necessary evidence-based syntheses: one from the perspective of each charity and one from the perspective of each code across charities—to generate a comprehensive, rigorously substantiated final research report that is meant to provide evidence-based answers to the research question.
 
 # Task
-Using these inputs, generate a final, exhaustive, and comprehensive research report that answers the overarching research question. Your report must adhere to the following guidelines:
+Examine the aggregated summaries produced in the previous layers (per charity and per code). Determine the key insights that emerge when considering both the cross-code and cross-charity perspectives. Highlight how different aspects of the evidence interact to form a comprehensive picture. Using these inputs, generate a final, exhaustive, and comprehensive research report that answers the overarching research question. Your report must adhere to the following guidelines:
 
 ## Evidence-Based Analysis:
 - Base every conclusion, inference, pattern, and theme exclusively on the provided synthesis outputs. Do not introduce any external data or assumptions.
+- Write a clear and cohesive narrative that pulls together all the aggregated evidence, emphasizes the interconnections and differences between codes and charities, and provides a final answer to the research question.
 
 ## Substantiated Findings:
 - Every pattern, similarity, difference, contrast, or overarching theme identified in your report must be explicitly substantiated with references or examples drawn from the provided code-level and charity-level synthesis outputs.
@@ -502,28 +508,13 @@ Write in a rigorous, scholarly style. Your report should be clear, logically str
 ## No Hallucinations:
 - Ensure that every inference or conclusion is directly supported by the evidence in the summaries provided. You must not make any unfounded claims or add any extraneous commentary.
 
+## Length and format of the report:
+- Favor longer more detailed reports.
+- Format the report as markdown.
+
 ## Output:
-Produce a complete research report that integrates and analyzes all the provided evidence, answers the research question in detail, and presents a robust, evidence-based narrative complete with detailed substantiation of every claim made.
-
-"""
-
-
-
-
-final_layer_research_question_prompt = """
-You are a qualitative research synthesis expert. You have aggregated outputs from both the per charity aggregation and the per code aggregation layers. Your task now is to integrate all these aggregated findings into one final comprehensive research report that fully answers the overarching research question.
-
-<research question>
-{research_question}
-</research question>
-
-# Instructions:
-
-1) Review All Aggregated Outputs: Examine the aggregated summaries produced in the previous layers (per charity and per code).
-2) Identify Overarching Themes: Determine the key insights that emerge when considering both the cross-code and cross-charity perspectives. Highlight how different aspects of the evidence interact to form a comprehensive picture.
-3) Answer the Research Question: Integrate all the insights into a final narrative that directly addresses the overarching research question. Ensure that your synthesis explains how the combined evidence from all charities and all codes informs the answer.
-4) Synthesize the Final Comprehensive Summary: Write a clear and cohesive narrative that pulls together all the aggregated evidence, emphasizes the interconnections and differences between codes and charities, and provides a final answer to the research question.
-5) Format your output as markdown.
+- Produce a complete research report that integrates and analyzes all the provided evidence, answers the research question in detail, and presents a robust, evidence-based narrative complete with detailed substantiation of every claim made.
+- Output the report only without any other text or commentary.
 """
 
 text_to_synthesis_final_report_prompt = """
