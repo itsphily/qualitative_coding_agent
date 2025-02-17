@@ -230,9 +230,6 @@ def continue_to_qa_quote_reasoning_pairs(state: CodingAgentState):
     Each Send sends a subset of quote–reasoning pairs (all results for a given charity and code)
     to the qa_quote_reasoning_pairs_subnode.
     """
-    print("*************************************************")
-    print(state['prompt_per_code_results'])
-    print("*************************************************")
     groups = {}
     for item in state.get("prompt_per_code_results", []):
         key = (item.get("charity_id"), item.get("code"))
@@ -376,7 +373,7 @@ def synthesis_layer_1_to_markdown(state: CodingAgentState) -> dict:
         markdown_dict[charity] = "\n".join(md_lines).strip()
     
     # Save the markdown files using your utility function.
-    save_final_markdown("synthesis_for.md", markdown_dict)
+    save_final_markdown("per_code_analysis_for.md", markdown_dict)
     
 
 def continue_to_synthesis_layer_2_per_code(state: CodingAgentState):
