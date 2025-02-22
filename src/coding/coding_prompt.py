@@ -79,7 +79,7 @@ Evaluate the overall strength, quantity, and clarity of the evidence in the text
 # Prohibited Actions
 - Do not alter, paraphrase, or truncate the original quotes.
 - Do not interpret absence of evidence as evidence of absence unless the text explicitly states it.
-- If no relevant quotes are found, only output the document importance..
+- If no relevant quotes are found, only output the document importance.
 
 # Project Specific Instructions
 <project_specific_instructions> 
