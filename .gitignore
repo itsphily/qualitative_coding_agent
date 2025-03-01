@@ -20,6 +20,7 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+uv.lock
 
 # Jupyter Notebook
 .ipynb_checkpoints
