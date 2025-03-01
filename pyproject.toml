@@ -1,0 +1,69 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coding-agent"
+version = "0.1.0"
+description = "A coding agent for LeoMarketing"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+dependencies = [
+    "langchain>=0.3.14",
+    "langchain-anthropic>=0.3.0",
+    "langchain-chroma>=0.2.1",
+    "langchain-community>=0.3.14",
+    "langchain-core>=0.3.34",
+    "langchain-google-genai>=2.0.7",
+    "langchain-google-vertexai>=2.0.9",
+    "langchain-ollama>=0.2.2",
+    "langchain-openai>=0.3.4",
+    "langchain-text-splitters>=0.3.4",
+    "langgraph>=0.2.69",
+    "transformers>=4.47.1",
+    "tokenizers>=0.19.1",
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "pdf2image>=1.17.0",
+    "python-dotenv>=1.0.1",
+    "nougat-ocr>=0.1.17",
+    "Pillow>=10.4.0",
+    "typing-extensions>=4.12.2",
+    "nltk>=3.9.1",
+    "chromadb>=0.6.3",
+    "numpy>=1.26.4",
+    "pandas>=2.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "black>=22.0",
+    "isort>=5.10",
+    "mypy>=0.910",
+    "flake8>=7.1.1",
+]
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py" 
