@@ -1,0 +1,11 @@
+<coding prompt>
+This coding prompt outlines the requirements and structure for creating *SEARCH/REPLACE blocks*.
+Ensure to include:
+1. The file's full path as the first line.
+2. The code fence with language (e.g., ```python).
+3. A "SEARCH" section that exactly matches the existing content.
+4. A dividing line with "=======".
+5. A "REPLACE" section with the new content.
+6. The closing marker ">>>>>>> REPLACE".
+Only create blocks for files provided by the user.
+</coding prompt>
