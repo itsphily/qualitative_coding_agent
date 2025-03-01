@@ -10,6 +10,7 @@ import logging
 from datetime import datetime
 from langgraph.checkpoint.memory import MemorySaver
 import json
+import argparse
 
 # Create debug directory if it doesn't exist
 debug_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/debug"
@@ -549,27 +550,21 @@ main_graph = main_graph.compile(checkpointer=checkpointer)
 
 
 def main():
-    # Hardcode the CodingAgentInputState
-    research_question = "What operational processes enable charities to be cost effective?"
-    code_list = [
-        "Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.",
-        "Pre-intervention data collection: Collecting information about the charitable cause before implementing the charity's intervention."
-    ]
-
-
-    charities = [
-        {
-            "charity_id": 'GiveDirectly',
-            "charity_overview": "Its social goal is 'Extreme poverty'. Its intervention is 'Distribution of wealth transfers'.",
-            "charity_directory": "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/storage/nougat_extracted_text/01_GiveDirectly_short"
-        },
-        {
-            "charity_id": "MalariaConsortium",
-            "charity_overview": "Its social goal is 'Malaria'. Its intervention is 'Distribution of seasonal malaria chemoprevention'.",
-            "charity_directory": "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/final_markdown_files/04_Malaria_Consortium short"
-        }
-    ]
-
+    # Parse command line arguments
+    parser = argparse.ArgumentParser(description='Run the coding agent with specified parameters')
+    parser.add_argument('--research_question', type=str, required=True, 
+                        help='The research question to investigate')
+    parser.add_argument('--code_list', type=str, nargs='+', required=True,
+                        help='List of codes to analyze')
+    parser.add_argument('--charities', type=json.loads, required=True,
+                        help='JSON string containing charity information')
+    
+    args = parser.parse_args()
+    
+    # Extract arguments
+    research_question = args.research_question
+    code_list = args.code_list
+    charities = args.charities
 
     input_state = {
          "charities": charities,
@@ -579,7 +574,7 @@ def main():
 
     # Define the config that includes the research question
     config = {"configurable": {"thread_id": "1", 
-                            "research_question": "What operational processes enable charities to be cost effective?"}
+                            "research_question": research_question}
                             }
 
     # Visualize the graph
@@ -590,7 +585,6 @@ def main():
     # retrieve the final state 
     final_state = main_graph.get_state(config)
     final_state_dict = final_state.values 
-
 
     logging.info("Final State:")
     logging.info(final_state_dict)
