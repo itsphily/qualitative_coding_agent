@@ -1,6 +1,5 @@
 import os
 from dotenv import load_dotenv
-from typing import List
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from langgraph.graph import START, END, StateGraph
@@ -9,11 +8,10 @@ import json
 import logging
 from datetime import datetime
 from langgraph.checkpoint.memory import MemorySaver
-import json
 import argparse
 
-# Create debug directory if it doesn't exist
-debug_dir = "/Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/debug"
+# Create debug directory if it doesn't exist, configurable via DEBUG_DIR env var
+debug_dir = os.getenv("DEBUG_DIR", "debug")
 os.makedirs(debug_dir, exist_ok=True)
 
 # Configure logging to write to both file and console
@@ -124,7 +122,7 @@ def continue_to_invoke_subgraph_research_question(state: CodingAgentInputState) 
                 Send(
                     "invoke_subgraph_node",
                     {
-                        "code_and_research_question_prompt_variable": code_and_research_question_prompt_variable + "<code>" + c + "</code>",
+                        "code_and_research_question_prompt_variable": f"{code_and_research_question_prompt_variable}<code>{c}</code>",
                         "charity_id": charity["charity_id"],
                         "charity_directory": charity["charity_directory"],
                         "code": c,
@@ -412,7 +410,6 @@ def continue_to_synthesis_layer_2_per_charity(state: CodingAgentState):
     Iterate over state['synthesis_layer_1'] grouping by charity,
     then send aggregated JSON string to synthesis_layer_2_per_charity node.
     """
-    import json
     groups = {}
     for val in state.get("synthesis_layer_1", []):
         charity = val["synthesis_layer_1_charity_id"]
