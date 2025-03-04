@@ -1,3 +1,0 @@
-Here is a sample prompt for testing the aider-review command.
-
-Please analyze the src/coding/coding_exec.py file and check for any potential optimizations.
