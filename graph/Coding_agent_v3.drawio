@@ -1,0 +1,92 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.9 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.9">
+  <diagram name="Page-1" id="0Ydfxz6QTc93MpmbOC5K">
+    <mxGraphModel dx="2036" dy="1757" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-1" target="7zysp7-P2iY6PpEXY4lb-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-1" value="Extract Quote-reasoning pairs based on the code&lt;div&gt;Coding_agent_prompt_QA_lvl1&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="271" y="57" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-2" target="7zysp7-P2iY6PpEXY4lb-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-2" value="Human feedback of which quote/reasoning pairs are relevant and which are not" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="276" y="554" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-5" target="7zysp7-P2iY6PpEXY4lb-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-5" value="Add project specific instructions (for instance don&#39;t confuse before and after the intervention)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="18" y="554" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-8" value="Add metric for improvement" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="169" y="196" width="95" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-31" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-9" target="7zysp7-P2iY6PpEXY4lb-10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-9" value="Weight the evidence as whole. For each code look at all quote/reasoning pairs and determine how strong/weak the evidence is&amp;nbsp;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="271" y="333" width="220" height="96" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-10" value="Categorize the evidence&lt;div&gt;Evidence for or evidence of the contrary. Is it a pattern or an exception ?&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;implicit (infered) vs explicit&amp;nbsp; ex: strong evidence vs.weak&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="271" y="457" width="221" height="76" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-11" target="7zysp7-P2iY6PpEXY4lb-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-11" value="Check your work" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="271" y="151" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-17" target="7zysp7-P2iY6PpEXY4lb-9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-17" value="AI Evaluation" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="271" y="246" width="220" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-18" value="&lt;b&gt;AI Evaluation&amp;nbsp;&lt;/b&gt;&lt;br&gt;&lt;br&gt;Assess the reasoning is it an inference or a direct evidence, Check if it&#39;s direct evidence or implied.&amp;nbsp;&lt;br class=&quot;Apple-interchange-newline&quot;&gt;The reasoning goes beyond what is mentioned in the quote, as it in tries to extract too much meaning. (&lt;b&gt;code -reasoning&lt;/b&gt;)&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Is there a fit between the definition of the code and the quote.&lt;b&gt; (code - quote)&amp;nbsp;&lt;/b&gt;&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;div&gt;Determine the alignment between quote, code reasoning, because the reasoning could be biased/incorrect.&lt;b&gt; (code - quote - reasoning)&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Assess the chronological accuracy&lt;b&gt; (quote - code)&lt;/b&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Does the quote contain sufficient information to assess wether it is aligned with the c ode &lt;b&gt;(code - quote)&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Bias the QA to find holes in the reasoning to disqualify the quote &lt;b&gt;(&lt;/b&gt;quote(key) &lt;b&gt;reasoning code)&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Bias the QA to find holes in the mismatched quotes and codes&amp;nbsp; &lt;b&gt;(code quote)&lt;/b&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;Add a QA step to evaluate only the quote&lt;b&gt; (quote code)&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;QA step to evaluate quote/reasoning pairs &lt;b&gt;(quote reasoning)&amp;nbsp;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;Keep everything&amp;nbsp; and explain why it was removed. Use that explanation to refine the prompt&lt;/b&gt;&lt;/div&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="531" y="-24" width="738" height="343" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-19" value="First assess the reasoning (for, against, implicit, explicit&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="1258" y="19" width="314" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-20" value="Overall assessment of the quotes" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="279" y="668" width="214" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-21" value="This is done on all the quote/reasoning pairs for the code" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="525" y="470" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-23" value="Note: Don&#39;t filter any quote/reasoning pairs at this stage" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="520" y="374" width="190" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-24" value="Define the code (break down the code into key aspects)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="265" y="-104" width="226" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-25">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="254" y="-23" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-29" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="7zysp7-P2iY6PpEXY4lb-25" target="7zysp7-P2iY6PpEXY4lb-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-25" value="Human refines those definitions" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="267" y="-38" width="226" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" target="7zysp7-P2iY6PpEXY4lb-24">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="141" y="-38" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-26" value="Add a helper to&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="79" y="-38" width="226" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="7zysp7-P2iY6PpEXY4lb-32" value="Project specific instructions&lt;div&gt;AI generated from the first QA loop ask human to confirm that they want to implement those changes to the prompts&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="-198" y="376" width="193" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
