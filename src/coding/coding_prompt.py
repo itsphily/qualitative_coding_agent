@@ -67,7 +67,6 @@ Each selected quote must be presented in its entirety, ensuring that it provides
 - Do not paraphrase, alter, or truncate any part of the quote.
 3. Provide Reasoning
 - For each extracted quote, explain how it supports the research question or how it highlights the absence of relevant evidence.
-- Link your reasoning directly to aspects of the research question, explaining the significance of the evidence or the noted absence.
 4. Classify Document Importance
 - In addition to the quote and its reasoning, assign a document importance classification based on these guidelines:
 - important to read: The document contains multiple or highly compelling pieces of evidence that strongly support or refute the research question.
