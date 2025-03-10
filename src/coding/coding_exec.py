@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.schema import SystemMessage, HumanMessage
 from langgraph.graph import START, END, StateGraph
@@ -76,9 +75,6 @@ from coding_prompt import (
 )
 from langchain_core.tools import tool
 from langgraph.prebuilt import ToolNode
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Define model and tools
 model_openai = "o3-mini"
