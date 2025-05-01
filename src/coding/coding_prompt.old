@@ -61,7 +61,7 @@ Each selected quote must be presented in its entirety, ensuring that it provides
 - Read the research question thoroughly to grasp its focus.
 - Identify passages that either support the research question directly or point out where evidence is lacking.
 2. Extracting Quotes
-- Select full, unmodified quotes from the text that meet the following criteria:
+- Select full, unmodified quotes from the text that meet the following criteria: 
 - They are long enough to offer clear context.
 - They directly contribute to answering the research question or clearly indicate missing evidence.
 - Do not paraphrase, alter, or truncate any part of the quote.
@@ -84,9 +84,6 @@ Evaluate the overall strength, quantity, and clarity of the evidence in the text
 <project_specific_instructions> 
 {project_specific_instructions} 
 </project_specific_instructions>
-
-
-
 """
 
 coding_agent_prompt_footer = """

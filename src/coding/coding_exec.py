@@ -50,7 +50,6 @@ from coding_utils import (
     generate_markdown, 
     format_results_to_json, 
     transform_qa_results_to_list,
-    generate_synthesis_markdown
 )
 
 from coding_prompt import (

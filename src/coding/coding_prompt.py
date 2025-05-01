@@ -46,8 +46,37 @@ Do NOT include explanations or text outside the JSON object.
 Now, analyze the provided Input Code and generate the JSON output containing the key aspects.
 """
 
+identify_intervention = """
+You are a qualitative research analyst.
+
+INPUTS  
+• Research question: 
+  <research_question>
+  {research_question}  
+  </research_question>
+• Codes (for context only):
+  <codes>
+  {codes}  
+  </codes>
+• Case texts (markdown):  
+  <texts>
+  {texts}
+  </texts>
+
+TASK  
+1. Read the case texts, ignoring markdown formatting.  
+2. From all available details, pinpoint the **single intervention** (i.e. the main action, program, policy, or practice that is implemented in this case).
+
+OUTPUT  
+Write **one clear sentence (≤ 30 words)** that describes that intervention.  
+- Start with an action verb.  
+- Make the sentence self-contained; include enough context so it can stand alone.  
+- Return *only* that sentence—no labels, headings, or extra text.
+"""
+
 
 # Export the variables
 __all__ = [
-    'identify_key_aspects_prompt'
+    'identify_key_aspects_prompt', 
+    'identify_intervention'
 ]
