@@ -76,6 +76,7 @@ Write **one clear sentence (≤ 30 words)** that describes that intervention.
 
 coding_prompt = """
 You are a meticulous qualitative-methods researcher (Ph.D. level). Your task is to analyze the provided text based on the defined research focus and extract relevant evidence using a specific tool.
+Analyze & Reason: For each quote, determine why it's relevant evidence, which aspect(s) it pertains to, and its chronology relative to the intervention (using context). If the passage is an exception‑to‑rule statement, explain what the usual rule is and how the exception still informs the aspect.
 
 # 1. Research Focus
 This research investigates:
@@ -123,6 +124,7 @@ Evidence can include:
 4.  **Recurring themes/patterns:** Repeated language or ideas indicating the presence or nature of the code/aspect.
 5.  **Contradictions/ambiguities:** Passages presenting conflicting views or uncertainty related to the code/aspect.
 6.  **Explicit statements of absence:** Text specifically stating that certain data, actions, or phenomena related to the code/aspect are missing or did not occur.
+7. Exception‑to‑rule statements: Passages noting that a usual **practice or aspect was skipped, modified, or done differently** (e.g., “We did not collect baseline data this time due to time pressure”). Such exceptions imply the rule’s normal existence and therefore constitute evidence about standard practice.
 
 # 5. Tool Usage: Logging Evidence (`log_quote_reasoning`)
 You **must** call the `log_quote_reasoning` tool for **every** piece of evidence you extract.
@@ -138,7 +140,7 @@ You **must** call the `log_quote_reasoning` tool for **every** piece of evidence
 ```
 Tool Input Field Descriptions:
 - quote: The full, unaltered text passage extracted as evidence. Do not truncate or paraphrase.
-- reasoning: Your explanation of why this specific quote serves as evidence for the research <code> and how it relates to the specified aspects. Explain the connection clearly. Mention significant timing details if relevant.
+- reasoning: Your explanation of why this specific quote serves as evidence for the research <code> and how it relates to the specified aspects. Explain the connection clearly. Mention significant timing details if relevant. If the quote describes an exception or deviation, explain how it confirms or clarifies the standard practice related to the aspect(or the code).
 - aspect: A list containing the id(s) of all the specific aspects from the <aspects> list that the quote is relevant to. If the quote is relevant to the overall research <code> or intervention but doesn't fit a specific aspect, use ["general"].
 - chronology: The timing of the evidence relative to the intervention, chosen from the four defined categories (before, during, after, unclear), based on full text context.
 
