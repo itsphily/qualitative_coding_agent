@@ -346,6 +346,74 @@ Produce a structured report using Markdown, containing **only the Kept or Refine
     *(Include ALL Kept/Refined Strong Claims, or state "None Validated as Significant Case-Wide")*
 """
 
+cross_case_analysis_prompt = """
+You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **deep synthesis and case-wide pattern identification**. Your task is to analyze the **complete set of source texts** for a specific case and research code, informed by a previously generated **Adjusted Findings Summary**. Your goal is to conduct an **independent, holistic analysis of the full texts** to identify and describe robust, overarching synthesis findings (Overall Consistency, Pervasive Absence, Theme Saturation, Evolution, Triangulation, Completeness & Gaps), considering the defined aspects of the research code.
+
+# Context
+* **Case Name:** {case_name}
+* **Research Code (Name and Description):** {code}
+* **Defined Aspects of the research code:** {aspects}
+* **Research Question:** {research_question}
+* **Intervention:** {intervention}
+* **Context Usage:** Use the overall context (Research Question, Intervention, Code Aspects) to frame your synthesis and interpret the significance of the patterns you identify across the full texts.
+
+# Input Data
+1.  **Adjusted Findings Summary (Context & Starting Point):** Contains themes, contradictions, and claims previously validated against the full texts. **Use this primarily to understand established core findings, but DO NOT limit your analysis only to these items.**
+    <adjusted_findings_summary>
+    {adjusted_findings_summary}
+    </adjusted_findings_summary>
+
+2.  **Complete Source Texts (Primary Data):** You have access to the full corpus of original documents for Case '{case_name}'. You **must** base your synthesis analysis *directly and primarily* on a holistic review of these texts.
+    <source_texts>
+    {source_texts}
+    </source_texts>
+
+# Task: Conduct Deep Synthesis Across All Texts ONLY
+Perform an **independent analysis of the complete source texts** for the Research Code '{code}'. Identify and describe the overarching patterns listed below. While informed by the Adjusted Findings Summary, your synthesis must reflect insights gleaned from the **entire corpus**. Consider the defined `{aspects}` of the code throughout your analysis. **Do NOT simply repeat or slightly modify the Adjusted Findings Summary.** <notes> it isn't clear enough what the aspects are used for </notes>
+
+# Detailed Instructions for Synthesis:
+
+1.  **Overall Consistency / Convergence:** Based on **all texts**, what are the most significant points, findings, or themes (including but not limited to those validated in the summary) related to '{code}' that demonstrate strong agreement or consistency across multiple source texts and different source *types*? Note if consistency is particularly strong for specific `{aspects}`.
+2.  **Pervasive Absence:** Based on your review of **all texts** and considering the code's definition and `{aspects}`, what expected information, discussions, or perspectives related to '{code}' are conspicuously *missing* throughout the case data? Describe the nature and potential significance of these absences. Is the absence related to particular `{aspects}`?
+3.  **Theme Saturation / Recurrence:** Which themes (especially those validated as core findings in the Adjusted Summary) are so frequently and consistently present across the **entire dataset** that they can be considered saturated? Does saturation differ across `{aspects}`?
+4.  **Evolution / Change Over Time (If Applicable):** Analyze **all relevant texts** spanning the case timeline. Is there clear evidence of evolution, development, or shifts related to '{code}' (or its specific `{aspects}`) over time? Describe these changes. If none identified, state that.
+5.  **Triangulation:** Search the **full texts** for strong examples where key findings (validated themes/claims OR newly identified points of consistency) can be substantiated by linking converging evidence from **at least two different kinds** of source texts. Describe 1-3 clear examples, noting the finding and the source types involved. Are certain `{aspects}` better triangulated than others?
+6.  **Case-Wide Contradictions / Divergence:** Beyond validating specific contradictions, what are the most significant conflicting perspectives, data points, or unresolved tensions related to '{code}' emerging from the analysis of **all texts**? Do these relate to specific `{aspects}`? Describe the nature of these major tensions.
+7.  **Overall Completeness & Remaining Gaps:** Considering **all texts**, provide a concluding assessment. How comprehensive is the picture regarding '{code}' and its `{aspects}` for this case? What are the most significant remaining gaps in evidence or unanswered questions based *only* on the available data?
+
+# Output Format: Deep Synthesis Report ONLY
+Produce a structured report using Markdown, detailing **only** the deep synthesis findings based on your independent analysis of the complete source texts. Reference specific aspects where relevant.
+
+**Example Output Structure:**
+# Deep Synthesis Findings Report
+
+**Case ID:** {case_name}
+**Code Analyzed:** {code}
+
+## Overall Consistency / Convergence
+* [Description of robust points of agreement across all texts/types. E.g., Strong consistency found regarding aspect 'X', supported by reports and interviews...]
+* [...]
+
+## Pervasive Absence
+* [Detailed description of significant information missing across all texts. E.g., Notable lack of discussion regarding aspect 'Y' in participant accounts...]
+* [...]
+
+## Theme Saturation / Recurrence
+* [Identification of which validated themes are considered core/saturated case-wide. E.g., Theme 'Z' demonstrates high saturation, particularly for aspect 'A'.]
+
+## Evolution / Change Over Time
+* [Description of significant shifts observed across the case timeline related to the code/aspects, if applicable. Otherwise state "No significant evolution identified based on the texts.".]
+
+## Triangulation Notes
+* [Specific example 1 demonstrating triangulation across source types for finding related to aspect 'X'.]
+* [Specific example 2...]
+
+## Case-Wide Contradictions / Divergence
+* [Description of major tensions or conflicting perspectives identified from analyzing all texts, potentially linked to specific aspects.]
+
+## Overall Completeness & Remaining Gaps
+* [Concluding assessment of understanding based on all texts, highlighting key remaining questions or evidence gaps, potentially noting which aspects are less well understood.]
+"""
 
 
 
@@ -356,5 +424,5 @@ __all__ = [
     'identify_evidence_prompt',
     'synthesize_evidence', 
     'evaluate_evidence_vs_full_prompt',
-    
+    'cross_case_analysis_prompt',
 ]
