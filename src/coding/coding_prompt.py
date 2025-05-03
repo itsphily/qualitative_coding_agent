@@ -256,11 +256,105 @@ Provide your complete output as a clearly structured text report using Markdown 
 * [Full text of quote 3...]
 """
 
+evaluate_evidence_vs_full_prompt = """
+You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **critical validation and refinement**. Your task is to evaluate a **Preliminary Findings Summary** (generated from an initial analysis) against the **complete set of source texts** for a specific case and research code. Your goal is to produce an **Adjusted Findings Summary** that includes ONLY the preliminary findings that are validated, significant, and accurately nuanced based on the full corpus of evidence, potentially refining their descriptions.
+
+# Context
+* **Case Name:** {case_name}
+* **Research Code (Name and Description):** {code}
+* **Research Question:** {research_question}
+* **Intervention:** {intervention}
+* **Context Usage:** Use the overall context (Research Question, Intervention) to judge the significance and relevance of findings during the validation and refinement process.
+
+# Input Data
+1.  **Preliminary Findings Summary:** Contains potential Content Themes, Dimensional Themes, Contradictions, and Strong Singular Claims identified during the initial analysis phase.
+    <preliminary_findings_summary>
+    {level_1_synthesis_summary}
+    </preliminary_findings_summary>
+    *Important Note:* This summary contains *potential* findings requiring validation.
+
+2.  **Complete Source Texts:** You have access to the full corpus of original documents for Case '{case_name}'. You **must** use these texts as the definitive source for validation and refinement.
+    <source_texts>
+    {source_texts}
+    </source_texts>
+
+# Task: Produce Adjusted Findings Summary
+Systematically review **each component listed** in the Preliminary Findings Summary. For each item (each listed Content Theme, Dimensional Theme, Contradiction, and Strong Claim), search and analyze the **complete source texts** to assess its validity, accuracy, and significance case-wide. Based on this assessment, decide whether to **Keep**, **Refine**, or **Discard** each item. Your output will be a new summary containing *only* the Kept or Refined items.
+
+# Detailed Instructions for Validation & Refinement:
+
+**General Guidance:**
+* **Prioritize Quotes:** Base your validation primarily on the direct evidence (or absence thereof) within the `source_texts`. Treat any initial `reasoning` implicitly associated with preliminary findings as secondary.
+* **Decision Criteria:** Your decisions (Keep/Refine/Discard) should be based on whether the finding accurately reflects patterns, statements, or tensions present when considering the *entire* corpus of source texts for this case and code.
+
+**Validation & Decision Steps (Address each item from the preliminary summary):**
+
+1.  **For each Preliminary Content Theme:**
+    * **Search & Assess:** How strongly and consistently is this theme supported case-wide? Is its core concept accurate? Does it need refinement? What is its prevalence (core, secondary, minor)?
+    * **Decide & Prepare Output:**
+        * If **strongly confirmed and accurate**: **Keep** the theme label. Note its status as "Confirmed - Core Finding" or "Confirmed - Secondary Theme".
+        * If **partially supported or needs nuance**: **Refine** the theme label or add a brief clarification to its description to better reflect the full context. Note its status as "Refined - [Specify prevalence]".
+        * If **refuted, not supported, or insignificant case-wide**: **Discard** this theme. Do not include it in the output.
+2.  **For each Preliminary Dimensional Theme:**
+    * **Search & Assess:** Is this characteristic genuinely prominent and significant case-wide?
+    * **Decide & Prepare Output:**
+        * If **confirmed as prominent/significant**: **Keep** the theme label. Note status "Confirmed - Prominent Characteristic".
+        * If **isolated or not significant case-wide**: **Discard** this theme.
+3.  **For each Preliminary Direct Contradiction:**
+    * **Investigate & Assess:** Does the conflict represent a genuine, significant tension case-wide? Is it resolved or explained differently in the full context?
+    * **Decide & Prepare Output:**
+        * If **confirmed as significant case-wide tension**: **Keep** and potentially **Refine** the description to accurately reflect its nature and status (e.g., resolved/unresolved) based on all texts. Note status "Confirmed - Significant Tension".
+        * If **resolved, minor, or misinterpretation**: **Discard** this contradiction.
+4.  **For each Preliminary Strong Singular Claim:**
+    * **Contextualize & Assess:** Is the claim credible and significant within the full case narrative? Is it corroborated or heavily contested? Is it fact or opinion?
+    * **Decide & Prepare Output:**
+        * If **deemed significant and credible (even if contested)**: **Keep** the essential claim summary. Add a brief note on its contextual status (e.g., "Corroborated by policy", "Contested by practice accounts", "Isolated but impactful statement"). Note status "Confirmed - Notable Claim".
+        * If **isolated opinion, lacks credibility, or insignificant**: **Discard** this claim.
+
+# Output Format: Adjusted Findings Summary
+Produce a structured report using Markdown, containing **only the Kept or Refined findings** from the preliminary summary, potentially including status annotations. **Do not include discarded items.** Structure the output clearly.
+
+**Example Output Structure:**
+# Adjusted Findings Summary
+
+**Case ID:** {case_name}
+**Code Analyzed:** {code}
+
+## Validated & Refined Content Themes
+* **Theme:** '[Kept or Refined Theme Label 1]'
+    * **Status:** [e.g., Confirmed - Core Finding]
+    * **Refinement Note (If applicable):** [e.g., Broadened to include aspect Z based on full texts.]
+* **Theme:** '[Kept or Refined Theme Label 2]'
+    * **Status:** [e.g., Refined - Secondary Theme]
+    * **Refinement Note (If applicable):** [e.g., Clarified focus on Y.]
+    *(Include ALL Kept/Refined Content Themes)*
+
+## Validated & Refined Dimensional Themes
+* **Theme:** '[Kept Dim Theme Label A]'
+    * **Status:** [e.g., Confirmed - Prominent Characteristic]
+    *(Include ALL Kept Dimensional Themes, or state "None Validated as Prominent Case-Wide")*
+
+## Validated & Refined Contradictions
+* **Contradiction:** '[Refined description of Contradiction 1]'
+    * **Status:** [e.g., Confirmed - Major Tension (Unresolved)]
+    *(Include ALL Kept/Refined Contradictions, or state "None Validated as Significant Case-Wide")*
+
+## Validated & Refined Strong Claims
+* **Claim:** '[Essential message/quote of Claim 1]'
+    * **Status:** [e.g., Confirmed - Notable Claim]
+    * **Context Note:** [e.g., Corroborated by policy, contested by practice accounts.]
+    *(Include ALL Kept/Refined Strong Claims, or state "None Validated as Significant Case-Wide")*
+"""
+
+
+
 
 # Export the variables
 __all__ = [
     'identify_key_aspects_prompt', 
     'identify_intervention', 
     'identify_evidence_prompt',
-    'synthesize_evidence'
+    'synthesize_evidence', 
+    'evaluate_evidence_vs_full_prompt',
+    
 ]
