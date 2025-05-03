@@ -415,7 +415,84 @@ Produce a structured report using Markdown, detailing **only** the deep synthesi
 * [Concluding assessment of understanding based on all texts, highlighting key remaining questions or evidence gaps, potentially noting which aspects are less well understood.]
 """
 
+final_synthesis_prompt = """
+You are a meticulous qualitative-methods researcher (Ph.D. level) synthesizing case study findings. Your task is to integrate insights from prior validation and deep synthesis analyses to produce a **Final Synthesized Findings Report** for a specific research code and case. This comprehensive report must structure findings clearly, provide insightful "meta-reasoning" for each, and include the **full text of all primary supporting quotes (quotes must be unaltered and shared in full)** identified from the original evidence records for direct reference and traceability.
 
+# Context
+* **Case Name:** {case_name}
+* **Research Code (Name and Description):** {code}
+* **Research Question:** {research_question} # Optional context
+* **Intervention:** {intervention} # Optional context
+
+# Input Data
+1.  **Adjusted Findings Summary (Validated Elements):** Contains the validated/refined themes, contradictions, and claims. Use this to identify core validated elements.
+    <adjusted_findings_summary>
+    {adjusted_findings_summary_markdown}
+    </adjusted_findings_summary>
+
+2.  **Deep Synthesis Report (Case-Wide Patterns):** Contains the analysis of overall consistency, absence, saturation, evolution, etc. Use this for deep context and nuanced interpretation.
+    <deep_synthesis_report>
+    {deep_synthesis_report_markdown}
+    </deep_synthesis_report>
+
+3.  **Original Evidence Records (For Quote Retrieval):** You have access to the complete list of original evidence records (containing `record_id`, `quote`, `aspect`, `doc_name`, `chronology`) from which the initial summaries were derived. You **must** retrieve quotes, doc_name, chronology in full without any alteration from this list.
+    <original_evidence_records>
+    {list_of_original_records_json}
+    </original_evidence_records>
+
+# Task: Generate Final Synthesized Findings Report with All Supporting Quotes
+Review the Adjusted Findings Summary and the Deep Synthesis Report. Identify the most important validated findings and significant case-wide patterns. Structure these into a final report organized by key finding. For each finding:
+    1. State the finding clearly.
+    2. Write concise **Meta-Reasoning:** Synthesize information from *both* input reports to explain the finding's significance, nuance, strength, and context within the case, incorporating relevant analytical considerations (see guidance below).
+    3. Compile & Embed Supporting Quotes: Identify **all** original Phase 1 evidence records that provide **primary support** for this specific finding. Retrieve the full `quote` text and the source document identifier (`doc_name`) for **each** identified record. Present these quotes clearly under the finding. Focus on quotes where the core statement directly relates to the finding described in the meta-reasoning.
+
+# Guidance for Meta-Reasoning (Incorporate where relevant):
+* **Strength & Consistency:** How robust is this finding (confirmed, saturated, triangulated)? Based on diverse sources? Reflected in how many quotes are listed below?
+* **Contradictions & Nuance:** Does this finding conflict with others? Was it refined? Does synthesis suggest multiple interpretations?
+* **Context & Credibility:** Nature of supporting evidence (policy, opinion, practice)? Credibility based on synthesis?
+* **Evolution & Recency:** Did it change over time? Is recent evidence weighted?
+* **Exceptions & Scope:** General rule or exceptions noted?
+* **Absence:** Significance of related absences?
+
+# Guidance for Compiling Supporting Quotes:
+* Be comprehensive: Include **all** quotes that offer direct, primary support for the specific finding being discussed.
+* Retrieve accurately: Ensure the full `quote` text is retrieved from the `original_evidence_records`.
+* Provide Source Context: Include the `doc_name` for each quote to give the reader context on its origin within the case.
+
+# Output Format: Final Synthesized Findings Report
+Produce a structured report using Markdown. Organize by key finding, including meta-reasoning and a **complete list** of primary supporting quotes with their source document names. **Be aware this report may become very long.**
+
+**Example Output Structure:**
+```markdown
+# Final Synthesized Findings Report
+
+**Case ID:** {case_name}
+**Code Analyzed:** {code}
+
+## Key Finding 1: [Validated Theme Label / Finding Title]
+* **Meta-Reasoning:** [Synthesis explaining the theme's meaning, strength (e.g., supported by N quotes across Y document types), nuance, etc.]
+* **Supporting Quotes:**
+    * Document: [doc_name_A] - "[Full text of quote 1 supporting Finding 1...]"
+    * Document: [doc_name_B] - "[Full text of quote 2 supporting Finding 1...]"
+    * Document: [doc_name_C] - "[Full text of quote 3 supporting Finding 1...]"
+    * Document: [doc_name_D] - "[Full text of quote 4 supporting Finding 1...]"
+    * *(List ALL primary supporting quotes identified for Finding 1)*
+
+## Key Finding 2: Contradiction Regarding [Topic]
+* **Meta-Reasoning:** [Synthesis describing the contradiction, sources involved, significance, etc.]
+* **Supporting Quotes:**
+    * Document: [doc_name_X] - "[Quote illustrating one side...]"
+    * Document: [doc_name_Y] - "[Quote illustrating the opposing side...]"
+    * Document: [doc_name_Z] - "[Another quote illustrating one side...]"
+    * *(List ALL primary supporting quotes identified for Finding 2)*
+
+## Key Finding 3: Pervasive Absence of [Topic]
+* **Meta-Reasoning:** [Synthesis confirming the absence, discussing potential implications.]
+* **Supporting Quotes:**
+    * *(Often N/A, but list any quotes that explicitly mention the lack or hint at why something isn't discussed, including their doc_name. Otherwise state "No direct quotes support this absence finding.")
+
+*(Continue for all major validated findings and significant patterns like Evolution, Strong Claims, etc.)*
+"""
 
 # Export the variables
 __all__ = [
@@ -425,4 +502,5 @@ __all__ = [
     'synthesize_evidence', 
     'evaluate_evidence_vs_full_prompt',
     'cross_case_analysis_prompt',
+    'final_synthesis_prompt',
 ]
