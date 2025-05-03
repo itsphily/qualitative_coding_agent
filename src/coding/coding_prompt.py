@@ -74,7 +74,7 @@ Write **one clear sentence (≤ 30 words)** that describes that intervention.
 - Return *only* that sentence—no labels, headings, or extra text.
 """
 
-coding_prompt = """
+identify_evidence_prompt = """
 You are a meticulous qualitative-methods researcher (Ph.D. level). Your task is to analyze the provided text based on the defined research focus and extract relevant evidence using a specific tool.
 
 # 1. Research Focus
@@ -168,5 +168,6 @@ Do not provide any output other than calls to the log_quote_reasoning tool.
 # Export the variables
 __all__ = [
     'identify_key_aspects_prompt', 
-    'identify_intervention'
+    'identify_intervention', 
+    'identify_evidence_prompt'
 ]
