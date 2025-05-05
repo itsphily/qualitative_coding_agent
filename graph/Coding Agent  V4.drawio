@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.9 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.9">
   <diagram name="Page-1" id="xkog-0CbHqIXtxAfaAvf">
-    <mxGraphModel dx="2612" dy="2052" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="2935" dy="1783" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -41,7 +41,7 @@
           <mxGeometry x="37" y="259" width="18" height="26" as="geometry" />
         </mxCell>
         <mxCell id="AScNVb7dmJ9JvbfS0WlG-12" value="Models: 4o-mini (high), Gemini 2.5 pro, maybe Gemini 2.5 flash (I didn&#39;t really like the output)&#xa;" style="rounded=1;whiteSpace=wrap;align=left;strokeColor=none;strokeWidth=0;" vertex="1" parent="1">
-          <mxGeometry x="79" y="55" width="195" height="126" as="geometry" />
+          <mxGeometry x="69" y="67" width="195" height="126" as="geometry" />
         </mxCell>
         <mxCell id="AScNVb7dmJ9JvbfS0WlG-14" value="&lt;b&gt;Human in the loop: Add any project specific instructions&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D5E8D4,var(--ge-dark-color, #121212));shadow=1;dashed=1;" vertex="1" parent="1">
           <mxGeometry x="305" y="503" width="273" height="63" as="geometry" />
@@ -145,7 +145,7 @@
         <mxCell id="AScNVb7dmJ9JvbfS0WlG-57" value="Models: Gemini 2.5 flash thinking or gemini 2.5 pro depending on the cost&#xa;" style="rounded=1;whiteSpace=wrap;align=left;strokeColor=none;strokeWidth=0;fillColor=default;" vertex="1" parent="1">
           <mxGeometry x="55" y="1418" width="215" height="126" as="geometry" />
         </mxCell>
-        <mxCell id="AScNVb7dmJ9JvbfS0WlG-58" value="&lt;b&gt;Generate transversal evidence&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=3;" vertex="1" parent="1">
+        <mxCell id="AScNVb7dmJ9JvbfS0WlG-58" value="Finish this" style="rounded=1;whiteSpace=wrap;html=1;strokeWidth=3;" vertex="1" parent="1">
           <mxGeometry x="305" y="1645" width="273" height="144" as="geometry" />
         </mxCell>
         <mxCell id="AScNVb7dmJ9JvbfS0WlG-61" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="AScNVb7dmJ9JvbfS0WlG-49" target="AScNVb7dmJ9JvbfS0WlG-52">

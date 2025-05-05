@@ -12,6 +12,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, END, StateGraph
+from coding_prompt import identify_key_aspects_prompt
 
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
@@ -81,37 +82,35 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
 runtime_config = {  "configurable": {
-                    "llm_long_context_with_structured_output": llm_long_context_with_structured_output
+                    "llm_aspect_identifier_structured": llm_long_context_with_structured_output
                     }
 }
 
+def start_llm(state: CodingState):
+    """
+    Empty start node
+    """
+    return state
+
 
 def continue_to_aspect_definition(state: CodingState) -> List[Send]:
-    """
-    Dispatcher Node: Uses a list comprehension with Send, exactly mirroring
-    the provided example structure, to dispatch parallel tasks for each code.
-    """
-    codes_list: Optional[List[Code]] = state.get("codes")
-
-    if not codes_list or not isinstance(codes_list, list):
-        logging.warning("No valid 'codes' list found in state. Cannot dispatch aspect definition tasks.")
+    codes = state.get("codes", {})
+    if not codes:
+        logging.warning("No codes found in state.")
         return []
 
-    print(f"--- Dispatching Aspect Definition Tasks via Send for {len(codes_list)} Codes ---")
-    logging.info(f"Dispatching tasks for {len(codes_list)} codes to 'aspect_definition_node' via Send.")
+    logging.info("Dispatching %d codes", len(codes))
 
-    messages_to_send = [
+    return [
         Send(
             "aspect_definition_node",
             {
-                "identifier": code_obj.get("code_description", "Error: Missing Description"),
-                "code_description_for_prompt": code_obj.get("code_description", "Error: Missing Description")
+                "identifier": desc,
+                "code_description_for_prompt": desc 
             }
         )
-        for code_obj in codes_list
+        for desc in codes
     ]
-
-    return messages_to_send
 
 
 def aspect_definition_node(payload: dict, config: RunnableConfig) -> Dict[str, Dict[str, Any]]:
@@ -154,7 +153,7 @@ def aspect_definition_node(payload: dict, config: RunnableConfig) -> Dict[str, D
 
     # --- Prepare LLM Input ---
     try:
-        system_message_content = identify_key_aspects_prompt_template
+        system_message_content = identify_key_aspects_prompt
         # Use the code description received in the payload for the human message
         human_message_content = f"here is the code to deconstruct into core components: {code_description_for_prompt}"
         messages = [
@@ -181,28 +180,31 @@ def aspect_definition_node(payload: dict, config: RunnableConfig) -> Dict[str, D
         logging.error(f"[{node_name}] LLM call/parsing failed for code {identifier[:60]}: {e}", exc_info=True)
         aspects_list = [f"Error: LLM/Parsing failed - {e}"]
 
-    # --- Prepare and Return Update for Reducer ---
-    update_payload = {
-        "identifier": identifier, 
-        "key_aspects": aspects_list 
+    return {
+        "codes": { 
+            identifier: aspects_list
+        }
     }
-    return {"codes": update_payload}
+
+def place_holder(state: CodingState):
+    """
+    Placeholder node to ensure the graph ends
+    """
+    return state
 
 
 coding_graph = StateGraph(CodingState)
 
 # --- Add Nodes ---
-coding_graph.add_node("continue_to_aspect_definition", continue_to_aspect_definition)
+coding_graph.add_node("start", start_llm)
 coding_graph.add_node("aspect_definition_node", aspect_definition_node)
-
+coding_graph.add_node("place_holder", place_holder)
 
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
-coding_graph.add_conditional_edges(
-    "start",
-    continue_to_aspect_definition,['aspect_definition_node']
-)
-coding_graph.add_edge("aspect_definition_node", END)
+coding_graph.add_conditional_edges("start",continue_to_aspect_definition, ['aspect_definition_node'])
+coding_graph.add_edge("aspect_definition_node", 'place_holder')
+coding_graph.add_edge("place_holder", END)
 
 coding_graph = coding_graph.compile()
 
@@ -217,9 +219,8 @@ if __name__ == "__main__":
     print("\n--- Initial State Content ---")
     print(f"Research Question: {initial_state['research_question']}")
     print(f"\nCodes ({len(initial_state['codes'])}):")
-    for code_obj in initial_state['codes']:
-        code_desc = code_obj.get('code_description', 'N/A')
-        print(f"  - Code Desc: \"{code_desc[:60]}...\"")
+    for desc, aspects in initial_state["codes"].items():
+        print(f'  – {desc[:60]}...  →  {aspects}')
     print(f"\nCases ({len(initial_state['cases_info'])}):")
     for case_name, case_obj in initial_state['cases_info'].items():
         print(f"  - Key: \"{case_name}\"")

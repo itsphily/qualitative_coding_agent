@@ -1,17 +1,18 @@
-import argparse
-import json
-from typing import List, Dict, Any, Optional, Tuple, cast,TYPE_CHECKING
+from __future__ import annotations
+import argparse, json, logging
+from typing import Dict, List, Tuple, Optional, cast
 from coding_state import CodingState, Code, CaseInfo
 
-def parse_code_string(code_string: str) -> Tuple[Optional[str], Optional[str]]:
-    """Parses 'Code Name: Definition' string."""
-    parts = code_string.split(':', 1)
-    if len(parts) == 2:
-        name = parts[0].strip()
-        definition = parts[1].strip()
-        return name, definition
-    return None, None
-
+def _parse_code_string(raw: str) -> str:
+    """
+    Normalises an input like 'Name: Definition' or just 'Definition'
+    into the key we store in the state.
+    """
+    name, sep, definition = raw.partition(":")
+    if sep:
+        name, definition = name.strip(), definition.strip()
+        return f"{name}: {definition}" if definition else name
+    return raw.strip()
 
 def parse_arguments() -> argparse.Namespace:
     """Parses command-line arguments for the main execution script."""
@@ -36,65 +37,40 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def initialize_state(args: argparse.Namespace) -> 'CodingState':
-    """
-    Initializes the graph state dictionary from parsed command-line arguments.
-    """
-    print("--- Initializing Graph State ---")
+def initialize_state(args: argparse.Namespace) -> CodingState:
+    """Creates the initial LangGraph state from CLI arguments."""
+    logging.info("‑‑‑ Initialising graph state ‑‑‑")
 
-    # 1. Process Codes
-    initial_codes_list: List[Code] = []
-    processed_code_descriptions = set()
-    print(f"Processing {len(args.code_list)} input codes...")
-    for code_string in args.code_list:
-        name, definition = parse_code_string(code_string)
-        code_desc_key = code_string
-        if name and definition:
-            code_desc_key = f"{name}: {definition}"
-        elif definition:
-             code_desc_key = definition
-        else:
-             print(f"Warning: Using full string as key for possibly malformed code: {code_string}")
-
-        if code_desc_key in processed_code_descriptions:
-            print(f"Warning: Duplicate code description key detected: '{code_desc_key}'. Skipping duplicate.")
+    # 1. Codes → dict keyed by description
+    codes: Dict[str, Code] = {}
+    for raw in args.code_list:
+        key = _parse_code_string(raw)
+        if key in codes:
+            logging.warning("Duplicate code skipped: %s", key)
             continue
-        processed_code_descriptions.add(code_desc_key)
-        initial_codes_list.append(Code(code_description=code_desc_key, key_aspects=None))
-    print(f"Created {len(initial_codes_list)} code entries.")
+        codes[key] = Code(code_description=key, key_aspects=None)
+    logging.info("Added %d code entries", len(codes))
 
-    # 2. Process Cases (Charities)
-    initial_cases_info: Dict[str, CaseInfo] = {}
-    print(f"Processing {len(args.charities)} input cases/charities...")
-    if isinstance(args.charities, list):
-        for charity_data in args.charities:
-            if isinstance(charity_data, dict):
-                case_name = charity_data.get("charity_id")
-                directory = charity_data.get("charity_directory")
-                description = charity_data.get("charity_overview")
+    # 2. Charities / cases
+    cases: Dict[str, CaseInfo] = {}
+    for item in args.charities:
+        if not isinstance(item, dict):
+            logging.warning("Charity entry is not a dict: %s", item); continue
+        cid, directory = item.get("charity_id"), item.get("charity_directory")
+        if not (cid and directory):
+            logging.warning("Missing id/directory in charity entry: %s", item); continue
+        cases[cid] = CaseInfo(
+            directory=directory,
+            description=item.get("charity_overview"),
+            intervention=None,
+        )
+    logging.info("Added %d case entries", len(cases))
 
-                if case_name and directory:
-                    if case_name in initial_cases_info:
-                         print(f"Warning: Duplicate case name (charity_id) detected: '{case_name}'. Overwriting.")
-                    initial_cases_info[case_name] = CaseInfo(
-                        directory=directory,
-                        description=description,
-                        intervention=None
-                    )
-                else:
-                     print(f"Warning: Skipping charity data due to missing 'charity_id' or 'charity_directory': {charity_data}")
-            else:
-                print(f"Warning: Item in charities input is not a dictionary: {charity_data}")
-    else:
-        print(f"Error: --charities input was not parsed as a list. Received type: {type(args.charities)}")
-        raise TypeError("--charities argument must be a valid JSON list of objects.")
-    print(f"Created {len(initial_cases_info)} case entries.")
-
-    initial_graph_state = cast(CodingState, {
+    # 3. Assemble and return CodingState
+    state: CodingState = cast(CodingState, {
         "research_question": args.research_question,
-        "codes": initial_codes_list,
-        "cases_info": initial_cases_info,
-
+        "codes": codes,
+        "cases_info": cases,
     })
-    print("--- Initial Graph State Created ---")
-    return initial_graph_state
+    logging.info("‑‑‑ Initial state ready ‑‑‑")
+    return state
