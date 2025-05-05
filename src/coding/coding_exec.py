@@ -13,7 +13,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, END, StateGraph
 from coding_prompt import identify_key_aspects_prompt
-
+from coding_utils import visualize_graph
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
 os.makedirs(debug_dir, exist_ok=True)
@@ -214,6 +214,7 @@ if __name__ == "__main__":
 
     # --- Initialize the State ---
     initial_state = initialize_state(parsed_args)
+    visualize_graph(coding_graph, "coding_graph")
     coding_graph.invoke(initial_state, config=runtime_config)
 
     print("\n--- Initial State Content ---")
