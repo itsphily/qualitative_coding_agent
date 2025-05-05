@@ -7,13 +7,6 @@ help:
 	@echo "make help           - Display this help message"
 	@echo "make test           - Run a test with minimal parameters"
 	@echo "make full           - Run with expanded parameters and all charities"
-	@echo "make aider          - Run aider in architect mode with o3-mini"
-	@echo "make aider-oneshot  - Run aider once with a prompt file (PROMPT=path/to/file.txt)"
-	@echo "make aider-reflect  - Run aider twice: implement changes then verify them (PROMPT=path/to/file.txt)"
-	@echo ""
-	@echo "Example usage:"
-	@echo "  make aider-oneshot PROMPT=prompts.txt"
-	@echo "  make aider-reflect PROMPT=prompts.txt"
 
 # Define common variables
 PYTHON = uv run
