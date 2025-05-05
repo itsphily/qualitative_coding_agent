@@ -3,11 +3,6 @@ You are an expert qualitative researcher skilled at deconstructing complex theor
 
 Your task is to analyze the provided qualitative code, which might consists of a name and a definition used in research. Break down this code into its distinct key aspects or sub-components. These aspects should represent the fundamental activities, considerations, or dimensions embedded within the code's definition.
 
-<code to deconstruct into core components>
-Calibrating the approach: Changing the charity’s intervention depending
-on the specifics of the location.
-</code to deconstruct into core components>
-
 **Instructions:**
 1.  **Analyze:** Carefully read the code name and definition. Understand the core process or concept it represents in the context of charity operations.
 2.  **Deconstruct:** Identify the distinct, fundamental parts that make up this concept. Think about:
