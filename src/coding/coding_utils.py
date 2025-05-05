@@ -2,6 +2,7 @@ from __future__ import annotations
 import argparse, json, logging
 from typing import Dict, List, Tuple, Optional, cast
 from coding_state import CodingState, Code, CaseInfo
+from langgraph.graph import MermaidDrawMethod
 
 def _parse_code_string(raw: str) -> str:
     """
@@ -42,7 +43,7 @@ def initialize_state(args: argparse.Namespace) -> CodingState:
     logging.info("‑‑‑ Initialising graph state ‑‑‑")
 
     # 1. Codes → dict keyed by description
-    codes: Dict[str, Code] = {}
+    codes: Dict[str, Optional[List[str]]] = {}
     for raw in args.code_list:
         key = _parse_code_string(raw)
         if key in codes:
@@ -74,3 +75,16 @@ def initialize_state(args: argparse.Namespace) -> CodingState:
     })
     logging.info("‑‑‑ Initial state ready ‑‑‑")
     return state
+
+
+def visualize_graph(graph, name):
+    """Visualize the graph."""
+    try:
+        png_data = graph.get_graph(xray=2).draw_mermaid_png(
+            draw_method=MermaidDrawMethod.API,
+        )
+        with open(f'{name}.png', 'wb') as f:
+            f.write(png_data)
+        print(f"Graph visualization saved to '{name}.png'")
+    except Exception as e:
+        print(f"Error saving graph visualization: {e}")
