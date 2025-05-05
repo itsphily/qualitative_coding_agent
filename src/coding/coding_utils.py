@@ -43,7 +43,8 @@ def initialize_state(args: argparse.Namespace) -> 'CodingState':
     print("--- Initializing Graph State ---")
 
     # 1. Process Codes
-    initial_codes: Dict[str, Code] = {}
+    initial_codes_list: List[Code] = []
+    processed_code_descriptions = set()
     print(f"Processing {len(args.code_list)} input codes...")
     for code_string in args.code_list:
         name, definition = parse_code_string(code_string)
@@ -55,11 +56,12 @@ def initialize_state(args: argparse.Namespace) -> 'CodingState':
         else:
              print(f"Warning: Using full string as key for possibly malformed code: {code_string}")
 
-        if code_desc_key in initial_codes:
+        if code_desc_key in processed_code_descriptions:
             print(f"Warning: Duplicate code description key detected: '{code_desc_key}'. Skipping duplicate.")
             continue
-        initial_codes[code_desc_key] = Code(code_description=code_desc_key, key_aspects=None)
-    print(f"Created {len(initial_codes)} code entries.")
+        processed_code_descriptions.add(code_desc_key)
+        initial_codes_list.append(Code(code_description=code_desc_key, key_aspects=None))
+    print(f"Created {len(initial_codes_list)} code entries.")
 
     # 2. Process Cases (Charities)
     initial_cases_info: Dict[str, CaseInfo] = {}
@@ -90,7 +92,7 @@ def initialize_state(args: argparse.Namespace) -> 'CodingState':
 
     initial_graph_state = cast(CodingState, {
         "research_question": args.research_question,
-        "codes": initial_codes,
+        "codes": initial_codes_list,
         "cases_info": initial_cases_info,
 
     })

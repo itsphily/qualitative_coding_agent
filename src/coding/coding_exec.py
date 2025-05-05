@@ -77,6 +77,7 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 
 
 
+
 if __name__ == "__main__":
     parsed_args = parse_arguments()
 
@@ -85,8 +86,9 @@ if __name__ == "__main__":
     print("\n--- Initial State Content ---")
     print(f"Research Question: {initial_state['research_question']}")
     print(f"\nCodes ({len(initial_state['codes'])}):")
-    for code_desc, code_obj in initial_state['codes'].items():
-        print(f"  - Key: \"{code_desc[:60]}...\"") # Truncate long keys
+    for code_obj in initial_state['codes']:
+        code_desc = code_obj.get('code_description', 'N/A')
+        print(f"  - Code Desc: \"{code_desc[:60]}...\"")
     print(f"\nCases ({len(initial_state['cases_info'])}):")
     for case_name, case_obj in initial_state['cases_info'].items():
         print(f"  - Key: \"{case_name}\"")
