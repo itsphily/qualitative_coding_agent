@@ -4,6 +4,7 @@ from langgraph.constants import Send
 import os
 import logging
 from datetime import datetime
+from dotenv import load_dotenv
 
 
 # --- Logging Setup ---
@@ -19,9 +20,11 @@ logging.basicConfig(
 logging.info(f"Starting script execution. Debug log file: {debug_file}")
 
 
-
-
-
+if os.path.exists(".env"):
+    logging.info("Loading environment variables from .env file.")
+    load_dotenv()
+else:
+    logging.warning("No .env file found.")
 
 
 if __name__ == "__main__":
