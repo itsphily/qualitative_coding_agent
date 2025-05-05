@@ -1,7 +1,7 @@
 from coding_state import CodingState, Code, CaseInfo
 from coding_utils import parse_arguments, initialize_state
-from langgraph.constants import Send
-from typing import Dict, Any, List
+from langgraph.types import Send
+from typing import Dict, Any, List, Optional
 import os
 import logging
 from datetime import datetime
@@ -76,6 +76,41 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 )
 
 
+def start_llm(state: CodingState):
+    """
+    Initializes and configures the specific LLM needed for aspect identification
+    by binding the structured output model.
+    """
+    llm_long_context.with_structured_output(KeyAspectsOutput)
+    
+
+
+def continue_to_aspect_definition(state: CodingState) -> List[Send]:
+    """
+    Dispatcher Node: Uses a list comprehension with Send, exactly mirroring
+    the provided example structure, to dispatch parallel tasks for each code.
+    """
+    codes_list: Optional[List[Code]] = state.get("codes")
+
+    if not codes_list or not isinstance(codes_list, list):
+        logging.warning("No valid 'codes' list found in state. Cannot dispatch aspect definition tasks.")
+        return []
+
+    print(f"--- Dispatching Aspect Definition Tasks via Send for {len(codes_list)} Codes ---")
+    logging.info(f"Dispatching tasks for {len(codes_list)} codes to 'aspect_definition_node' via Send.")
+
+    messages_to_send = [
+        Send(
+            "aspect_definition_node",
+            {
+                "identifier": code_obj.get("code_description", "Error: Missing Description"),
+                "code_description_for_prompt": code_obj.get("code_description", "Error: Missing Description")
+            }
+        )
+        for code_obj in codes_list
+    ]
+
+    return messages_to_send
 
 
 if __name__ == "__main__":
