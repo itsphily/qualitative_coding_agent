@@ -1,10 +1,15 @@
-from typing import TypedDict, List, Dict, Optional
+from typing import TypedDict, List, Dict, Optional, Annotated
 
-class QualitativeAnalysisInputState(TypedDict):
+class Code(TypedDict):
+    code_description: str
+    key_aspects: Optional[List[str]]
+
+class CaseInfo(TypedDict):
+    directory: str
+    description: Optional[str]
+    intervention: Optional[str]
+
+class CodingState(TypedDict):
     research_question: str
-    code_list: List[str]
-    case_list: List[Dict]
-
-class QualitativeAnalysisState(QualitativeAnalysisInputState):
-    case_interventions: Dict[str, str]
-    codes_to_process_aspects: List[str]
+    codes: Annotated[Optional[List[Code]], update_codes_list_reducer]
+    cases_info: Dict[str, CaseInfo]
