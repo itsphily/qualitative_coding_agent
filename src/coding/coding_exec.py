@@ -535,9 +535,16 @@ case_processing_subgraph = case_processing_graph.compile()
 # --- Create the Main Graph ---
 coding_graph = StateGraph(CodingState)
 
+def add_test(state: CodingState) -> CodingState:
+    """
+    Test node that returns the state unchanged.
+    """
+    return state
+
 # --- Add Nodes ---
 coding_graph.add_node("start", start_llm)
 coding_graph.add_node("aspect_definition_node", aspect_definition_node)
+coding_graph.add_node("add_test", add_test)
 coding_graph.add_node("intervention_definition_node", intervention_definition_node)
 coding_graph.add_node("case_aggregation_node", case_aggregation_node)
 coding_graph.add_node("case_processing", case_processing_subgraph)
@@ -594,7 +601,8 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
 coding_graph.add_conditional_edges("start", continue_to_aspect_definition, ['aspect_definition_node'])
-coding_graph.add_conditional_edges("aspect_definition_node", continue_to_intervention_definition, ['intervention_definition_node'])
+coding_graph.add_edge("aspect_definition_node", "add_test")
+coding_graph.add_conditional_edges("add_test", continue_to_intervention_definition, ['intervention_definition_node'])
 coding_graph.add_edge("intervention_definition_node", "case_aggregation_node")
 coding_graph.add_conditional_edges("case_aggregation_node", continue_to_case_processing, ['case_processing'])
 coding_graph.add_edge("case_processing", END)
