@@ -1,4 +1,4 @@
-from coding_state import CodingState, CaseInfo
+from coding_state import CodingState, CaseInfo, merge_case_info
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List, Optional, TypedDict
@@ -173,6 +173,89 @@ def aspect_definition_node(code_description: str)-> Dict[str, Any]:
     return {
         "codes": { 
             code_description: aspects_list
+        }
+    }
+
+def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any]]:
+    """
+    Worker Node: Identifies the intervention from a case's directory of texts.
+    Aggregates all text files, then uses an LLM to identify the single intervention.
+
+    This node participates in a map operation, receiving a CaseInfo object and 
+    returning a state update that will be merged with the main state.
+
+    Args:
+        case_info (CaseInfo): The case info object containing directory path
+
+    Returns:
+        Dict containing updates to cases_info that will be merged into the state
+    """
+    node_name = "intervention_definition_node"
+    directory = case_info["directory"]
+    description = case_info.get("description", "")
+    
+    logging.info(f"[{node_name}] Processing case with directory: {directory}")
+    
+    # --- Aggregate all text files ---
+    aggregated_texts = ""
+    try:
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.md') or file.endswith('.txt'):
+                    file_path = os.path.join(root, file)
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            text_content = f.read()
+                            aggregated_texts += f"path: {file_path}\n{text_content}\n\n"
+                    except Exception as file_e:
+                        logging.warning(f"[{node_name}] Could not read file {file_path}: {file_e}")
+                        continue
+    except Exception as e:
+        logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
+        # Return a meaningful error instead of an empty dict
+        return {"cases_info": {directory: {"intervention": f"Error: Directory processing failed - {e}"}}}
+    
+    if not aggregated_texts:
+        logging.warning(f"[{node_name}] No text files found in directory: {directory}")
+        return {"cases_info": {directory: {"intervention": "Error: No text files found"}}}
+    
+    # --- Retrieve LLM from Config ---
+    try:
+        config = get_config()
+        llm_intervention_identifier = config.get("configurable", {}).get("llm_intervention_identifier")
+        if not llm_intervention_identifier or not isinstance(llm_intervention_identifier, Runnable):
+            raise ValueError("Required 'llm_intervention_identifier' Runnable not found in config")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+        return {"cases_info": {directory: {"intervention": f"Error: LLM config missing - {e}"}}}
+    
+    # --- Prepare LLM Input ---
+    try:
+        system_message_content = identify_intervention
+        human_message_content = f"here are the texts from which you need to find the **single intervention** : <texts>{aggregated_texts}</texts>"
+        messages = [
+            SystemMessage(content=system_message_content),
+            HumanMessage(content=human_message_content)
+        ]
+        logging.debug(f"[{node_name}] Prepared messages for LLM for case with directory: {directory}")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error formatting messages for directory {directory}: {e}")
+        return {"cases_info": {directory: {"intervention": f"Error: Message formatting failed - {e}"}}}
+    
+    # --- Invoke LLM and Parse Output ---
+    intervention = "Error: LLM Call Failed"
+    try:
+        result = llm_intervention_identifier.invoke(messages)
+        intervention = result.content.strip()
+        logging.info(f"[{node_name}] Successfully identified intervention: {intervention[:60]}...")
+    except Exception as e:
+        logging.error(f"[{node_name}] LLM call failed for directory {directory}: {e}", exc_info=True)
+        intervention = f"Error: LLM call failed - {e}"
+    
+    # Use the directory as the key directly
+    return {
+        "cases_info": {
+            directory: {"intervention": intervention}
         }
     }
 

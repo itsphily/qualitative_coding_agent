@@ -72,6 +72,7 @@ def initialize_state(args: argparse.Namespace) -> CodingState:
         "research_question": args.research_question,
         "codes": codes,
         "cases_info": cases,
+        "evidence_list": {},  # Initialize with empty dictionary
     })
     logging.info("‑‑‑ Initial state ready ‑‑‑")
     return state
