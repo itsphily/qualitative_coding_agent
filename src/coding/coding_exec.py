@@ -85,7 +85,8 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
 runtime_config = {  "configurable": {
-                    "llm_aspect_identifier_structured": llm_long_context_with_structured_output
+                    "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
+                    "llm_intervention_identifier": llm_long_context_with_structured_output
                     }
 }
 
@@ -113,7 +114,7 @@ def continue_to_aspect_definition(state: CodingState):
     ]
 
 
-def aspect_definition_node(code_description: str) -> Dict[str, Dict[str, Any]]:
+def aspect_definition_node(code_description: str)-> Dict[str, Any]:
     """
     Worker Node: Identifies key aspects for a code using a structured output LLM.
     Uses the get_config() method to retrieve the LLM from runtime configuration.
