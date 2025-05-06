@@ -6,6 +6,8 @@ from langgraph.config import get_config
 import os
 import logging
 from datetime import datetime
+import glob
+import pathlib
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
@@ -13,7 +15,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, END, StateGraph
-from coding_prompt import identify_key_aspects_prompt
+from coding_prompt import identify_key_aspects_prompt, identify_intervention
 from coding_utils import visualize_graph
 
 
@@ -86,7 +88,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 
 runtime_config = {  "configurable": {
                     "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
-                    "llm_intervention_identifier": llm_long_context_with_structured_output
+                    "llm_intervention_identifier": llm_long_context
                     }
 }
 
@@ -174,11 +176,22 @@ def aspect_definition_node(code_description: str)-> Dict[str, Any]:
         }
     }
 
-def place_holder(state: CodingState):
+def continue_to_intervention_definition(state: CodingState) -> List[Send]:
     """
-    Placeholder node to ensure the graph ends
+    Dispatches each case to the intervention_definition_node to identify interventions.
     """
-    return state
+    cases_info = state.get("cases_info", {})
+    if not cases_info:
+        logging.warning("No cases found in state.")
+        return []
+
+    logging.info("Dispatching %d cases for intervention identification", len(cases_info))
+
+    # Send each CaseInfo directly to intervention_definition_node
+    return [
+        Send("intervention_definition_node", case_info)
+        for case_info in cases_info.values()
+    ]
 
 
 coding_graph = StateGraph(CodingState)
@@ -186,13 +199,13 @@ coding_graph = StateGraph(CodingState)
 # --- Add Nodes ---
 coding_graph.add_node("start", start_llm)
 coding_graph.add_node("aspect_definition_node", aspect_definition_node)
-coding_graph.add_node("place_holder", place_holder)
+coding_graph.add_node("intervention_definition_node", intervention_definition_node)
 
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
-coding_graph.add_conditional_edges("start",continue_to_aspect_definition, ['aspect_definition_node'])
-coding_graph.add_edge("aspect_definition_node", 'place_holder')
-coding_graph.add_edge("place_holder", END)
+coding_graph.add_conditional_edges("start", continue_to_aspect_definition, ['aspect_definition_node'])
+coding_graph.add_conditional_edges("aspect_definition_node", continue_to_intervention_definition, ['intervention_definition_node'])
+coding_graph.add_edge("intervention_definition_node", END)
 
 coding_graph = coding_graph.compile()
 

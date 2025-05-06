@@ -14,8 +14,7 @@ def merge_aspects(
         current = {}
     if new is None:
         return current
-    
-    # Simply update the dictionary with the new aspects
+
     current.update(new)
     return current
 
@@ -26,6 +25,5 @@ class CaseInfo(TypedDict):
 
 class CodingState(TypedDict):
     research_question: str
-    # Dictionary where code_description (string) is the key and value is a list of key aspects
     codes: Annotated[Dict[str, Optional[List[str]]], merge_aspects]
-    cases_info: Dict[str, CaseInfo]
+    cases_info: Annotated[Dict[str, CaseInfo], merge_case_info]

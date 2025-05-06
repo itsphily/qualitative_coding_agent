@@ -43,17 +43,7 @@ Now, analyze the provided Input Code and generate the JSON output containing the
 
 identify_intervention = """
 You are a qualitative research analyst.
-
-INPUTS  
-• Research question: 
-  <research_question>
-  {research_question}  
-  </research_question>
-• Codes (for context only):
-  <codes>
-  {codes}  
-  </codes>
-• Case texts (markdown):  
+Case texts:  
   <texts>
   {texts}
   </texts>
