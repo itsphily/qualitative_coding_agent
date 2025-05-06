@@ -247,7 +247,18 @@ def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any
     directory = case_info["directory"]
     description = case_info.get("description", "")
     
-    logging.info(f"[{node_name}] Processing case with directory: {directory}")
+    # Get case_id by matching directory from the initial state (passed to this node)
+    # We'll get this from the continue_to_intervention_definition function
+    # which passed the entire case_info to us
+    case_id = case_info.get("case_id", None)
+    
+    # If case_id isn't available (which shouldn't happen), fall back to using a derived ID
+    if case_id is None:
+        # Derive a case_id from the directory name as fallback
+        case_id = os.path.basename(directory.rstrip("/"))
+        logging.warning(f"[{node_name}] No case_id found, using derived id: {case_id}")
+    
+    logging.info(f"[{node_name}] Processing case {case_id} with directory: {directory}")
     
     # --- Aggregate all text files ---
     aggregated_texts = ""
@@ -266,11 +277,11 @@ def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any
     except Exception as e:
         logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
         # Return a meaningful error instead of an empty dict
-        return {"cases_info": {directory: {"intervention": f"Error: Directory processing failed - {e}"}}}
+        return {"cases_info": {case_id: {"intervention": f"Error: Directory processing failed - {e}"}}}
     
     if not aggregated_texts:
         logging.warning(f"[{node_name}] No text files found in directory: {directory}")
-        return {"cases_info": {directory: {"intervention": "Error: No text files found"}}}
+        return {"cases_info": {case_id: {"intervention": "Error: No text files found"}}}
     
     # --- Retrieve LLM from Config ---
     try:
@@ -280,7 +291,7 @@ def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any
             raise ValueError("Required 'llm_intervention_identifier' Runnable not found in config")
     except Exception as e:
         logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
-        return {"cases_info": {directory: {"intervention": f"Error: LLM config missing - {e}"}}}
+        return {"cases_info": {case_id: {"intervention": f"Error: LLM config missing - {e}"}}}
     
     # --- Prepare LLM Input ---
     try:
@@ -293,28 +304,29 @@ def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any
         logging.debug(f"[{node_name}] Prepared messages for LLM for case with directory: {directory}")
     except Exception as e:
         logging.error(f"[{node_name}] Error formatting messages for directory {directory}: {e}")
-        return {"cases_info": {directory: {"intervention": f"Error: Message formatting failed - {e}"}}}
+        return {"cases_info": {case_id: {"intervention": f"Error: Message formatting failed - {e}"}}}
     
     # --- Invoke LLM and Parse Output ---
     intervention = "Error: LLM Call Failed"
     try:
         result = llm_intervention_identifier.invoke(messages)
         intervention = result.content.strip()
-        logging.info(f"[{node_name}] Successfully identified intervention: {intervention[:60]}...")
+        logging.info(f"[{node_name}] Successfully identified intervention for case {case_id}: {intervention[:60]}...")
     except Exception as e:
         logging.error(f"[{node_name}] LLM call failed for directory {directory}: {e}", exc_info=True)
         intervention = f"Error: LLM call failed - {e}"
     
-    # Use the directory as the key directly
+    # Use the case_id as the key, not the directory
     return {
         "cases_info": {
-            directory: {"intervention": intervention}
+            case_id: {"intervention": intervention}
         }
     }
 
 def continue_to_intervention_definition(state: CodingState) -> List[Send]:
     """
     Dispatches each case to the intervention_definition_node to identify interventions.
+    Includes the case_id in the case_info to ensure proper tracking.
     """
     cases_info = state.get("cases_info", {})
     if not cases_info:
@@ -323,11 +335,16 @@ def continue_to_intervention_definition(state: CodingState) -> List[Send]:
 
     logging.info("Dispatching %d cases for intervention identification", len(cases_info))
 
-    # Send each CaseInfo directly to intervention_definition_node
-    return [
-        Send("intervention_definition_node", case_info)
-        for case_info in cases_info.values()
-    ]
+    # Create sends with case_id included in the case_info
+    sends = []
+    for case_id, case_info in cases_info.items():
+        # Create a copy of the case_info with case_id added
+        case_info_with_id = dict(case_info)
+        case_info_with_id["case_id"] = case_id
+        
+        sends.append(Send("intervention_definition_node", case_info_with_id))
+    
+    return sends
 
 def case_aggregation_node(state: CodingState) -> CodingState:
     """
@@ -356,7 +373,9 @@ def case_aggregation_node(state: CodingState) -> CodingState:
     
     for case_id, info in cases_info.items():
         intervention = info.get("intervention", "No intervention specified")
-        logging.info(f"[case_aggregation_node] Case: {case_id} has intervention: {intervention[:60]}...")
+        # Safely handle None values when displaying intervention
+        intervention_display = intervention[:60] + "..." if intervention else "None"
+        logging.info(f"[case_aggregation_node] Case: {case_id} has intervention: {intervention_display}")
     
     # Return the state unchanged - this node just ensures all updates are aggregated
     return state
