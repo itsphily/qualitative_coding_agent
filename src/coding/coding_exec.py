@@ -575,17 +575,21 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
         sends.append(
             Send(
                 "case_processing",
-                case_id=case_id,
-                directory=directory,
-                intervention=intervention,
-                research_question=research_question,
-                codes=codes,
-                evidence_list=[]  # Start with empty evidence list
+                {
+                    "case_id":case_id,
+                    "directory":directory,
+                    "intervention":intervention,
+                    "research_question":research_question,
+                    "codes":codes,
+                    "evidence_list":[]
+                } 
             )
         )
     
     logging.info(f"[continue_to_case_processing] Dispatching {len(sends)} cases for evidence extraction")
     return sends
+
+
 
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
