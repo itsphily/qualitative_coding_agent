@@ -1,8 +1,8 @@
 from __future__ import annotations
 import argparse, json, logging
 from typing import Dict, List, Tuple, Optional, cast
-from coding_state import CodingState, Code, CaseInfo
-from langgraph.graph import MermaidDrawMethod
+from coding_state import CodingState, CaseInfo
+from langchain_core.runnables.graph import MermaidDrawMethod
 
 def _parse_code_string(raw: str) -> str:
     """
@@ -49,7 +49,7 @@ def initialize_state(args: argparse.Namespace) -> CodingState:
         if key in codes:
             logging.warning("Duplicate code skipped: %s", key)
             continue
-        codes[key] = Code(code_description=key, key_aspects=None)
+        codes[key] = None  # Initialize with None, will be replaced with aspects list
     logging.info("Added %d code entries", len(codes))
 
     # 2. Charities / cases

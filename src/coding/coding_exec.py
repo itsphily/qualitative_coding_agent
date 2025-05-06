@@ -1,7 +1,8 @@
-from coding_state import CodingState, Code, CaseInfo
+from coding_state import CodingState, CaseInfo
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, TypedDict
+from langgraph.config import get_config
 import os
 import logging
 from datetime import datetime
@@ -14,6 +15,8 @@ from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, END, StateGraph
 from coding_prompt import identify_key_aspects_prompt
 from coding_utils import visualize_graph
+
+
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
 os.makedirs(debug_dir, exist_ok=True)
@@ -93,7 +96,7 @@ def start_llm(state: CodingState):
     return state
 
 
-def continue_to_aspect_definition(state: CodingState) -> List[Send]:
+def continue_to_aspect_definition(state: CodingState):
     codes = state.get("codes", {})
     if not codes:
         logging.warning("No codes found in state.")
@@ -104,85 +107,69 @@ def continue_to_aspect_definition(state: CodingState) -> List[Send]:
     return [
         Send(
             "aspect_definition_node",
-            {
-                "identifier": desc,
-                "code_description_for_prompt": desc 
-            }
+            code_description
         )
-        for desc in codes
+        for code_description in codes
     ]
 
 
-def aspect_definition_node(payload: dict, config: RunnableConfig) -> Dict[str, Dict[str, Any]]:
+def aspect_definition_node(code_description: str) -> Dict[str, Dict[str, Any]]:
     """
-    Worker Node: Receives payload via Send, identifies key aspects for one code
-    using a structured output LLM passed via runtime config.
+    Worker Node: Identifies key aspects for a code using a structured output LLM.
+    Uses the get_config() method to retrieve the LLM from runtime configuration.
 
     Args:
-        payload (dict): The dictionary sent via Send, containing
-                        'identifier' (code_description) and
-                        'code_description_for_prompt'.
-        config (RunnableConfig): The runtime configuration, expected to contain
-                                 the pre-configured structured LLM client under
-                                 config['configurable']['llm_aspect_identifier_structured'].
+        code_description (str): The code description to analyze
 
     Returns:
         Dict[str, Dict[str, Any]]: An update dictionary targeting the 'codes' key
-                                   in the state, formatted for the custom reducer.
-                                   e.g., {"codes": {"identifier": "...", "key_aspects": [...]}}
+                                   in the state, with code_description as key
+                                   and aspects list as value.
     """
-    identifier = payload.get("identifier")
-    code_description_for_prompt = payload.get("code_description_for_prompt")
     node_name = "aspect_definition_node" # For logging clarity
-    logging.info(f"[{node_name}] Running for code: {identifier[:60]}...")
+    logging.info(f"[{node_name}] Running for code: {code_description[:60]}...")
 
-    # --- Input Validation ---
-    if not identifier or not code_description_for_prompt:
-        logging.error(f"[{node_name}] Invalid payload received: {payload}")
-        # Return payload indicating error for the reducer
-        return {"codes": {"identifier": identifier or "Unknown Error", "key_aspects": ["Error: Invalid Payload Received"]}}
-
-    # --- Retrieve LLM from Config ---
+    # --- Retrieve LLM from Config using get_config() ---
     try:
+        # Access configuration without explicit config parameter
+        config = get_config()
         llm_aspect_identifier = config.get("configurable", {}).get("llm_aspect_identifier_structured")
         if not llm_aspect_identifier or not isinstance(llm_aspect_identifier, Runnable):
-            raise ValueError("Required 'llm_aspect_identifier_structured' Runnable not found in config['configurable']")
+            raise ValueError("Required 'llm_aspect_identifier_structured' Runnable not found in config")
     except Exception as e:
-        logging.error(f"[{node_name}] Error retrieving LLM from config for code {identifier[:60]}: {e}")
-        return {"codes": {"identifier": identifier, "key_aspects": [f"Error: LLM config missing - {e}"]}}
+        logging.error(f"[{node_name}] Error retrieving LLM from config for code {code_description[:60]}: {e}")
+        return {"codes": {code_description: [f"Error: LLM config missing - {e}"]}}
 
     # --- Prepare LLM Input ---
     try:
         system_message_content = identify_key_aspects_prompt
-        # Use the code description received in the payload for the human message
-        human_message_content = f"here is the code to deconstruct into core components: {code_description_for_prompt}"
+        human_message_content = f"here is the code to deconstruct into core components: {code_description}"
         messages = [
             SystemMessage(content=system_message_content),
             HumanMessage(content=human_message_content)
         ]
-        logging.debug(f"[{node_name}] Prepared messages for LLM for code: {identifier[:60]}")
+        logging.debug(f"[{node_name}] Prepared messages for LLM for code: {code_description[:60]}")
     except Exception as e:
-        logging.error(f"[{node_name}] Error formatting messages for code {identifier[:60]}: {e}")
-        return {"codes": {"identifier": identifier, "key_aspects": ["Error: Prompt formatting failed"]}}
+        logging.error(f"[{node_name}] Error formatting messages for code {code_description[:60]}: {e}")
 
     # --- Invoke LLM and Parse Output ---
-    aspects_list: List[str] = ["Error: LLM Call Failed"] # Default error value
+    aspects_list: List[str] = ["Error: LLM Call Failed"]
     try:
-        structured_output: KeyAspectsOutput = llm_aspect_identifier.invoke(messages, config) # Pass config if needed
+        # Pass the current config when invoking the LLM
+        structured_output: KeyAspectsOutput = llm_aspect_identifier.invoke(messages)
         aspects_list = structured_output.key_aspects
-        # Basic validation of the output structure
         if not isinstance(aspects_list, list) or not all(isinstance(item, str) for item in aspects_list):
-             logging.warning(f"[{node_name}] LLM output for {identifier[:60]} not List[str]: {aspects_list}")
+             logging.warning(f"[{node_name}] LLM output for {code_description[:60]} not List[str]: {aspects_list}")
              aspects_list = ["Error: Invalid format parsed"]
         else:
-             logging.info(f"[{node_name}] Successfully generated {len(aspects_list)} aspects for code: {identifier[:60]}")
+             logging.info(f"[{node_name}] Successfully generated {len(aspects_list)} aspects for code: {code_description[:60]}")
     except Exception as e:
-        logging.error(f"[{node_name}] LLM call/parsing failed for code {identifier[:60]}: {e}", exc_info=True)
+        logging.error(f"[{node_name}] LLM call/parsing failed for code {code_description[:60]}: {e}", exc_info=True)
         aspects_list = [f"Error: LLM/Parsing failed - {e}"]
 
     return {
         "codes": { 
-            identifier: aspects_list
+            code_description: aspects_list
         }
     }
 
