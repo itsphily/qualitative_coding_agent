@@ -115,12 +115,12 @@ You **must** call the `log_quote_reasoning` tool for **every** piece of evidence
 
 ## Tool Schema: log_quote_reasoning
 ```json
-{
+{{
   "quote":       "<string>",            
   "reasoning":   "<string>",            
   "aspect":      ["<aspect>", …],  
   "chronology":  "before" | "during" | "after" | "unclear"  
-}
+}}
 ```
 Tool Input Field Descriptions:
 - quote: The full, unaltered text passage extracted as evidence. Do not truncate or paraphrase.

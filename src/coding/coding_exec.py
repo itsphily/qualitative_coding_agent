@@ -398,15 +398,14 @@ def identify_evidence_node(state: CaseProcessingState) -> Dict:
     Uses LLM with tool binding to extract evidence.
     
     Args:
-        state: Current subgraph state
-        code_description: The code to search for evidence
-        file_path: Path to the text file to analyze
+        state: Current subgraph state containing code_description, file_path and aspects
         
     Returns:
         Empty dict as state updates come from tool calls
     """
     file_path = state.get("file_path")
     code_description = state.get("code_description")
+    aspects = state.get("aspects", [])  # Get aspects directly from state
     node_name = "identify_evidence_node"
     logging.info(f"[{node_name}] Processing file {file_path} for code {code_description}")
     
@@ -419,7 +418,6 @@ def identify_evidence_node(state: CaseProcessingState) -> Dict:
         return {}
     
     # Get information from state
-    aspects = state["codes"].get(code_description, [])
     intervention = state.get("intervention", "Unknown intervention")
     research_question = state.get("research_question", "")
     case_id = state.get("case_id", "unknown")
@@ -476,6 +474,8 @@ def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
     directory = state.get("directory", "")
     codes = state.get("codes", {})
     case_id = state.get("case_id", "unknown")
+    intervention = state.get("intervention", "")
+    research_question = state.get("research_question", "")
     
     if not directory or not codes:
         logging.warning(f"[continue_to_identify_evidence] Missing directory or codes in state for case {case_id}")
@@ -483,28 +483,39 @@ def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
     
     sends = []
     
-    # Find all text files in the directory (recursive)
+    # Find all text files in the directory, including all subdirectories (recursive)
     text_files = []
     try:
+        # Walk through all directories recursively
         for root, _, files in os.walk(directory):
             for file in files:
+                # Check if the file is a text file
                 if file.endswith('.md') or file.endswith('.txt'):
-                    text_files.append(os.path.join(root, file))
+                    # Get the full path of the file
+                    file_path = os.path.join(root, file)
+                    text_files.append(file_path)
+                    
+        logging.info(f"[continue_to_identify_evidence] Found {len(text_files)} text files in {directory} and subdirectories for case {case_id}")
     except Exception as e:
         logging.error(f"[continue_to_identify_evidence] Error walking directory {directory}: {e}")
         return []
     
-    logging.info(f"[continue_to_identify_evidence] Found {len(text_files)} text files in {directory} for case {case_id}")
-    
     # Create Send objects for each code and file combination
     for code_description in codes:
+        # Get aspects for this code
+        aspects = codes.get(code_description, [])
+        
         for file_path in text_files:
             sends.append(
                 Send(
                     "identify_evidence_node",
                     {
-                        "code_description":code_description,
-                        "file_path":file_path
+                        "code_description": code_description,
+                        "file_path": file_path,
+                        "aspects": aspects,        # Include aspects directly
+                        "intervention": intervention,
+                        "research_question": research_question,
+                        "case_id": case_id
                     }
                 )
             )
