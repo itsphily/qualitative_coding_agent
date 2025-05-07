@@ -48,26 +48,17 @@ class KeyAspectsOutput(BaseModel):
     key_aspects: List[str] = Field(..., description="List of concise key aspects identified from the code definition")
 
 ## OpenAI LLM initialization
-reasoning = {
-    "effort": "high",  # 'low', 'medium', or 'high'
-    "summary": "auto",  # 'detailed', 'auto', or None
-}
-
 llm_long_context_tool_use = ChatOpenAI(model="o4-mini",
-                                       temperature=0, 
-                                       use_responses_api=True,
                                        timeout=None,
                                        max_retries=4,
-                                       model_kwargs={"reasoning": reasoning}
+                                       reasoning_effort="high"
 )
 
 
 llm_short_context_high_processing = ChatOpenAI(model="o3",
-                                               temperature=0, 
-                                               use_responses_api=True, 
                                                timeout=None,
                                                max_retries=4,
-                                               model_kwargs={"reasoning": reasoning}
+                                               reasoning_effort="high"
 )
 
 ## Google LLM initialization
@@ -123,17 +114,9 @@ def log_quote_reasoning(
     # Return state update for the evidence_list
     return {"evidence_list": [new_evidence]}
 
-# Initialize LLM for evidence extraction
-llm_evidence_extractor = ChatOpenAI(model="o4-mini",
-                                   temperature=0, 
-                                   use_responses_api=True,
-                                   timeout=None,
-                                   max_retries=4,
-                                   model_kwargs={"reasoning": reasoning}
-)
 
 # Bind the tool to the LLM upfront
-llm_evidence_extractor_with_tools = llm_evidence_extractor.bind_tools(
+llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(
     [log_quote_reasoning], 
     tool_choice={"type": "function", "function": {"name": "log_quote_reasoning"}}
 )

@@ -88,7 +88,7 @@ Note: The research_question and other Research Focus details are included intent
 # 2. Your Task
 Read the provided text carefully. Identify and extract all passages (evidence) that are **relevant to the research `<code>` and relate to at least one defined `aspect`**.
 
-For **each piece of evidence** you identify, you **must** log it using the `log_quote_reasoning` tool.
+For **each piece of evidence** you identify, you **must** log it using the `log_quote_reasoning` tool. [IMPORTANT] There can be multiple pieces of evidence in the text, for each piece of evidence you must call the tool once.
 
 # 3. Chronological Awareness
 The intervention serves as a key temporal marker. For every piece of evidence extracted, determine its timing relative to the intervention **based on the context of the full text**:
