@@ -392,11 +392,7 @@ def case_subgraph_start(state: CaseProcessingState) -> CaseProcessingState:
     logging.info(f"[case_subgraph_start] Starting evidence extraction for case: {case_id} in directory: {directory}")
     return state
 
-def identify_evidence_node(
-    state: CaseProcessingState,
-    code_description: str,
-    file_path: str
-) -> Dict:
+def identify_evidence_node(state: CaseProcessingState) -> Dict:
     """
     Worker node that processes a single text file for a given code.
     Uses LLM with tool binding to extract evidence.
@@ -409,6 +405,8 @@ def identify_evidence_node(
     Returns:
         Empty dict as state updates come from tool calls
     """
+    file_path = state.get("file_path")
+    code_description = state.get("code_description")
     node_name = "identify_evidence_node"
     logging.info(f"[{node_name}] Processing file {file_path} for code {code_description}")
     
@@ -504,8 +502,10 @@ def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
             sends.append(
                 Send(
                     "identify_evidence_node",
-                    code_description=code_description,
-                    file_path=file_path
+                    {
+                        "code_description":code_description,
+                        "file_path":file_path
+                    }
                 )
             )
     
