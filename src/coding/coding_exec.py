@@ -1,7 +1,7 @@
 from coding_state import CodingState, CaseInfo, CaseProcessingState
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Literal
 from langgraph.config import get_config
 import os
 import logging
@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage,AIMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, END, StateGraph
 from langgraph.prebuilt import ToolNode
@@ -354,13 +354,14 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
             Send(
                 "case_processing",
                 {
-                    "case_id":case_id,
-                    "directory":directory,
-                    "intervention":intervention,
-                    "research_question":research_question,
-                    "codes":codes,
-                    "evidence_list":[]
-                } 
+                    "case_id":state.get("case_id", ""),
+                    "directory":state.get("directory", ""),
+                    "intervention":state.get("intervention", ""),
+                    "research_question":state.get("research_question", ""),
+                    "codes":state.get("codes", {}),
+                    "evidence_list":state.get("evidence_list", []),
+                    "messages":[]
+                }
             )
         )
     
@@ -368,14 +369,12 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
     return sends
 
 # --- Case Processing Subgraph Implementation ---
-def case_subgraph_start(state: CaseProcessingState) -> CaseProcessingState:
+def case_subgraph_start(state: dict) -> CaseProcessingState:
     """
     Starting node for the case processing subgraph.
-    Validates input state and prepares for evidence extraction.
+    Converts input dictionary to CaseProcessingState.
     """
-    case_id = state.get("case_id")
-    directory = state.get("directory")
-    logging.info(f"[case_subgraph_start] Starting evidence extraction for case: {case_id} in directory: {directory}")
+    # Create a proper CaseProcessingState object
     return state
 
 def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
@@ -429,60 +428,17 @@ def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
                     {
                         "code_description": code_description,
                         "file_path": file_path,
-                        "aspects": aspects,        # Include aspects directly
+                        "aspects": aspects,       
                         "intervention": intervention,
                         "research_question": research_question,
                         "case_id": case_id,
-                        "evidence_list": []        # Initialize with empty evidence list
+                        "evidence_list": []
                     }
                 )
             )
     
     logging.info(f"[continue_to_identify_evidence] Dispatching {len(sends)} evidence extraction tasks for case {case_id}")
     return sends
-
-def should_continue(state: CaseProcessingState):
-    """
-    Determines whether to continue the evidence extraction process.
-    Routes to the tool node if there are tool calls to process,
-    to the agent node if there are tool results to handle,
-    or to END if the process is complete.
-    
-    Args:
-        state: Current state with messages
-        
-    Returns:
-        Next node to route to
-    """
-    # Get messages - handle empty state case
-    messages = state.get("messages", [])
-    if not messages:
-        logging.info("[should_continue] No messages found, ending workflow")
-        return END
-    
-    # Get the last message
-    last_message = messages[-1]
-    
-    # Check message type and properties - based on LangChain message structure
-    if hasattr(last_message, "type"):
-        # AI message with tool calls - go to tool node
-        if last_message.type == "ai" and hasattr(last_message, "tool_calls") and last_message.tool_calls:
-            logging.info(f"[should_continue] Found AI message with {len(last_message.tool_calls)} tool calls, routing to tool_node")
-            return "tool_node"
-        
-        # AI message with no tool calls - we're done
-        if last_message.type == "ai" and (not hasattr(last_message, "tool_calls") or not last_message.tool_calls):
-            logging.info("[should_continue] AI message with no tool calls, ending workflow")
-            return END
-        
-        # Tool message - go back to agent for follow-up
-        if last_message.type == "tool":
-            logging.info("[should_continue] Tool message, routing back to agent_node")
-            return "agent_node"
-    
-    # Default case - assume we need to end if message type is not recognized
-    logging.info(f"[should_continue] Message of unknown type {getattr(last_message, 'type', 'unknown')}, ending workflow")
-    return END
 
 def agent_node(state: CaseProcessingState) -> Dict:
     """
@@ -587,6 +543,30 @@ case_processing_graph.add_node("agent_node", agent_node)
 case_processing_graph.add_node("tool_node",  ToolNode(TOOLS))
 
 
+def should_continue(state: CaseProcessingState) -> Literal["__end__", "tool_node"]:
+    """
+    Determines whether to continue the evidence extraction process.
+    Routes to the tool node if there are tool calls to process,
+    or to END if the process is complete.
+    
+    Args:
+        state: Current state with messages
+        
+    Returns:
+        Next node to route to
+    """
+    last_message = state.messages[-1]
+    
+    if not isinstance(last_message, AIMessage):
+        raise ValueError(
+            f"Expected AIMessage in output edges, but got {type(last_message).__name__}"
+        )
+    # If there is no tool call, then we finish
+    if not last_message.tool_calls:
+        return "__end__"
+    # Otherwise we execute the requested actions
+    return "tool_node"
+
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -594,15 +574,11 @@ case_processing_graph.add_conditional_edges(
     continue_to_identify_evidence,
     ["agent_node"]
 )
-
-# ReAct pattern edges
 case_processing_graph.add_conditional_edges(
     "agent_node",
     should_continue,
-    ["tool_node", "agent_node",END]
+    ["tool_node", END]
 )
-
-# Always return to agent node after tool execution with ReAct pattern
 case_processing_graph.add_edge("tool_node", "agent_node")  
 
 
