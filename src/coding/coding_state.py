@@ -1,9 +1,5 @@
-from typing import TypedDict, List, Dict, Optional, Annotated, Any, Union
+from typing import TypedDict, List, Dict, Optional, Annotated, Any
 from langgraph.graph import MessagesState
-from langchain_core.messages import AnyMessage
-from typing import Sequence
-from langgraph.graph import add_messages
-from dataclasses import field
 
 def merge_aspects(
     current: Optional[Dict[str, Optional[List[str]]]],
@@ -155,9 +151,6 @@ class CaseProcessingState(MessagesState):
     research_question: str
     codes: Dict[str, List[str]]
     evidence_list: Annotated[List[Evidence], append_evidence]
-    messages: Annotated[Sequence[AnyMessage], add_messages] = field(
-        default_factory=list
-    )
 
 class CodingState(TypedDict):
     research_question: str

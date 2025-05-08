@@ -1,7 +1,7 @@
 from coding_state import CodingState, CaseInfo, CaseProcessingState
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
-from typing import Dict, Any, List, Literal
+from typing import Dict, Any, List, Literal, cast
 from langgraph.config import get_config
 import os
 import logging
@@ -17,6 +17,7 @@ from langgraph.prebuilt import ToolNode
 from coding_prompt import identify_key_aspects_prompt, identify_intervention
 from coding_utils import visualize_graph
 from coding_tools import TOOLS
+from coding_prompt import identify_evidence_prompt
 
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
@@ -373,7 +374,7 @@ def case_subgraph_start(state: dict) -> CaseProcessingState:
     Converts input dictionary to CaseProcessingState.
     """
     # Create a proper CaseProcessingState object
-    return state
+    return CaseProcessingState(**state)
 
 def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
     """
@@ -422,7 +423,7 @@ def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
         for file_path in text_files:
             sends.append(
                 Send(
-                    "agent_node",  # Route directly to agent_node instead of evidence_extraction
+                    "agent_node", 
                     {
                         "code_description": code_description,
                         "file_path": file_path,
@@ -468,8 +469,6 @@ def agent_node(state: CaseProcessingState) -> Dict:
     aspects = state.get("aspects", [])
     intervention = state.get("intervention", "Unknown intervention")
     research_question = state.get("research_question", "")
-    case_id = state.get("case_id", "unknown")
-    doc_name = os.path.basename(file_path)
     
     # Get LLM from config
     config = get_config()
@@ -478,59 +477,19 @@ def agent_node(state: CaseProcessingState) -> Dict:
         logging.error(f"[agent_node] LLM for evidence extraction not found in config")
         return {"messages": [HumanMessage(content="Error: LLM not configured")]}
     
-    # Create the runnable config with tool metadata
-    runnable_config = RunnableConfig(configurable={
-        "code_description": code_description,
-        "doc_name": doc_name
-    })
-    
-    # Get existing messages
-    messages = state.get("messages", [])
-    
-    # Process differently based on whether this is the first call or a follow-up
-    if not messages:
-        # First call - create initial messages
-        from coding_prompt import identify_evidence_prompt
-        system_content = identify_evidence_prompt.format(
-            code=code_description,
-            aspects="\n".join([f"- {aspect}" for aspect in aspects]),
-            research_question=research_question,
-            intervention=intervention
-        )
+    system_content = identify_evidence_prompt.format(
+        code=code_description,
+        aspects="\n".join([f"- {aspect}" for aspect in aspects]),
+        research_question=research_question,
+        intervention=intervention
+    )
         
-        system_msg = SystemMessage(content=system_content)
-        human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
-        
-        try:
-            # Get AI response with potential tool calls
-            ai_message = llm_with_tools.invoke([system_msg, human_msg], config=runnable_config)
-            logging.info(f"[agent_node] Got initial AI response for {file_path}")
-            
-            # Return full state with all context preserved
-            return {
-                "messages": [system_msg, human_msg, ai_message]
-            }
-        except Exception as e:
-            logging.error(f"[agent_node] Error from LLM: {e}", exc_info=True)
-            # Return error state with context preserved
-            return {
-                "messages": [system_msg, human_msg, HumanMessage(content=f"Error processing text: {str(e)}")]
-            }
-    else:
-        # Follow-up call - use existing message history
-        try:
-            # Get AI response with existing conversation
-            ai_message = llm_with_tools.invoke(messages, config=runnable_config)
-            logging.info(f"[agent_node] Got follow-up AI response for {file_path}")
-            
-            return {
-                "messages": messages + [ai_message]
-            }
-        except Exception as e:
-            logging.error(f"[agent_node] Error from LLM: {e}", exc_info=True)
-            return {
-                "messages": messages + [HumanMessage(content=f"Error processing text: {str(e)}")],
-            }
+    system_msg = SystemMessage(content=system_content)
+    human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
+    llm_with_tools.invoke([system_msg, human_msg])
+    return {}
+
+
     
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
@@ -538,32 +497,6 @@ case_processing_graph = StateGraph(CaseProcessingState)
 # Add nodes directly to the subgraph
 case_processing_graph.add_node("case_start", case_subgraph_start)
 case_processing_graph.add_node("agent_node", agent_node)
-case_processing_graph.add_node("tool_node",  ToolNode(TOOLS))
-
-
-def should_continue(state: CaseProcessingState) -> Literal["__end__", "tool_node"]:
-    """
-    Determines whether to continue the evidence extraction process.
-    Routes to the tool node if there are tool calls to process,
-    or to END if the process is complete.
-    
-    Args:
-        state: Current state with messages
-        
-    Returns:
-        Next node to route to
-    """
-    last_message = state.messages[-1]
-    
-    if not isinstance(last_message, AIMessage):
-        raise ValueError(
-            f"Expected AIMessage in output edges, but got {type(last_message).__name__}"
-        )
-    # If there is no tool call, then we finish
-    if not last_message.tool_calls:
-        return "__end__"
-    # Otherwise we execute the requested actions
-    return "tool_node"
 
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
@@ -572,15 +505,6 @@ case_processing_graph.add_conditional_edges(
     continue_to_identify_evidence,
     ["agent_node"]
 )
-case_processing_graph.add_conditional_edges(
-    "agent_node",
-    should_continue,
-    ["tool_node", END]
-)
-case_processing_graph.add_edge("tool_node", "agent_node")  
-
-
-
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
 
