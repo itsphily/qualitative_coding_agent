@@ -1,15 +1,11 @@
-from coding_state import CodingState, CaseInfo, CaseProcessingState, Evidence, merge_case_info, append_evidence, merge_evidence_from_subgraph
+from coding_state import CodingState, CaseInfo, CaseProcessingState
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
-from typing import Dict, Any, List, Optional, TypedDict, cast, Annotated
-from langchain_core.tools import tool
-from langchain_core.tools.base import InjectedToolCallId
+from typing import Dict, Any, List
 from langgraph.config import get_config
 import os
 import logging
 from datetime import datetime
-import glob
-import pathlib
 from dotenv import load_dotenv
 from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
@@ -17,9 +13,10 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, END, StateGraph
+from langgraph.prebuilt import ToolNode
 from coding_prompt import identify_key_aspects_prompt, identify_intervention
 from coding_utils import visualize_graph
-
+from coding_tools import TOOLS
 
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
@@ -79,47 +76,9 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
-# --- Create evidence logging tool ---
-@tool
-def log_quote_reasoning(
-    quote: str,
-    reasoning: str,
-    aspect: List[str],
-    chronology: str,
-    tool_call_id: Annotated[str, InjectedToolCallId],
-    code_description: str = None,
-    doc_name: str = None
-) -> Dict[str, Any]:
-    """
-    Tool for logging evidence found during text analysis.
-    
-    Args:
-        quote: The text passage extracted as evidence
-        reasoning: Explanation of why this quote is evidence
-        aspect: List of aspects this quote relates to
-        chronology: Timing relative to intervention (before/during/after/unclear)
-        tool_call_id: Injected tool call ID
-        code_description: The code this evidence relates to
-        doc_name: Source document name
-    """
-    new_evidence = cast(Evidence, {
-        "quote": quote,
-        "reasoning": reasoning,
-        "aspect": aspect,
-        "chronology": chronology,
-        "code_description": code_description,
-        "doc_name": doc_name
-    })
-    
-    # Return state update for the evidence_list
-    return {"evidence_list": [new_evidence]}
-
-
 # Bind the tool to the LLM upfront
-llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(
-    [log_quote_reasoning], 
-    tool_choice={"type": "function", "function": {"name": "log_quote_reasoning"}}
-)
+llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(TOOLS)
+
 
 runtime_config = {  "configurable": {
                     "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
@@ -133,7 +92,6 @@ def start_llm(state: CodingState):
     Empty start node
     """
     return state
-
 
 def continue_to_aspect_definition(state: CodingState):
     codes = state.get("codes", {})
@@ -150,7 +108,6 @@ def continue_to_aspect_definition(state: CodingState):
         )
         for code_description in codes
     ]
-
 
 def aspect_definition_node(code_description: str)-> Dict[str, Any]:
     """
@@ -363,186 +320,6 @@ def case_aggregation_node(state: CodingState) -> CodingState:
     # Return the state unchanged - this node just ensures all updates are aggregated
     return state
 
-# --- Case Processing Subgraph Implementation ---
-
-def case_subgraph_start(state: CaseProcessingState) -> CaseProcessingState:
-    """
-    Starting node for the case processing subgraph.
-    Validates input state and prepares for evidence extraction.
-    """
-    case_id = state.get("case_id")
-    directory = state.get("directory")
-    logging.info(f"[case_subgraph_start] Starting evidence extraction for case: {case_id} in directory: {directory}")
-    return state
-
-def identify_evidence_node(state: CaseProcessingState) -> Dict:
-    """
-    Worker node that processes a single text file for a given code.
-    Uses LLM with tool binding to extract evidence.
-    
-    Args:
-        state: Current subgraph state containing code_description, file_path and aspects
-        
-    Returns:
-        Empty dict as state updates come from tool calls
-    """
-    file_path = state.get("file_path")
-    code_description = state.get("code_description")
-    aspects = state.get("aspects", [])  # Get aspects directly from state
-    node_name = "identify_evidence_node"
-    logging.info(f"[{node_name}] Processing file {file_path} for code {code_description}")
-    
-    # Read the text file
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            text_content = f.read()
-    except Exception as e:
-        logging.error(f"[{node_name}] Error reading file {file_path}: {e}")
-        return {}
-    
-    # Get information from state
-    intervention = state.get("intervention", "Unknown intervention")
-    research_question = state.get("research_question", "")
-    case_id = state.get("case_id", "unknown")
-    doc_name = os.path.basename(file_path)
-    
-    # Get LLM from config (already has tools bound)
-    config = get_config()
-    llm_with_tools = config.get("configurable", {}).get("llm_evidence_extractor")
-    if not llm_with_tools:
-        logging.error(f"[{node_name}] LLM for evidence extraction not found in config")
-        return {}
-    
-    # Prepare prompt
-    from coding_prompt import identify_evidence_prompt
-    system_message = identify_evidence_prompt.format(
-        code=code_description,
-        aspects="\n".join([f"- {aspect}" for aspect in aspects]),
-        research_question=research_question,
-        intervention=intervention
-    )
-    
-    # Call LLM with tools
-    human_message = f"Text to analyze: {text_content}"
-    messages = [
-        SystemMessage(content=system_message),
-        HumanMessage(content=human_message)
-    ]
-    
-    # Create a config with default values for the tool
-    runnable_config = RunnableConfig(configurable={
-        "code_description": code_description,
-        "doc_name": doc_name
-    })
-    
-    try:
-        # Use the LLM with pre-bound tools, adding config
-        result = llm_with_tools.invoke(messages, config=runnable_config)
-        logging.info(f"[{node_name}] Successfully processed file {file_path} for code {code_description}")
-        return {}  # Tool calls will update the state
-    except Exception as e:
-        logging.error(f"[{node_name}] Error processing file {file_path}: {e}", exc_info=True)
-        return {}
-
-def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
-    """
-    Routing function that sends each code + file combination to identify_evidence_node.
-    
-    Args:
-        state: Current subgraph state containing case info and codes
-        
-    Returns:
-        List of Send objects for each code-file combination
-    """
-    directory = state.get("directory", "")
-    codes = state.get("codes", {})
-    case_id = state.get("case_id", "unknown")
-    intervention = state.get("intervention", "")
-    research_question = state.get("research_question", "")
-    
-    if not directory or not codes:
-        logging.warning(f"[continue_to_identify_evidence] Missing directory or codes in state for case {case_id}")
-        return []
-    
-    sends = []
-    
-    # Find all text files in the directory, including all subdirectories (recursive)
-    text_files = []
-    try:
-        # Walk through all directories recursively
-        for root, _, files in os.walk(directory):
-            for file in files:
-                # Check if the file is a text file
-                if file.endswith('.md') or file.endswith('.txt'):
-                    # Get the full path of the file
-                    file_path = os.path.join(root, file)
-                    text_files.append(file_path)
-                    
-        logging.info(f"[continue_to_identify_evidence] Found {len(text_files)} text files in {directory} and subdirectories for case {case_id}")
-    except Exception as e:
-        logging.error(f"[continue_to_identify_evidence] Error walking directory {directory}: {e}")
-        return []
-    
-    # Create Send objects for each code and file combination
-    for code_description in codes:
-        # Get aspects for this code
-        aspects = codes.get(code_description, [])
-        
-        for file_path in text_files:
-            sends.append(
-                Send(
-                    "identify_evidence_node",
-                    {
-                        "code_description": code_description,
-                        "file_path": file_path,
-                        "aspects": aspects,        # Include aspects directly
-                        "intervention": intervention,
-                        "research_question": research_question,
-                        "case_id": case_id
-                    }
-                )
-            )
-    
-    logging.info(f"[continue_to_identify_evidence] Dispatching {len(sends)} evidence extraction tasks for case {case_id}")
-    return sends
-
-
-# --- Create and Compile the Case Processing Subgraph ---
-case_processing_graph = StateGraph(CaseProcessingState)
-
-# Add nodes to the subgraph
-case_processing_graph.add_node("case_start", case_subgraph_start)
-case_processing_graph.add_node("identify_evidence_node", identify_evidence_node)
-
-# Add edges to the subgraph
-case_processing_graph.add_edge(START, "case_start")
-case_processing_graph.add_conditional_edges(
-    "case_start",
-    continue_to_identify_evidence,
-    ["identify_evidence_node"]
-)
-case_processing_graph.add_edge("identify_evidence_node", END)
-
-# Compile the subgraph
-case_processing_subgraph = case_processing_graph.compile()
-
-# --- Create the Main Graph ---
-coding_graph = StateGraph(CodingState)
-
-def add_test(state: CodingState) -> CodingState:
-    """
-    Test node that returns the state unchanged.
-    """
-    return state
-
-# --- Add Nodes ---
-coding_graph.add_node("start", start_llm)
-coding_graph.add_node("aspect_definition_node", aspect_definition_node)
-coding_graph.add_node("add_test", add_test)
-coding_graph.add_node("intervention_definition_node", intervention_definition_node)
-coding_graph.add_node("case_aggregation_node", case_aggregation_node)
-coding_graph.add_node("case_processing", case_processing_subgraph)
-
 # --- Add Routing to Subgraph ---
 def continue_to_case_processing(state: CodingState) -> List[Send]:
     """
@@ -590,6 +367,337 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
     logging.info(f"[continue_to_case_processing] Dispatching {len(sends)} cases for evidence extraction")
     return sends
 
+# --- Case Processing Subgraph Implementation ---
+def case_subgraph_start(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Starting node for the case processing subgraph.
+    Validates input state and prepares for evidence extraction.
+    """
+    case_id = state.get("case_id")
+    directory = state.get("directory")
+    logging.info(f"[case_subgraph_start] Starting evidence extraction for case: {case_id} in directory: {directory}")
+    return state
+
+def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code + file combination directly to the agent_node.
+    
+    Args:
+        state: Current subgraph state containing case info and codes
+        
+    Returns:
+        List of Send objects for each code-file combination
+    """
+    directory = state.get("directory", "")
+    codes = state.get("codes", {})
+    case_id = state.get("case_id", "unknown")
+    intervention = state.get("intervention", "")
+    research_question = state.get("research_question", "")
+    
+    if not directory or not codes:
+        logging.warning(f"[continue_to_identify_evidence] Missing directory or codes in state for case {case_id}")
+        return []
+    
+    sends = []
+    
+    # Find all text files in the directory, including all subdirectories (recursive)
+    text_files = []
+    try:
+        # Walk through all directories recursively
+        for root, _, files in os.walk(directory):
+            for file in files:
+                # Check if the file is a text file
+                if file.endswith('.md') or file.endswith('.txt'):
+                    # Get the full path of the file
+                    file_path = os.path.join(root, file)
+                    text_files.append(file_path)
+                    
+        logging.info(f"[continue_to_identify_evidence] Found {len(text_files)} text files in {directory} and subdirectories for case {case_id}")
+    except Exception as e:
+        logging.error(f"[continue_to_identify_evidence] Error walking directory {directory}: {e}")
+        return []
+    
+    # Create Send objects for each code and file combination
+    for code_description in codes:
+        # Get aspects for this code
+        aspects = codes.get(code_description, [])
+        
+        for file_path in text_files:
+            sends.append(
+                Send(
+                    "agent_node",  # Route directly to agent_node instead of evidence_extraction
+                    {
+                        "code_description": code_description,
+                        "file_path": file_path,
+                        "aspects": aspects,        # Include aspects directly
+                        "intervention": intervention,
+                        "research_question": research_question,
+                        "case_id": case_id,
+                        "evidence_list": []        # Initialize with empty evidence list
+                    }
+                )
+            )
+    
+    logging.info(f"[continue_to_identify_evidence] Dispatching {len(sends)} evidence extraction tasks for case {case_id}")
+    return sends
+
+def identify_evidence_node(state: CaseProcessingState) -> Dict:
+    """
+    Worker node that processes a single text file for a given code.
+    Uses LLM with tool binding to extract evidence.
+    
+    Args:
+        state: Current subgraph state containing code_description, file_path and aspects
+        
+    Returns:
+        Empty dict as state updates come from tool calls
+    """
+    file_path = state.get("file_path")
+    code_description = state.get("code_description")
+    aspects = state.get("aspects", [])  # Get aspects directly from state
+    node_name = "identify_evidence_node"
+    logging.info(f"[{node_name}] Processing file {file_path} for code {code_description}")
+    
+    # Read the text file
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            text_content = f.read()
+    except Exception as e:
+        logging.error(f"[{node_name}] Error reading file {file_path}: {e}")
+        return {}
+    
+    # Get information from state
+    intervention = state.get("intervention", "Unknown intervention")
+    research_question = state.get("research_question", "")
+    case_id = state.get("case_id", "unknown")
+    doc_name = os.path.basename(file_path)
+    
+    # Get LLM from config
+    config = get_config()
+    llm_with_tools = config.get("configurable", {}).get("llm_evidence_extractor")
+    if not llm_with_tools:
+        logging.error(f"[{node_name}] LLM for evidence extraction not found in config")
+        return {}
+    
+    # Prepare prompt
+    from coding_prompt import identify_evidence_prompt
+    system_message = identify_evidence_prompt.format(
+        code=code_description,
+        aspects="\n".join([f"- {aspect}" for aspect in aspects]),
+        research_question=research_question,
+        intervention=intervention
+    )
+    
+    # Call LLM with tools
+    human_message = f"Text to analyze: {text_content}"
+    messages = [
+        SystemMessage(content=system_message),
+        HumanMessage(content=human_message)
+    ]
+    
+    # Create a config with default values for the tool
+    runnable_config = RunnableConfig(configurable={
+        "code_description": code_description,
+        "doc_name": doc_name
+    })
+    
+    try:
+        # Use the LLM with pre-bound tools, adding config
+        llm_with_tools.invoke(messages, config=runnable_config)
+        logging.info(f"[{node_name}] Successfully processed file {file_path} for code {code_description}")
+        return {}  # Tool calls will update the state
+    except Exception as e:
+        logging.error(f"[{node_name}] Error processing file {file_path}: {e}", exc_info=True)
+        return {}
+
+def should_continue(state: CaseProcessingState):
+    """
+    Determines whether to continue the evidence extraction process.
+    Routes to the tool node if there are tool calls to process,
+    to the agent node if there are tool results to handle,
+    or to END if the process is complete.
+    
+    Args:
+        state: Current state with messages
+        
+    Returns:
+        Next node to route to
+    """
+    # Get messages - handle empty state case
+    messages = state.get("messages", [])
+    if not messages:
+        logging.info("[should_continue] No messages found, ending workflow")
+        return END
+    
+    # Get the last message
+    last_message = messages[-1]
+    
+    # Check message type and properties - based on LangChain message structure
+    if hasattr(last_message, "type"):
+        # AI message with tool calls - go to tool node
+        if last_message.type == "ai" and hasattr(last_message, "tool_calls") and last_message.tool_calls:
+            logging.info(f"[should_continue] Found AI message with {len(last_message.tool_calls)} tool calls, routing to tool_node")
+            return "tool_node"
+        
+        # AI message with no tool calls - we're done
+        if last_message.type == "ai" and (not hasattr(last_message, "tool_calls") or not last_message.tool_calls):
+            logging.info("[should_continue] AI message with no tool calls, ending workflow")
+            return END
+        
+        # Tool message - go back to agent for follow-up
+        if last_message.type == "tool":
+            logging.info("[should_continue] Tool message, routing back to agent_node")
+            return "agent_node"
+    
+    # Default case - assume we need to end if message type is not recognized
+    logging.info(f"[should_continue] Message of unknown type {getattr(last_message, 'type', 'unknown')}, ending workflow")
+    return END
+
+def agent_node(state: CaseProcessingState) -> Dict:
+    """
+    Analyzes text using an LLM to identify evidence.
+    Properly initializes messages on first call and preserves context.
+    
+    Args:
+        state: Current state with file path, code description, aspects, etc.
+        
+    Returns:
+        Updated state with messages from the LLM and preserved context
+    """
+    # Get file information
+    file_path = state.get("file_path")
+    if not file_path or not os.path.exists(file_path):
+        logging.error(f"[agent_node] Invalid or missing file: {file_path}")
+        return {"messages": [HumanMessage(content=f"Error: Invalid file path {file_path}")]}
+    
+    # Read the text file
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            text_content = f.read()
+    except Exception as e:
+        logging.error(f"[agent_node] Error reading file {file_path}: {e}")
+        return {"messages": [HumanMessage(content=f"Error reading file: {str(e)}")]}
+    
+    # Get state information
+    code_description = state.get("code_description", "Unknown code")
+    aspects = state.get("aspects", [])
+    intervention = state.get("intervention", "Unknown intervention")
+    research_question = state.get("research_question", "")
+    case_id = state.get("case_id", "unknown")
+    doc_name = os.path.basename(file_path)
+    
+    # Get LLM from config
+    config = get_config()
+    llm_with_tools = config.get("configurable", {}).get("llm_evidence_extractor")
+    if not llm_with_tools:
+        logging.error(f"[agent_node] LLM for evidence extraction not found in config")
+        return {"messages": [HumanMessage(content="Error: LLM not configured")]}
+    
+    # Create the runnable config with tool metadata
+    runnable_config = RunnableConfig(configurable={
+        "code_description": code_description,
+        "doc_name": doc_name
+    })
+    
+    # Get existing messages
+    messages = state.get("messages", [])
+    
+    # Process differently based on whether this is the first call or a follow-up
+    if not messages:
+        # First call - create initial messages
+        from coding_prompt import identify_evidence_prompt
+        system_content = identify_evidence_prompt.format(
+            code=code_description,
+            aspects="\n".join([f"- {aspect}" for aspect in aspects]),
+            research_question=research_question,
+            intervention=intervention
+        )
+        
+        system_msg = SystemMessage(content=system_content)
+        human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
+        
+        try:
+            # Get AI response with potential tool calls
+            ai_message = llm_with_tools.invoke([system_msg, human_msg], config=runnable_config)
+            logging.info(f"[agent_node] Got initial AI response for {file_path}")
+            
+            # Return full state with all context preserved
+            return {
+                "messages": [system_msg, human_msg, ai_message]
+            }
+        except Exception as e:
+            logging.error(f"[agent_node] Error from LLM: {e}", exc_info=True)
+            # Return error state with context preserved
+            return {
+                "messages": [system_msg, human_msg, HumanMessage(content=f"Error processing text: {str(e)}")]
+            }
+    else:
+        # Follow-up call - use existing message history
+        try:
+            # Get AI response with existing conversation
+            ai_message = llm_with_tools.invoke(messages, config=runnable_config)
+            logging.info(f"[agent_node] Got follow-up AI response for {file_path}")
+            
+            return {
+                "messages": messages + [ai_message]
+            }
+        except Exception as e:
+            logging.error(f"[agent_node] Error from LLM: {e}", exc_info=True)
+            return {
+                "messages": messages + [HumanMessage(content=f"Error processing text: {str(e)}")],
+            }
+    
+
+
+# --- Create and Compile the Case Processing Subgraph ---
+case_processing_graph = StateGraph(CaseProcessingState)
+
+# Add nodes directly to the subgraph
+case_processing_graph.add_node("case_start", case_subgraph_start)
+case_processing_graph.add_node("agent_node", agent_node)
+case_processing_graph.add_node("tool_node",  ToolNode(TOOLS))
+case_processing_graph.add_node("identify_evidence_node", identify_evidence_node)  # Keep for backwards compatibility
+
+# Add edges to implement the ReAct pattern
+case_processing_graph.add_edge(START, "case_start")
+case_processing_graph.add_conditional_edges(
+    "case_start",
+    continue_to_identify_evidence,
+    ["agent_node"]  # Route directly to agent_node
+)
+
+# ReAct pattern edges
+case_processing_graph.add_conditional_edges(
+    "agent_node",
+    should_continue,
+    ["tool_node", "agent_node",END]
+)
+
+# Always return to agent node after tool execution with ReAct pattern
+case_processing_graph.add_edge("tool_node", "agent_node")  
+
+# Keep for backwards compatibility
+case_processing_graph.add_edge("identify_evidence_node", END)
+
+# Compile the subgraph
+case_processing_subgraph = case_processing_graph.compile()
+
+# --- Create the Main Graph ---
+coding_graph = StateGraph(CodingState)
+
+def add_test(state: CodingState) -> CodingState:
+    """
+    Test node that returns the state unchanged.
+    """
+    return state
+
+# --- Add Nodes ---
+coding_graph.add_node("start", start_llm)
+coding_graph.add_node("aspect_definition_node", aspect_definition_node)
+coding_graph.add_node("add_test", add_test)
+coding_graph.add_node("intervention_definition_node", intervention_definition_node)
+coding_graph.add_node("case_aggregation_node", case_aggregation_node)
+coding_graph.add_node("case_processing", case_processing_subgraph)
 
 
 # --- Add Edges ---

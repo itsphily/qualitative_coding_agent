@@ -1,5 +1,7 @@
 from typing import TypedDict, List, Dict, Optional, Annotated, Any, Union
 import logging
+from langchain_core.messages import BaseMessage
+from langgraph.graph import MessagesState
 
 def merge_aspects(
     current: Optional[Dict[str, Optional[List[str]]]],
@@ -144,13 +146,15 @@ class CaseInfo(TypedDict):
     description: Optional[str]
     intervention: Optional[str]
 
-class CaseProcessingState(TypedDict):
+class CaseProcessingState(MessagesState):
+    """State class for case processing with built-in message handling."""
     case_id: str
     directory: str
     intervention: str
     research_question: str
     codes: Dict[str, List[str]]
     evidence_list: Annotated[List[Evidence], append_evidence]
+    # messages is provided by MessagesState with proper reducer
 
 class CodingState(TypedDict):
     research_question: str
