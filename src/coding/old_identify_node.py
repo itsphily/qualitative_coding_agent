@@ -1,5 +1,8 @@
 case_processing_graph.add_node("identify_evidence_node", identify_evidence_node)  
 
+# Keep for backwards compatibility
+case_processing_graph.add_edge("identify_evidence_node", END)
+
 
 def identify_evidence_node(state: CaseProcessingState) -> Dict:
     """
