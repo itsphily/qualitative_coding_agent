@@ -302,7 +302,6 @@ def case_aggregation_node(state: CodingState) -> CodingState:
     """
     logging.info(f"[case_aggregation_node] Aggregating state before case processing")
     
-    # Log what we have in the state
     codes = state.get("codes", {})
     cases_info = state.get("cases_info", {})
     
@@ -317,7 +316,6 @@ def case_aggregation_node(state: CodingState) -> CodingState:
         intervention_display = intervention[:60] + "..." if intervention else "None"
         logging.info(f"[case_aggregation_node] Case: {case_id} has intervention: {intervention_display}")
     
-    # Return the state unchanged - this node just ensures all updates are aggregated
     return state
 
 # --- Add Routing to Subgraph ---
@@ -349,18 +347,18 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
             logging.warning(f"[continue_to_case_processing] Missing directory for case {case_id}, skipping")
             continue
         
-        # Send specific case data to the subgraph
+        # Create proper case-specific state to send to subgraph
         sends.append(
             Send(
                 "case_processing",
                 {
-                    "case_id":state.get("case_id", ""),
-                    "directory":state.get("directory", ""),
-                    "intervention":state.get("intervention", ""),
-                    "research_question":state.get("research_question", ""),
-                    "codes":state.get("codes", {}),
-                    "evidence_list":state.get("evidence_list", []),
-                    "messages":[]
+                    "case_id": case_id,  # Use the case_id from the loop
+                    "directory": directory,  # Use the directory from case_info
+                    "intervention": intervention,  # Use the intervention from case_info
+                    "research_question": research_question,
+                    "codes": codes,  # Pass all codes to each case
+                    "evidence_list": [],  # Initialize as empty list
+                    "messages": []  # Initialize as empty list
                 }
             )
         )
