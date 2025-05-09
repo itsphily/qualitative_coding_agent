@@ -17,7 +17,7 @@ def log_quote_reasoning(
     reasoning: str,
     aspect: List[str],
     chronology: str,
-    tool_call_id: Annotated[str, InjectedToolCallId],
+    tool_call_id: Annotated[str, InjectedToolCallId]
 ) -> Command:
     """
     Tool for logging evidence found during text analysis.
@@ -55,7 +55,7 @@ def log_quote_reasoning(
         "code_description": code_description,
         "doc_name": doc_name
     })
-    
+
     # Create tool message - REQUIRED for Command objects from tools
     tool_message = ToolMessage(
         content=f"Successfully logged evidence from document '{doc_name}': '{quote[:50]}...'",
@@ -66,7 +66,6 @@ def log_quote_reasoning(
     return Command(
         update={
             "evidence_list": [new_evidence],
-            "messages": [tool_message]
         }
     )
 

@@ -1,4 +1,4 @@
-from coding_state import CodingState, CaseInfo, CaseProcessingState
+from coding_state import CodingState, CaseInfo, CaseProcessingState, CodeProcessingState
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List, Literal, cast
@@ -368,13 +368,12 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
     return sends
 
 # --- Case Processing Subgraph Implementation ---
-def case_subgraph_start(state: dict) -> CaseProcessingState:
+def case_subgraph_start(state: CaseProcessingState):
     """
     Starting node for the case processing subgraph.
     Converts input dictionary to CaseProcessingState.
     """
-    # Create a proper CaseProcessingState object
-    return CaseProcessingState(**state)
+    return state
 
 def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
     """
@@ -398,15 +397,11 @@ def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
     
     sends = []
     
-    # Find all text files in the directory, including all subdirectories (recursive)
     text_files = []
     try:
-        # Walk through all directories recursively
         for root, _, files in os.walk(directory):
             for file in files:
-                # Check if the file is a text file
                 if file.endswith('.md') or file.endswith('.txt'):
-                    # Get the full path of the file
                     file_path = os.path.join(root, file)
                     text_files.append(file_path)
                     
@@ -415,31 +410,25 @@ def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
         logging.error(f"[continue_to_identify_evidence] Error walking directory {directory}: {e}")
         return []
     
-    # Create Send objects for each code and file combination
+    # Iterate over all codes and files
     for code_description in codes:
-        # Get aspects for this code
         aspects = codes.get(code_description, [])
-        
         for file_path in text_files:
-            sends.append(
-                Send(
-                    "agent_node", 
-                    {
-                        "code_description": code_description,
-                        "file_path": file_path,
-                        "aspects": aspects,       
-                        "intervention": intervention,
-                        "research_question": research_question,
-                        "case_id": case_id,
-                        "evidence_list": []
-                    }
-                )
-            )
-    
-    logging.info(f"[continue_to_identify_evidence] Dispatching {len(sends)} evidence extraction tasks for case {case_id}")
+                code_state: CodeProcessingState = {
+                  "file_path": file_path,
+                  "code_description": code_description,
+                  "aspects": aspects,
+                  "intervention": intervention,
+                  "research_question": research_question,
+                  "case_id": case_id,
+                  "evidence_list": []
+              }
+                sends.append(Send("agent_node", code_state))
+                logging.info(f"[continue_to_identify_evidence] Dispatching {len(sends)} evidence extraction tasks for case {case_id}")
+                
     return sends
 
-def agent_node(state: CaseProcessingState) -> Dict:
+def agent_node(state: CodeProcessingState) -> Dict:
     """
     Analyzes text using an LLM to identify evidence.
     Properly initializes messages on first call and preserves context.
@@ -456,26 +445,36 @@ def agent_node(state: CaseProcessingState) -> Dict:
         logging.error(f"[agent_node] Invalid or missing file: {file_path}")
         return {"messages": [HumanMessage(content=f"Error: Invalid file path {file_path}")]}
     
+    # Extract filename for doc_name
+    doc_name = os.path.basename(file_path)
+
     # Read the text file
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             text_content = f.read()
     except Exception as e:
         logging.error(f"[agent_node] Error reading file {file_path}: {e}")
-        return {"messages": [HumanMessage(content=f"Error reading file: {str(e)}")]}
+        return {"evidence_list": []}
     
     # Get state information
     code_description = state.get("code_description", "Unknown code")
     aspects = state.get("aspects", [])
     intervention = state.get("intervention", "Unknown intervention")
     research_question = state.get("research_question", "")
+    case_id = state.get("case_id", "Unknown case")
+
+    # Create a custom config to pass code_description and doc_name to the tool
+    tool_config = RunnableConfig(configurable={
+          "code_description": code_description,
+          "doc_name": doc_name
+      })
     
     # Get LLM from config
     config = get_config()
     llm_with_tools = config.get("configurable", {}).get("llm_evidence_extractor")
     if not llm_with_tools:
         logging.error(f"[agent_node] LLM for evidence extraction not found in config")
-        return {"messages": [HumanMessage(content="Error: LLM not configured")]}
+        return {"evidence_list": []}
     
     system_content = identify_evidence_prompt.format(
         code=code_description,
@@ -486,8 +485,17 @@ def agent_node(state: CaseProcessingState) -> Dict:
         
     system_msg = SystemMessage(content=system_content)
     human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
-    llm_with_tools.invoke([system_msg, human_msg])
-    return {}
+
+    result = llm_with_tools.invoke([system_msg, human_msg])
+    logging.info(f"[agent_node] Completed processing file {doc_name}, tool should have logged evidence")
+
+    return {"evidence_list": state.get("evidence_list", [])}
+
+def aggregation_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates evidence from all cases and codes.
+    """
+    return state
 
 
     
@@ -497,6 +505,7 @@ case_processing_graph = StateGraph(CaseProcessingState)
 # Add nodes directly to the subgraph
 case_processing_graph.add_node("case_start", case_subgraph_start)
 case_processing_graph.add_node("agent_node", agent_node)
+case_processing_graph.add_node("aggregation_node", aggregation_node)
 
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
@@ -505,6 +514,10 @@ case_processing_graph.add_conditional_edges(
     continue_to_identify_evidence,
     ["agent_node"]
 )
+case_processing_graph.add_edge("agent_node", "aggregation_node")
+
+
+
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
 

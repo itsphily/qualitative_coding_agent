@@ -136,21 +136,31 @@ class Evidence(TypedDict):
     reasoning: str
     aspect: List[str]
     chronology: str
-    code_description: str  # For tracking which code this evidence belongs to
-    doc_name: str  # For tracking source document
+    code_description: str 
+    doc_name: str  
 
 class CaseInfo(TypedDict):
     directory: str
     description: Optional[str]
     intervention: Optional[str]
 
-class CaseProcessingState(MessagesState):
+class CaseProcessingState(TypedDict):
     case_id: str
     directory: str
     intervention: str
     research_question: str
     codes: Dict[str, List[str]]
     evidence_list: Annotated[List[Evidence], append_evidence]
+
+class CodeProcessingState(TypedDict):
+    file_path: str
+    code_description: str
+    aspects: List[str]
+    intervention: str
+    research_question: str
+    case_id: str
+    evidence_list: Annotated[List[Evidence], append_evidence]
+
 
 class CodingState(TypedDict):
     research_question: str
