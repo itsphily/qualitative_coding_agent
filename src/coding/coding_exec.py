@@ -1,7 +1,7 @@
 from coding_state import CodingState, CaseInfo, CaseProcessingState, CodeProcessingState
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
-from typing import Dict, Any, List, Literal, cast
+from typing import Dict, Any, List
 from langgraph.config import get_config
 import os
 import logging
@@ -13,11 +13,11 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage,AIMessage
 from langchain_core.runnables import Runnable, RunnableConfig
 from langgraph.graph import START, END, StateGraph
-from langgraph.prebuilt import ToolNode
 from coding_prompt import identify_key_aspects_prompt, identify_intervention
 from coding_utils import visualize_graph
 from coding_tools import TOOLS
 from coding_prompt import identify_evidence_prompt
+from langgraph.types import Command
 
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
@@ -84,7 +84,9 @@ llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(TOOLS)
 runtime_config = {  "configurable": {
                     "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
                     "llm_intervention_identifier": llm_long_context,
-                    "llm_evidence_extractor": llm_evidence_extractor_with_tools
+                    "llm_evidence_extractor": llm_evidence_extractor_with_tools,
+                    "code_description": "unknown_code",
+                    "doc_name": "unknown_doc"
                     }
 }
 
@@ -464,7 +466,7 @@ def agent_node(state: CodeProcessingState) -> Dict:
     case_id = state.get("case_id", "Unknown case")
 
     # Create a custom config to pass code_description and doc_name to the tool
-    tool_config = RunnableConfig(configurable={
+    run_config = RunnableConfig(configurable={
           "code_description": code_description,
           "doc_name": doc_name
       })
@@ -475,7 +477,8 @@ def agent_node(state: CodeProcessingState) -> Dict:
     if not llm_with_tools:
         logging.error(f"[agent_node] LLM for evidence extraction not found in config")
         return {"evidence_list": []}
-    
+   
+    # format the prompt
     system_content = identify_evidence_prompt.format(
         code=code_description,
         aspects="\n".join([f"- {aspect}" for aspect in aspects]),
@@ -486,10 +489,46 @@ def agent_node(state: CodeProcessingState) -> Dict:
     system_msg = SystemMessage(content=system_content)
     human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
 
-    result = llm_with_tools.invoke([system_msg, human_msg])
+    ai_message = llm_with_tools.invoke([system_msg, human_msg], config=run_config)
     logging.info(f"[agent_node] Completed processing file {doc_name}, tool should have logged evidence")
+    
+    # Following the pattern from the update-state-from-tools documentation
+    tool_calls = []
+    if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+        tool_calls = ai_message.tool_calls
+        logging.info(f"[agent_node] Found {len(tool_calls)} tool calls in LLM response")
+    else:
+        logging.warning(f"[agent_node] No tool calls found in LLM response")
+        return []
+    # Execute the tools and collect Commands
+    commands = []
+    tools_by_name = {tool.name: tool for tool in TOOLS}
 
-    return {"evidence_list": state.get("evidence_list", [])}
+    for tool_call in tool_calls:
+        try:
+            # Get tool by name
+            tool_name = tool_call.get("name", "")
+            if tool_name not in tools_by_name:
+                logging.error(f"[agent_node] Unknown tool: {tool_name}")
+                continue
+
+            # Execute tool with arguments from tool call
+            tool = tools_by_name[tool_name]
+            args = tool_call.get("args", {})
+            args["tool_call_id"] = tool_call.get("id", "unknown")
+
+            logging.info(f"[agent_node] Executing tool {tool_name} with args: {args}")
+
+            # Following exactly the pattern from documentation
+            command = tool.invoke(args)
+            if isinstance(command, Command):
+                commands.append(command)
+                logging.info(f"[agent_node] Added Command from tool {tool_name}")
+        except Exception as e:
+            logging.error(f"[agent_node] Error executing tool {tool_call.get('name', 'unknown')}: {e}")
+
+    logging.info(f"[agent_node] Returning {len(commands)} Commands to update state")
+    return commands
 
 def aggregation_node(state: CaseProcessingState) -> CaseProcessingState:
     """
