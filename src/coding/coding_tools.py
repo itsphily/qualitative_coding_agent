@@ -8,7 +8,7 @@ from langchain_core.tools import tool
 from langgraph.types import Command
 from coding_state import Evidence
 from langgraph.config import get_config
-
+from langchain_core.runnables import RunnableConfig
 
 # --- logging tool ---
 @tool
@@ -17,7 +17,7 @@ def log_quote_reasoning(
     reasoning: str,
     aspect: List[str],
     chronology: str,
-    tool_call_id: Annotated[str, InjectedToolCallId]
+    tool_call_id: Annotated[str, InjectedToolCallId], config: RunnableConfig
 ) -> Command:
     """
     Tool for logging evidence found during text analysis.

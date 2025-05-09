@@ -1,5 +1,5 @@
 from typing import TypedDict, List, Dict, Optional, Annotated, Any
-from langgraph.graph import MessagesState
+import logging
 
 def merge_aspects(
     current: Optional[Dict[str, Optional[List[str]]]],
@@ -98,7 +98,15 @@ def append_evidence(
     if new is None:
         return current
     
+    logging.info(f"[append_evidence] REDUCER CALLED: Adding {len(new)} evidence items to list of {len(current)} items")
+    for item in new:
+        if isinstance(item, dict):
+            quote_snippet = item.get('quote', '')[:30] + '...' if item.get('quote') else 'No quote'
+            logging.info(f"[append_evidence] Adding evidence: {quote_snippet}")
+    
     return current + new
+
+
 
 def merge_evidence_from_subgraph(
     current: Optional[Dict[str, List[Any]]], 
