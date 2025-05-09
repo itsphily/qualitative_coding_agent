@@ -7,8 +7,8 @@ from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langgraph.types import Command
 from coding_state import Evidence
-from langgraph.config import get_config
-from langchain_core.runnables import RunnableConfig
+from langgraph.prebuilt import InjectedState
+
 
 # --- logging tool ---
 @tool
@@ -17,8 +17,8 @@ def log_quote_reasoning(
     reasoning: str,
     aspect: List[str],
     chronology: str,
-    tool_call_id: Annotated[str, InjectedToolCallId], config: RunnableConfig
-) -> Command:
+    state: Annotated[dict, InjectedState],
+    tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
     """
     Tool for logging evidence found during text analysis.
     
@@ -41,10 +41,9 @@ def log_quote_reasoning(
     if not chronology or chronology not in ["before", "during", "after", "unclear"]:
         raise ToolException("Chronology must be one of: before, during, after, unclear")
     
-    # Get code_description and doc_name from config if not provided
-    cfg = get_config().get("configurable", {})
-    code_description = cfg.get("code_description", "unknown_code")
-    doc_name = cfg.get("doc_name", "unknown_doc")
+    # Get the current state dictionary
+    code_description = state["code_description"]
+    doc_name = state["file_path"]
     
     # Create evidence item
     new_evidence = cast(Evidence, {

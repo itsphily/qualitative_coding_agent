@@ -19,6 +19,7 @@ from coding_tools import TOOLS
 from coding_prompt import identify_evidence_prompt
 from langgraph.types import Command
 
+
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
 os.makedirs(debug_dir, exist_ok=True)
@@ -449,6 +450,7 @@ def agent_node(state: CodeProcessingState) -> Dict:
     
     # Extract filename for doc_name
     doc_name = os.path.basename(file_path)
+    code_description = state.get("code_description", "Unknown code")
 
     # Read the text file
     try:
@@ -457,19 +459,6 @@ def agent_node(state: CodeProcessingState) -> Dict:
     except Exception as e:
         logging.error(f"[agent_node] Error reading file {file_path}: {e}")
         return {"evidence_list": []}
-    
-    # Get state information
-    code_description = state.get("code_description", "Unknown code")
-    aspects = state.get("aspects", [])
-    intervention = state.get("intervention", "Unknown intervention")
-    research_question = state.get("research_question", "")
-    case_id = state.get("case_id", "Unknown case")
-
-    # Create a custom config to pass code_description and doc_name to the tool
-    run_config = RunnableConfig(configurable={
-          "code_description": code_description,
-          "doc_name": doc_name
-      })
     
     # Get LLM from config
     config = get_config()
@@ -480,16 +469,16 @@ def agent_node(state: CodeProcessingState) -> Dict:
    
     # format the prompt
     system_content = identify_evidence_prompt.format(
-        code=code_description,
-        aspects="\n".join([f"- {aspect}" for aspect in aspects]),
-        research_question=research_question,
-        intervention=intervention
+        code= state.get("code_description", "Unknown code"),
+        aspects="\n".join([f"- {aspect}" for aspect in state.get("aspects", [])])
+        research_question=state.get("research_question", ""),
+        intervention=state.get("intervention", "Unknown intervention")
     )
-        
+
     system_msg = SystemMessage(content=system_content)
     human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
-
-    ai_message = llm_with_tools.invoke([system_msg, human_msg], config=run_config)
+    logging.info(f"[agent_node] Preparing to execute with CONFIGURATION: code_description='{code_description}', doc_name='{doc_name}'")
+    ai_message = llm_with_tools.invoke([system_msg, human_msg])
     logging.info(f"[agent_node] Completed processing file {doc_name}, tool should have logged evidence")
     
     # Following the pattern from the update-state-from-tools documentation
