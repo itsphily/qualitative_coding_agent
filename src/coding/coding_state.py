@@ -106,8 +106,6 @@ def append_evidence(
     
     return current + new
 
-
-
 def merge_evidence_from_subgraph(
     current: Optional[Dict[str, List[Any]]], 
     new: Optional[List[Any]]
@@ -137,6 +135,28 @@ def merge_evidence_from_subgraph(
             current[code_desc] = []
         current[code_desc].append(item)
     
+    return current
+
+def merge_synthesis_results(
+    current: Optional[Dict[str, str]],
+    new: Optional[Dict[str, str]]
+) -> Dict[str, str]:
+    """
+    Merges new synthesis results into the current state.
+    
+    Args:
+        current: Dictionary mapping code descriptions to their synthesis results
+        new: Dictionary containing new synthesis results for codes
+    
+    Returns:
+        Updated dictionary with merged synthesis results
+    """
+    if current is None:
+        current = {}
+    if new is None:
+        return current
+    
+    current.update(new)
     return current
 
 class Evidence(TypedDict):
