@@ -86,6 +86,7 @@ runtime_config = {  "configurable": {
                     "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
                     "llm_intervention_identifier": llm_long_context,
                     "llm_evidence_extractor": llm_evidence_extractor_with_tools,
+                    "llm_synthesize_evidence": llm_short_context_high_processing,
                     "code_description": "unknown_code",
                     "doc_name": "unknown_doc"
                     }
