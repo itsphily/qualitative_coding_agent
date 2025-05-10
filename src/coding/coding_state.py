@@ -175,3 +175,10 @@ class CodingState(TypedDict):
     codes: Annotated[Dict[str, Optional[List[str]]], merge_aspects]
     cases_info: Annotated[Dict[str, CaseInfo], merge_case_info]
     evidence_list: Annotated[Dict[str, List[Evidence]], merge_evidence_from_subgraph]
+
+class SynthesisState(TypedDict):
+    case_id: str
+    code_description: str
+    research_question: str
+    intervention: str
+    evidence_subset: List[Dict[str, Any]] 
