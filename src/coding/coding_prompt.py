@@ -226,7 +226,7 @@ Analyze the provided batch data to:
 
 ## 5. Selecting Exemplar Quotes (Focus: Representing Dominant Themes)
 - 5.1 Review Content Themes:** Refer back to the primary Content Themes identified in step 1.
-- 5.2 Select Quotes:** From the *entire batch*, select 2-3 quotes based on these criteria:
+- 5.2 Select Quotes:** From the *entire batch*, select 1-10 quotes based on these criteria (the quotes must never be truncated or paraphrased):
     * **Representativeness:** Clearly illustrates one or more *most central/frequent* Content Themes.
     * **Conciseness & Clarity:** Prefer shorter, clearer quotes.
 - 5.3 Extract Details:** Provide the original `record_id` and the full `quote` text for each.
@@ -244,16 +244,16 @@ Provide your complete output as a clearly structured text report using Markdown 
 [A concise paragraph (typically 3-10 sentences) synthesizing the 1-10 most central ideas, arguments, or findings from the collective evidence regarding the research code. This should be a high-level overview making sense of the quote/reasoning pairs collectively. For example: "The evidence collectively highlights the complexities of program rollout, emphasizing the need for careful geographic site selection based on poverty indicators and regulatory approvals, alongside the iterative development and adaptation of targeting criteria like proxy means tests. Community feedback plays a role in shaping these criteria, though the extent of its formal solicitation can vary. Operational capacity and navigating local regulations are also significant recurring considerations."]
 
 ## Content Themes
-* **Theme Label 1:** Brief (1-3 sentence) summary explaining what the evidence reveals about this theme. For example: "Geographic site selection involves identifying sufficiently poor districts and navigating lengthy approval processes for new operational areas, with considerations for control groups in research."
+* **Theme Label 1:**  (1-10 sentence) summary explaining what the evidence reveals about this theme. For example: "Geographic site selection involves identifying sufficiently poor districts and navigating lengthy approval processes for new operational areas, with considerations for control groups in research."
 (...)
 
 ## Dimensional Themes
-* **Dimensional Label A:** Brief (1-2 sentence) summary explaining this dimension. For example: "Evidence indicates a pattern of adapting processes, like poverty targeting criteria, to specific local conditions encountered in different counties or countries."
+* **Dimensional Label A:** (1-10 sentence) summary explaining this dimension. For example: "Evidence indicates a pattern of adapting processes, like poverty targeting criteria, to specific local conditions encountered in different counties or countries."
 (...)
 
 ## Direct Contradictions
-* [Concise explanation of contradiction 1, summarizing the conflicting points from the quotes to make it understandable, e.g., "Regarding X, some quotes state Y, while others assert Z."]
-* [Concise explanation of contradiction 2...]
+* [explanation of contradiction 1, summarizing the conflicting points from the quotes to make it understandable, e.g., "Regarding X, some quotes state Y, while others assert Z."]
+* [explanation of contradiction 2...]
     *(If none: No direct contradictions were identified within this batch of records.)*
 
 ## Strong Singular Claims
@@ -262,7 +262,7 @@ Provide your complete output as a clearly structured text report using Markdown 
     *(If none: No strong singular claims were identified within this batch of records.)*
 
 ## Exemplar Quotes (Representing Content Themes)
-* [Full text of quote 1...]
+* [Full text of quote 1, quotes must never be truncated or paraphrased...]
 (...)
 """
 

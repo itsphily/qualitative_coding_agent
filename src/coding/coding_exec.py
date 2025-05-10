@@ -664,6 +664,12 @@ def synthesize_evidence_node(state: SynthesisState) -> Dict[str, Dict[str, str]]
         }
     }
 
+def aggregation_synthesis_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates synthesis results from all codes.
+    """
+    return state
+
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
 
@@ -672,6 +678,7 @@ case_processing_graph.add_node("case_start", case_subgraph_start)
 case_processing_graph.add_node("agent_node", agent_node)
 case_processing_graph.add_node("aggregation_node", aggregation_node)
 case_processing_graph.add_node("synthesize_evidence_node", synthesize_evidence_node)
+case_processing_graph.add_node("aggregation_synthesis_node", aggregation_synthesis_node)
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -681,7 +688,7 @@ case_processing_graph.add_conditional_edges(
 )
 case_processing_graph.add_edge("agent_node", "aggregation_node")
 case_processing_graph.add_conditional_edges("aggregation_node", continue_to_synthesize_evidence, ["synthesize_evidence_node"])
-
+case_processing_graph.add_edge("synthesize_evidence_node", "aggregation_synthesis_node")
 
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
