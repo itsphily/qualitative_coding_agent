@@ -155,13 +155,13 @@ You are a meticulous qualitative-methods researcher (Ph.D. level) performing the
 
 # Context
 Use the context (Research Question, Research Code, and Intervention) to understand the significance of the themes and findings you identify within the provided records as they relate to the specific Research Code.
-## Case Name: 
+## Case Name:
 {case_name}
-## Research Code (name and description): 
+## Research Code (name and description):
 {code}
-## Research Question (Optional Context): 
+## Research Question (Optional Context):
 {research_question}
-## Intervention: 
+## Intervention:
 {intervention}
 
 # Input Data Format
@@ -170,10 +170,8 @@ You will be provided with a batch of evidence records below under "data to analy
 - `quote`: The full, unaltered text passage extracted as evidence.
 - `reasoning`: The reasoning for extracting this quote (should not be used as the primary source of information, but can be used to guide your analysis)
 - `aspect`: Aspects are the distinct key aspects or sub-components of the research code.cThese aspects should represent the fundamental activities, considerations, or dimensions embedded within the code's definition.
-
 Each evidence record will be provided in a markdown format.
-
-# Evidence#0: 
+# Evidence#0:
 - chronology: "before"
 - quote: "quote"
 - reasoning: "reasoning"
@@ -181,6 +179,7 @@ Each evidence record will be provided in a markdown format.
 
 # Task Overview
 Analyze the provided batch data to:
+0.  **Craft an Overall Summary** of the central idea(s).
 1.  Identify the most prominent **Content Themes**.
 2.  Identify any prominent **Dimensional Themes**.
 3.  Identify any **Direct Contradictions** within this batch.
@@ -188,27 +187,37 @@ Analyze the provided batch data to:
 5.  Select **Exemplar Quotes** representing the core content themes.
 
 # Detailed Instructions
-
 ## General Guidance: Prioritize Direct Evidence (Quotes)
 **Core Principle:** Your analysis MUST be primarily based on the `quote` field for each record. The `quote` contains direct evidence extracted from the source text and is the most reliable data point.
 **Using Reasoning:** Treat the associated `reasoning` field as a potentially helpful *initial interpretation* generated previously by an LLM. It can guide your understanding or suggest potential themes, but **you must critically evaluate it and always verify any insights derived from the `reasoning` against the actual `quote` content.**
 **Hierarchy:** If the `reasoning` seems inconsistent with, misinterprets, or contradicts the `quote`, **the information directly present in the `quote` takes precedence.** The quote is the ground truth for your analysis in this phase.
 
+## 0. Crafting an Overall Summary (Focus: Big Picture Insights from all Evidence)
+- 0.1 Holistically review all provided `quote` and `reasoning` pairs. Consider the Research Code, Research Question (if provided), and Intervention context.
+- 0.2 Identify the 1-3 most central ideas, arguments, or findings that emerge from the collective evidence. What is the main story or key message conveyed by the data regarding the `{code}` within this specific batch?
+- 0.3 Synthesize these central ideas into a concise paragraph (typically 3-5 sentences). This summary should provide a high-level overview of the most significant takeaways from the provided evidence, making sense of the quote/reasoning pairs collectively.
+- 0.4 Ensure this summary is self-contained, well-supported by the evidence, and does not introduce information not present in the quotes/reasoning.
+
 ## 1. Identifying Content Themes (Focus: What is being discussed?)
 - 1.1 Analyze: Primarily analyze the `quote` content across all records to identify themes. Refer to the `reasoning` and `aspect` fields as supplementary guides or initial hypotheses about the quote's relevance/meaning, **always validating against the `quote` itself.
 - 1.2 Identify Concepts: Look for recurring concepts, activities, beliefs, etc., related to Research Code.
-- 1.3 Group & Synthesize: Group records discussing similar concepts. For each group representing a distinct and significant theme within the dataset, synthesize and articulate its **core concept or central idea**. Focus on themes that meaningfully recur or capture important facets of the code as represented in the data.
-- 1.4 Create a word label for each theme.
+- 1.3 Group & Synthesize: Group records discussing similar concepts. For each group representing a distinct and significant theme within the dataset:
+    - 1.3.a Articulate its **core concept or central idea**.
+    - 1.3.b Write a **concise (1-3 sentence) summary** that explains the theme by synthesizing key information and insights directly from the supporting `quote`(s). This summary should be understandable on its own and give a sense of *what the evidence says* about this theme.
+- 1.4 Create a **short, descriptive word label** for each theme.
 
 ## 2. Identifying Dimensional Themes (Focus: How is it being discussed?)
 - 2.1 Analyze: Look for recurring characteristics in *how* the evidence related to the research code is presented across the records.
 - 2.2 Identify dimensional characteristics **if** they are notably prominent or recurring across a significant portion of the provided records.
-- 2.3 Create a label for each.
+- 2.3 For each identified dimensional theme:
+    - 2.3.a Articulate its **core characteristic**.
+    - 2.3.b Write a **concise (1-2 sentence) summary** that explains the dimensional theme by synthesizing observations about *how* the information is presented in the supporting `quote`(s). This summary should be understandable on its own.
+- 2.4 Create a **short, descriptive label** for each.
 
 ## 3. Identifying Direct Contradictions (Focus: Conflicting Statements within this Batch)
 - 3.1 Scan Critically:** Specifically search the records for instances where the `quote` content presents directly opposing information, claims, or perspectives regarding the research code '{code}'. Use the `reasoning` field *only cautiously* as a potential pointer to conflicts, but **base the identification of a contradiction primarily on conflicting `quote` texts.
-- 3.2 Report Findings: If contradictions are found, list each instance clearly. Note the `record_id`s involved and briefly describe the nature of the contradiction. If none are found in this batch, state that explicitly.
-- 3.3 Example: "Contradiction found regarding standard practice for pre-intervention data collection: some evidence states it is always done, while other evidence suggests it is often skipped or done hastily."
+- 3.2 Report Findings: If contradictions are found, list each instance clearly. For each, provide a concise explanation of the conflicting points, drawing from the quotes involved, to make the contradiction clear without needing to refer back to specific record IDs. If none are found in this batch, state that explicitly.
+- 3.3 Example: "Contradiction found regarding standard practice for pre-intervention data collection: some evidence states it is always done (e.g., 'baseline data collection is a mandatory first step'), while other evidence suggests it is often skipped or done hastily (e.g., 'due to time pressure, we proceeded without the usual baseline survey')."
 
 ## 4. Identifying Strong Singular Claims (Focus: Definitive Statements)
 - 4.1 Scan Critically: Look for individual records where the `quote` contains a particularly strong, definitive, absolute, or impactful statement [...]. **Focus solely on the quote text** for identifying these claims.
@@ -228,29 +237,33 @@ Analyze the provided batch data to:
 </data to analyze>
 
 # Output Format
-Provide your complete output as a clearly structured text report using Markdown headings. Do not include any introductory or concluding explanatory text outside the specified structure. Ensure the output is self-contained and does not reference specific record IDs.
+Provide your complete output as a clearly structured text report using Markdown headings. Do not include any introductory or concluding explanatory text outside the specified structure. Ensure the output is self-contained and does not reference specific record IDs (except where explicitly asked for Strong Singular Claims and Exemplar Quotes, where the record ID is for your internal reference if needed but the output should be understandable without it).
 
 # Example Output Structure:
+## Overall Summary
+[A concise paragraph (typically 3-10 sentences) synthesizing the 1-10 most central ideas, arguments, or findings from the collective evidence regarding the research code. This should be a high-level overview making sense of the quote/reasoning pairs collectively. For example: "The evidence collectively highlights the complexities of program rollout, emphasizing the need for careful geographic site selection based on poverty indicators and regulatory approvals, alongside the iterative development and adaptation of targeting criteria like proxy means tests. Community feedback plays a role in shaping these criteria, though the extent of its formal solicitation can vary. Operational capacity and navigating local regulations are also significant recurring considerations."]
+
 ## Content Themes
-* Concise Label 1
-* Concise Label 2
-* Concise Label 3
+* **Theme Label 1:** Brief (1-3 sentence) summary explaining what the evidence reveals about this theme. For example: "Geographic site selection involves identifying sufficiently poor districts and navigating lengthy approval processes for new operational areas, with considerations for control groups in research."
+(...)
 
 ## Dimensional Themes
-* Concise Label A
+* **Dimensional Label A:** Brief (1-2 sentence) summary explaining this dimension. For example: "Evidence indicates a pattern of adapting processes, like poverty targeting criteria, to specific local conditions encountered in different counties or countries."
+(...)
 
 ## Direct Contradictions
-* [Description of contradiction 1, summarizing the conflicting points]
-* [Description of contradiction 2, summarizing the conflicting points]
+* [Concise explanation of contradiction 1, summarizing the conflicting points from the quotes to make it understandable, e.g., "Regarding X, some quotes state Y, while others assert Z."]
+* [Concise explanation of contradiction 2...]
+    *(If none: No direct contradictions were identified within this batch of records.)*
 
 ## Strong Singular Claims
-* [Claim 1, e.g., "Standard practice requires baseline surveys always be completed..."]
-* [Claim 2, e.g., "'It is impossible to measure impact without baseline data.'"]
+* [Full text of quote 1 containing a strong claim...]
+(...)
+    *(If none: No strong singular claims were identified within this batch of records.)*
 
 ## Exemplar Quotes (Representing Content Themes)
 * [Full text of quote 1...]
-* [Full text of quote 2...]
-* [Full text of quote 3...]
+(...)
 """
 
 evaluate_evidence_vs_full_prompt = """
