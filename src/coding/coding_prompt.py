@@ -165,7 +165,22 @@ Use the context (Research Question, Research Code, and Intervention) to understa
 {intervention}
 
 # Input Data Format
-You will be provided with a batch of evidence records below under "data to analyze". Each record contains fields like `record_id`, `quote`, `reasoning`, `aspect` (list), `chronology`, and `doc_name`.
+You will be provided with a batch of evidence records below under "data to analyze". Each record contains the following fields:
+- `chronology`: The timing of the evidence relative to the intervention, chosen from the four defined categories (before, during, after, unclear), based on full text context.
+- `quote`: The full, unaltered text passage extracted as evidence.
+- `reasoning`: The reasoning for extracting this quote (should not be used as the primary source of information, but can be used to guide your analysis)
+- `aspect`: Aspects are the distinct key aspects or sub-components of the research code.cThese aspects should represent the fundamental activities, considerations, or dimensions embedded within the code's definition.
+
+Each evidence record will be provided in a JSON format.
+{
+Evidence#0: 
+{
+chronology: "before",
+quote: "quote",
+reasoning: "reasoning",
+aspect: ["aspect1", "aspect2"]
+}
+}
 
 # Task Overview
 Analyze the provided batch data to:
