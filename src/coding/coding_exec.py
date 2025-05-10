@@ -612,32 +612,24 @@ def synthesize_evidence_node(state: SynthesisState) -> Dict[str, Dict[str, str]]
         logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
         return {"synthesis_results": {code_description: f"Error: LLM config missing - {e}"}}
 
-    # --- Format Evidence for Prompt ---
-    # Format exactly as expected in the prompt (lines 175-183)
-    formatted_evidence_items = []
+    # --- Format Evidence for Prompt using new Markdown format ---
+    evidence_text = ""
     for i, evidence in enumerate(evidence_subset):
-        # Replace all curly braces to avoid conflicts with string formatting
-        entry = f"Evidence#{i}:"
-        entry += "\n{"  # We need literal braces here
-        entry += f"\nchronology: \"{evidence.get('chronology', '')}\","
-        entry += f"\nquote: \"{evidence.get('quote', '').replace('\"', '\\\"').replace('{', '{{').replace('}', '}}').replace('\n', ' ')}\","
-        entry += f"\nreasoning: \"{evidence.get('reasoning', '').replace('\"', '\\\"').replace('{', '{{').replace('}', '}}').replace('\n', ' ')}\","
+        # Format each evidence item in Markdown as specified in the prompt
+        evidence_text += f"# Evidence#{i}: \n"
+        evidence_text += f"- chronology: \"{evidence.get('chronology', '')}\"\n"
+        evidence_text += f"- quote: \"{evidence.get('quote', '').replace('\"', '\\\"')}\"\n"
+        evidence_text += f"- reasoning: \"{evidence.get('reasoning', '').replace('\"', '\\\"')}\"\n"
 
-        # Handle the aspect list specially to avoid formatting issues
+        # Format the aspect list
         aspects = evidence.get("aspect", [])
-        aspect_str = json.dumps(aspects).replace('{', '{{').replace('}', '}}')
-        entry += f"\naspect: {aspect_str}"
-        entry += "\n}"  # Close the evidence record
-
-        formatted_evidence_items.append(entry)
-
-    # Join with double newlines
-    formatted_evidence = "\n\n".join(formatted_evidence_items)
+        aspects_str = str(aspects).replace("'", "\"")
+        evidence_text += f"- aspect: {aspects_str}\n\n"
 
     # --- Prepare LLM Input ---
     try:
         # Log a sample to debug
-        sample = formatted_evidence[:200] + "..." if len(formatted_evidence) > 200 else formatted_evidence
+        sample = evidence_text[:200] + "..." if len(evidence_text) > 200 else evidence_text
         logging.info(f"[{node_name}] Evidence format sample: {sample}")
 
         system_message_content = synthesize_evidence.format(
@@ -645,17 +637,14 @@ def synthesize_evidence_node(state: SynthesisState) -> Dict[str, Dict[str, str]]
             code=code_description,
             research_question=research_question,
             intervention=intervention,
-            data=formatted_evidence
+            data=evidence_text
         )
+
         messages = [SystemMessage(content=system_message_content)]
         logging.debug(f"[{node_name}] Prepared messages for LLM for case {case_id} and code {code_description[:60]}")
     except Exception as e:
         error_msg = str(e)
         logging.error(f"[{node_name}] Error formatting messages: {error_msg}")
-        # Provide more detailed error info
-        if 'data' in locals():
-            sample = formatted_evidence[:100] + "..." if len(formatted_evidence) > 100 else formatted_evidence
-            logging.error(f"[{node_name}] Evidence format causing error: {sample}")
         return {"synthesis_results": {code_description: f"Error: Message formatting failed - {error_msg}"}}
 
     # --- Invoke LLM and Process Output ---
