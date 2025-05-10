@@ -1,4 +1,4 @@
-from coding_state import CodingState, CaseInfo, CaseProcessingState, CodeProcessingState
+from coding_state import CodingState, CaseInfo, CaseProcessingState, CodeProcessingState, SynthesisState
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List
@@ -11,13 +11,13 @@ from pydantic import BaseModel, Field
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage,AIMessage
-from langchain_core.runnables import Runnable, RunnableConfig
+from langchain_core.runnables import Runnable
 from langgraph.graph import START, END, StateGraph
-from coding_prompt import identify_key_aspects_prompt, identify_intervention
+from coding_prompt import identify_key_aspects_prompt, identify_intervention, identify_evidence_prompt, synthesize_evidence
 from coding_utils import visualize_graph
 from coding_tools import TOOLS
-from coding_prompt import identify_evidence_prompt
 from langgraph.types import Command
+import json
 
 
 # --- Logging Setup ---
@@ -371,7 +371,6 @@ def continue_to_case_processing(state: CodingState) -> List[Send]:
     logging.info(f"[continue_to_case_processing] Dispatching {len(sends)} cases for evidence extraction")
     return sends
 
-# --- Case Processing Subgraph Implementation ---
 def case_subgraph_start(state: CaseProcessingState):
     """
     Starting node for the case processing subgraph.
@@ -531,8 +530,132 @@ def aggregation_node(state: CaseProcessingState) -> CaseProcessingState:
     """
     return state
 
-
+def continue_to_synthesize_evidence(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code with its relevant evidence to the synthesize_evidence_node.
     
+    Args:
+        state: Current aggregated state with all evidence
+        
+    Returns:
+        List of Send objects for each code with its evidence
+    """
+    case_id = state.get("case_id", "unknown")
+    codes = state.get("codes", {})
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    evidence_list = state.get("evidence_list", [])
+
+    if not codes:
+        logging.warning(f"[continue_to_synthesize_evidence] No codes found in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description in codes:
+        evidence_subset = []
+        for evidence in evidence_list:
+            if evidence.get("code_description") == code_description:
+                filtered_evidence = {
+                    "chronology": evidence.get("chronology", ""),
+                    "quote": evidence.get("quote", ""),
+                    "reasoning": evidence.get("reasoning", ""),
+                    "aspect": evidence.get("aspect", [])
+                }
+                evidence_subset.append(filtered_evidence)
+
+        if evidence_subset:
+            synthesis_input = {
+                "case_id": case_id,
+                "code_description": code_description,
+                "research_question": research_question,
+                "intervention": intervention,
+                "evidence_subset": evidence_subset
+            }
+
+            sends.append(Send("synthesize_evidence_node", synthesis_input))
+            logging.info(f"[continue_to_synthesize_evidence] Sending {len(evidence_subset)} evidence items for code {code_description} to synthesis node")
+
+    return sends
+    
+def synthesize_evidence_node(state: SynthesisState) -> Dict[str, Dict[str, str]]:
+    """
+    Worker Node: Synthesizes evidence for a specific code within a case.
+    Formats evidence records according to the synthesize_evidence prompt 
+    and invokes an LLM to generate synthesis.
+    
+    Args:
+        state: Input state containing case_id, code, and filtered evidence
+        
+    Returns:
+        Dict with synthesis results to be merged into the state
+    """
+    node_name = "synthesize_evidence_node"
+    case_id = state.get("case_id", "unknown")
+    code_description = state.get("code_description", "unknown")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    evidence_subset = state.get("evidence_subset", [])
+
+    logging.info(f"[{node_name}] Processing {len(evidence_subset)} evidence items for code '{code_description[:60]}...' in case {case_id}")
+
+    if not evidence_subset:
+        logging.warning(f"[{node_name}] No evidence to synthesize for code {code_description} in case {case_id}")
+        return {"synthesis_results": {code_description: "No evidence to synthesize"}}
+
+    # --- Retrieve LLM from Config ---
+    try:
+        config = get_config()
+        llm_synthesize_evidence = config.get("configurable", {}).get("llm_synthesize_evidence")
+        if not llm_synthesize_evidence or not isinstance(llm_synthesize_evidence, Runnable):
+            raise ValueError("Required 'llm_synthesize_evidence' Runnable not found in config")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+        return {"synthesis_results": {code_description: f"Error: LLM config missing - {e}"}}
+
+    # --- Format Evidence for Prompt ---
+    formatted_evidence = ""
+    for i, evidence in enumerate(evidence_subset):
+        formatted_evidence += f"Evidence#{i}: \n{{\n"
+        formatted_evidence += f"chronology: \"{evidence.get('chronology', '')}\",\n"
+        formatted_evidence += f"quote: \"{evidence.get('quote', '').replace('\"', '\\\"')}\",\n"
+        formatted_evidence += f"reasoning: \"{evidence.get('reasoning', '').replace('\"', '\\\"')}\",\n"
+        formatted_evidence += f"aspect: {json.dumps(evidence.get('aspect', []))}\n"
+        formatted_evidence += f"}}\n\n"
+
+    # --- Prepare LLM Input ---
+    try:
+        from coding_prompt import synthesize_evidence
+        system_message_content = synthesize_evidence.format(
+            case_name=case_id,
+            code=code_description,
+            research_question=research_question,
+            intervention=intervention,
+            data=formatted_evidence
+        )
+
+        messages = [SystemMessage(content=system_message_content)]
+        logging.debug(f"[{node_name}] Prepared messages for LLM for case {case_id} and code {code_description[:60]}")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error formatting messages: {e}")
+        return {"synthesis_results": {code_description: f"Error: Message formatting failed - {e}"}}
+
+    # --- Invoke LLM and Process Output ---
+    synthesis_result = f"Error: LLM call failed for code {code_description}"
+    try:
+        result = llm_synthesize_evidence.invoke(messages)
+        synthesis_result = result.content.strip()
+        logging.info(f"[{node_name}] Successfully synthesized evidence for code {code_description[:60]} in case {case_id}")
+    except Exception as e:
+        logging.error(f"[{node_name}] LLM call failed: {e}", exc_info=True)
+        synthesis_result = f"Error: LLM call failed - {e}"
+
+    # Return results to be merged into state
+    return {
+        "synthesis_results": {
+            code_description: synthesis_result
+        }
+    }
+
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
 
@@ -540,7 +663,7 @@ case_processing_graph = StateGraph(CaseProcessingState)
 case_processing_graph.add_node("case_start", case_subgraph_start)
 case_processing_graph.add_node("agent_node", agent_node)
 case_processing_graph.add_node("aggregation_node", aggregation_node)
-
+case_processing_graph.add_node("synthesize_evidence_node", synthesize_evidence_node)
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -549,7 +672,7 @@ case_processing_graph.add_conditional_edges(
     ["agent_node"]
 )
 case_processing_graph.add_edge("agent_node", "aggregation_node")
-
+case_processing_graph.add_conditional_edges("aggregation_node", continue_to_synthesize_evidence, ["synthesize_evidence_node"])
 
 
 # Compile the subgraph

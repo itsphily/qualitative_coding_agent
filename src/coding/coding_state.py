@@ -179,6 +179,7 @@ class CaseProcessingState(TypedDict):
     research_question: str
     codes: Dict[str, List[str]]
     evidence_list: Annotated[List[Evidence], append_evidence]
+    synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
 
 class CodeProcessingState(TypedDict):
     file_path: str
