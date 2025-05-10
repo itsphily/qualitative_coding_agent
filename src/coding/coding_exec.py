@@ -470,7 +470,7 @@ def agent_node(state: CodeProcessingState) -> Dict:
     # format the prompt
     system_content = identify_evidence_prompt.format(
         code= state.get("code_description", "Unknown code"),
-        aspects="\n".join([f"- {aspect}" for aspect in state.get("aspects", [])])
+        aspects="\n".join([f"- {aspect}" for aspect in state.get("aspects", [])]),
         research_question=state.get("research_question", ""),
         intervention=state.get("intervention", "Unknown intervention")
     )
@@ -505,6 +505,11 @@ def agent_node(state: CodeProcessingState) -> Dict:
             tool = tools_by_name[tool_name]
             args = tool_call.get("args", {})
             args["tool_call_id"] = tool_call.get("id", "unknown")
+
+            args["state"] = {
+                "code_description": state.get("code_description", "Unknown code"),
+                "file_path": state.get("file_path", "Unknown file")
+                }
 
             logging.info(f"[agent_node] Executing tool {tool_name} with args: {args}")
 
