@@ -1,4 +1,9 @@
-from coding_state import CodingState, CaseInfo, CaseProcessingState, CodeProcessingState, SynthesisState
+from coding_state import (CodingState, 
+                          CaseInfo, 
+                          CaseProcessingState, 
+                          CodeProcessingState, 
+                          SynthesisState, 
+                          EvaluateSynthesisState)
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List
@@ -13,7 +18,13 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import SystemMessage, HumanMessage,AIMessage
 from langchain_core.runnables import Runnable
 from langgraph.graph import START, END, StateGraph
-from coding_prompt import identify_key_aspects_prompt, identify_intervention, identify_evidence_prompt, synthesize_evidence
+from coding_prompt import (
+    identify_key_aspects_prompt,
+    identify_intervention,
+    identify_evidence_prompt,
+    synthesize_evidence,
+    evaluate_synthesis_prompt
+)
 from coding_utils import visualize_graph
 from coding_tools import TOOLS
 from langgraph.types import Command
@@ -61,7 +72,7 @@ llm_short_context_high_processing = ChatOpenAI(model="o3",
 )
 
 ## Google LLM initialization
-llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro-preview-03-25",
+llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro-exp-03-25",
                                                            temperature=0,
                                                            max_tokens=None,
                                                            timeout=None,
@@ -87,6 +98,7 @@ runtime_config = {  "configurable": {
                     "llm_intervention_identifier": llm_long_context,
                     "llm_evidence_extractor": llm_evidence_extractor_with_tools,
                     "llm_synthesize_evidence": llm_short_context_high_processing,
+                    "llm_evaluate_synthesis": llm_long_context_high_processing,
                     "code_description": "unknown_code",
                     "doc_name": "unknown_doc"
                     }
@@ -670,6 +682,151 @@ def aggregation_synthesis_node(state: CaseProcessingState) -> CaseProcessingStat
     """
     return state
 
+def continue_to_evaluate_synthesis(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each synthesis result with case context to the evaluate_synthesis_node.
+    
+    Args:
+        state: Current aggregated state with all synthesis results
+        
+    Returns:
+        List of Send objects for each synthesis result
+    """
+    case_id = state.get("case_id", "unknown")
+    directory = state.get("directory", "")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    synthesis_results = state.get("synthesis_results", {})
+
+    if not synthesis_results:
+        logging.warning(f"[continue_to_evaluate_synthesis] No synthesis results found in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description, synthesis_result in synthesis_results.items():
+        # Create input state for evaluate_synthesis_node
+        evaluation_input = {
+            "case_id": case_id,
+            "directory": directory,
+            "code_description": code_description,
+            "research_question": research_question,
+            "intervention": intervention,
+            "synthesis_result": synthesis_result
+        }
+
+        sends.append(Send("evaluate_synthesis_node", evaluation_input))
+        logging.info(f"[continue_to_evaluate_synthesis] Sending synthesis for code {code_description} to evaluation node")
+
+    return sends
+
+def evaluate_synthesis_node(state: EvaluateSynthesisState) -> Dict[str, Dict[str, str]]:
+    """
+    Worker Node: Evaluates synthesis for a specific code against all source texts.
+    
+    Args:
+        state: Input state containing case_id, directory, code_description, etc.
+        
+    Returns:
+        Dict with revised synthesis results to be merged into the state
+    """
+    node_name = "evaluate_synthesis_node"
+    case_id = state.get("case_id", "unknown")
+    directory = state.get("directory", "")
+    code_description = state.get("code_description", "unknown")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    synthesis_result = state.get("synthesis_result", "")
+
+    logging.info(f"[{node_name}] Evaluating synthesis for code '{code_description[:60]}...' in case {case_id}")
+
+    if not synthesis_result:
+        logging.warning(f"[{node_name}] No synthesis to evaluate for code {code_description} in case {case_id}")
+        return {"revised_synthesis_results": {code_description: "No synthesis to evaluate"}}
+
+    # --- Aggregate all text files ---
+    source_texts = ""
+    try:
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.md') or file.endswith('.txt'):
+                    file_path = os.path.join(root, file)
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            text_content = f.read()
+                            doc_name = os.path.basename(file_path)
+                            # Wrap the content in XML tags with document name
+                            source_texts += f"<beginning of text: {doc_name}>\n{text_content}\n<end of text: {doc_name}>\n\n"
+                    except Exception as file_e:
+                        logging.warning(f"[{node_name}] Could not read file {file_path}: {file_e}")
+                        continue
+    except Exception as e:
+        logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
+        return {"revised_synthesis_results": {code_description: f"Error: Directory processing failed - {e}"}}
+
+    if not source_texts:
+        logging.warning(f"[{node_name}] No text files found in directory: {directory}")
+        return {"revised_synthesis_results": {code_description: "Error: No text files found"}}
+
+    # --- Retrieve LLM from Config ---
+    try:
+        config = get_config()
+        llm_evaluate_synthesis = config.get("configurable", {}).get("llm_evaluate_synthesis")
+        if not llm_evaluate_synthesis or not isinstance(llm_evaluate_synthesis, Runnable):
+            raise ValueError("Required 'llm_evaluate_synthesis' Runnable not found in config")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+        return {"revised_synthesis_results": {code_description: f"Error: LLM config missing - {e}"}}
+
+    # --- Prepare LLM Input ---
+    try:
+
+        system_message_content = evaluate_synthesis_prompt
+        human_message_content = f"""
+        Please evaluate this synthesis result:
+
+        # Context
+        * **Case Name:** {case_id}
+        * **Research Code (Name and Description):** {code_description}
+        * **Research Question (Optional Context):** {research_question}
+        * **Intervention (Optional Context):** {intervention}
+        * **Context Usage:** Use the overall context (Research Question, Intervention) to judge the significance, relevance, and necessary refinements (for accuracy, completeness, and nuance) of findings during the validation process across all source texts.
+
+        Synthesis Result:
+        <preliminary_findings_summary>
+        {synthesis_result}
+        </preliminary_findings_summary>
+
+        Source Texts:
+        <Complete Source Texts>
+        {source_texts}
+        </Complete Source Texts>
+        """
+
+        messages = [SystemMessage(content=system_message_content), HumanMessage(content=human_message_content)]
+        logging.debug(f"[{node_name}] Prepared messages for LLM for case {case_id} and code {code_description[:60]}")
+    except Exception as e:
+        error_msg = str(e)
+        logging.error(f"[{node_name}] Error formatting messages: {error_msg}")
+        return {"revised_synthesis_results": {code_description: f"Error: Message formatting failed - {error_msg}"}}
+
+    # --- Invoke LLM and Process Output ---
+    revised_synthesis_result = f"Error: LLM call failed for code {code_description}"
+    try:
+        result = llm_evaluate_synthesis.invoke(messages)
+        revised_synthesis_result = result.content.strip()
+        logging.info(f"[{node_name}] Successfully evaluated synthesis for code {code_description[:60]} in case {case_id}")
+    except Exception as e:
+        logging.error(f"[{node_name}] LLM call failed: {e}", exc_info=True)
+        revised_synthesis_result = f"Error: LLM call failed - {e}"
+
+    # Return results to be merged into state
+    return {
+        "revised_synthesis_results": {
+            code_description: revised_synthesis_result
+        }
+    }
+
+
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
 
@@ -679,6 +836,8 @@ case_processing_graph.add_node("agent_node", agent_node)
 case_processing_graph.add_node("aggregation_node", aggregation_node)
 case_processing_graph.add_node("synthesize_evidence_node", synthesize_evidence_node)
 case_processing_graph.add_node("aggregation_synthesis_node", aggregation_synthesis_node)
+case_processing_graph.add_node("evaluate_synthesis_node", evaluate_synthesis_node)
+
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -689,6 +848,12 @@ case_processing_graph.add_conditional_edges(
 case_processing_graph.add_edge("agent_node", "aggregation_node")
 case_processing_graph.add_conditional_edges("aggregation_node", continue_to_synthesize_evidence, ["synthesize_evidence_node"])
 case_processing_graph.add_edge("synthesize_evidence_node", "aggregation_synthesis_node")
+case_processing_graph.add_conditional_edges(
+      "aggregation_synthesis_node",
+      continue_to_evaluate_synthesis,
+      ["evaluate_synthesis_node"]
+  )
+
 
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()

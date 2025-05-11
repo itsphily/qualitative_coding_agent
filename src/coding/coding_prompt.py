@@ -269,24 +269,13 @@ Provide your complete output as a clearly structured text report using Markdown 
 evaluate_synthesis_prompt = """
 You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **critical validation, holistic synthesis, and the corrective refinement of preliminary findings**. Your task is to evaluate a **Preliminary Findings Summary** (generated from an initial analysis of extracted quotes) against the **complete set of source texts** for a specific case and research code. Your goal is to **transform the Preliminary Findings Summary into an Adjusted Findings Summary by rigorously correcting, refining, expanding, and validating each component**. This Adjusted Summary must accurately, comprehensively, and nuancedly reflect the evidence across the entire corpus of source texts. You must never adjust the quotes in any way, all the quotes must be the full, unaltered text passages from their original source.
 
-# Context
-* **Case Name:** {case_name}
-* **Research Code (Name and Description):** {code}
-* **Research Question (Optional Context):** {research_question}
-* **Intervention (Optional Context):** {intervention}
-* **Context Usage:** Use the overall context (Research Question, Intervention) to judge the significance, relevance, and necessary refinements (for accuracy, completeness, and nuance) of findings during the validation process across all source texts.
 
 # Input Data
 1.  **Preliminary Findings Summary (`synthesis_result`):** This input contains an "Overall Summary," potential "Content Themes" (each with a label and a descriptive summary), "Dimensional Themes" (each with a label and a descriptive summary), "Direct Contradictions," "Strong Singular Claims," and "Exemplar Quotes" identified from extracted evidence.
-    <preliminary_findings_summary>
-    {synthesis_result}
-    </preliminary_findings_summary>
     *Important Note:* This summary is a first-pass interpretation based on analyzing each text individually. It requires careful scrutiny, correction, and enhancement against the complete source texts. Some nuances or contradictions might not be apparent from the individual texts, but become clear when considering the full corpus. For instance, if a statement was made (ex: "we care about the environment") in one text, but in another we learn that the organization is actually a big polluter, this contradiction might not be apparent from the individual texts, but becomes clear when considering the full corpus.
 
 2.  **Complete Source Texts:** You will be provided with the full corpus of original documents for the case. You **must** use these texts as the definitive source for validation, correction, refinement, and selection of final evidence.
-    <source_texts>
-    {source_texts}
-    </source_texts>
+
 
 # Task: Produce Adjusted Findings Summary
 Systematically review **each component listed** in the Preliminary Findings Summary. For each item (the Overall Summary, each listed Content Theme and its description, each Dimensional Theme and its description, each Contradiction, each Strong Claim, and each Exemplar Quote), search and analyze the **complete source texts**. Your primary goal is to **identify and implement necessary corrections, refinements, or expansions** to ensure each finding's accuracy, nuance, and completeness case-wide, then confirm its validity. Based on this assessment:
