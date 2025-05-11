@@ -85,26 +85,42 @@ def append_evidence(
     """
     Appends new items to a list.
     Handles None values gracefully.
+    Prevents duplicates by checking quote text.
     
     Args:
         current: Current list
         new: New list of items to append
         
     Returns:
-        Combined list
+        Combined list with duplicates removed
     """
     if current is None:
         current = []
     if new is None:
         return current
-    
+
     logging.info(f"[append_evidence] REDUCER CALLED: Adding {len(new)} evidence items to list of {len(current)} items")
+
+    existing_quotes = set()
+    for item in current:
+        if isinstance(item, dict) and "quote" in item:
+            quote_id = item["quote"][:100] if item["quote"] else ""
+            existing_quotes.add(quote_id)
+
+    items_to_add = []
     for item in new:
         if isinstance(item, dict):
             quote_snippet = item.get('quote', '')[:30] + '...' if item.get('quote') else 'No quote'
-            logging.info(f"[append_evidence] Adding evidence: {quote_snippet}")
-    
-    return current + new
+            quote_id = item.get('quote', '')[:100] if item.get('quote', '') else ''
+
+            if quote_id not in existing_quotes:
+                logging.info(f"[append_evidence] Adding NEW evidence: {quote_snippet}")
+                items_to_add.append(item)
+                existing_quotes.add(quote_id)
+            else:
+                logging.info(f"[append_evidence] SKIPPING duplicate evidence: {quote_snippet}")
+
+    return current + items_to_add
 
 def merge_evidence_from_subgraph(
     current: Optional[Dict[str, List[Any]]], 
