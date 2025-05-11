@@ -266,63 +266,90 @@ Provide your complete output as a clearly structured text report using Markdown 
 (...)
 """
 
-evaluate_evidence_vs_full_prompt = """
-You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **critical validation and refinement**. Your task is to evaluate a **Preliminary Findings Summary** (generated from an initial analysis) against the **complete set of source texts** for a specific case and research code. Your goal is to produce an **Adjusted Findings Summary** that includes ONLY the preliminary findings that are validated, significant, and accurately nuanced based on the full corpus of evidence, potentially refining their descriptions.
+evaluate_synthesis_prompt = """
+You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **critical validation, holistic synthesis, and the corrective refinement of preliminary findings**. Your task is to evaluate a **Preliminary Findings Summary** (generated from an initial analysis of extracted quotes) against the **complete set of source texts** for a specific case and research code. Your goal is to **transform the Preliminary Findings Summary into an Adjusted Findings Summary by rigorously correcting, refining, expanding, and validating each component**. This Adjusted Summary must accurately, comprehensively, and nuancedly reflect the evidence across the entire corpus of source texts. You must never adjust the quotes in any way, all the quotes must be the full, unaltered text passages from their original source.
 
 # Context
 * **Case Name:** {case_name}
 * **Research Code (Name and Description):** {code}
-* **Research Question:** {research_question}
-* **Intervention:** {intervention}
-* **Context Usage:** Use the overall context (Research Question, Intervention) to judge the significance and relevance of findings during the validation and refinement process.
+* **Research Question (Optional Context):** {research_question}
+* **Intervention (Optional Context):** {intervention}
+* **Context Usage:** Use the overall context (Research Question, Intervention) to judge the significance, relevance, and necessary refinements (for accuracy, completeness, and nuance) of findings during the validation process across all source texts.
 
 # Input Data
-1.  **Preliminary Findings Summary:** Contains potential Content Themes, Dimensional Themes, Contradictions, and Strong Singular Claims identified during the initial analysis phase.
+1.  **Preliminary Findings Summary (`synthesis_result`):** This input contains an "Overall Summary," potential "Content Themes" (each with a label and a descriptive summary), "Dimensional Themes" (each with a label and a descriptive summary), "Direct Contradictions," "Strong Singular Claims," and "Exemplar Quotes" identified from extracted evidence.
     <preliminary_findings_summary>
-    {level_1_synthesis_summary}
+    {synthesis_result}
     </preliminary_findings_summary>
-    *Important Note:* This summary contains *potential* findings requiring validation.
+    *Important Note:* This summary is a first-pass interpretation based on analyzing each text individually. It requires careful scrutiny, correction, and enhancement against the complete source texts. Some nuances or contradictions might not be apparent from the individual texts, but become clear when considering the full corpus. For instance, if a statement was made (ex: "we care about the environment") in one text, but in another we learn that the organization is actually a big polluter, this contradiction might not be apparent from the individual texts, but becomes clear when considering the full corpus.
 
-2.  **Complete Source Texts:** You have access to the full corpus of original documents for Case '{case_name}'. You **must** use these texts as the definitive source for validation and refinement.
+2.  **Complete Source Texts:** You will be provided with the full corpus of original documents for the case. You **must** use these texts as the definitive source for validation, correction, refinement, and selection of final evidence.
     <source_texts>
     {source_texts}
     </source_texts>
 
 # Task: Produce Adjusted Findings Summary
-Systematically review **each component listed** in the Preliminary Findings Summary. For each item (each listed Content Theme, Dimensional Theme, Contradiction, and Strong Claim), search and analyze the **complete source texts** to assess its validity, accuracy, and significance case-wide. Based on this assessment, decide whether to **Keep**, **Refine**, or **Discard** each item. Your output will be a new summary containing *only* the Kept or Refined items.
+Systematically review **each component listed** in the Preliminary Findings Summary. For each item (the Overall Summary, each listed Content Theme and its description, each Dimensional Theme and its description, each Contradiction, each Strong Claim, and each Exemplar Quote), search and analyze the **complete source texts**. Your primary goal is to **identify and implement necessary corrections, refinements, or expansions** to ensure each finding's accuracy, nuance, and completeness case-wide, then confirm its validity. Based on this assessment:
+* **Keep As Is:** Only if the preliminary item is fully validated by the complete texts AND its current phrasing is optimal in terms of accuracy, completeness, and nuance.
+* **Refine (Correct, Enhance, Rephrase):** If the preliminary item is generally valid but requires modification to accurately and comprehensively reflect the evidence from the *full corpus*. This is the most common action and involves actively improving the item.
+* **Discard:** If the preliminary item is refuted, insignificant, or a misinterpretation when judged against the full texts.
+
+Your output will be a new summary containing *only* the Kept As Is or Refined items, ensuring all claims and descriptions are robustly substantiated and accurately articulated based on the complete source texts.
 
 # Detailed Instructions for Validation & Refinement:
 
 **General Guidance:**
-* **Prioritize Quotes:** Base your validation primarily on the direct evidence (or absence thereof) within the `source_texts`. Treat any initial `reasoning` implicitly associated with preliminary findings as secondary.
-* **Decision Criteria:** Your decisions (Keep/Refine/Discard) should be based on whether the finding accurately reflects patterns, statements, or tensions present when considering the *entire* corpus of source texts for this case and code.
+* **Prioritize Full Texts for Correction and Substantiation:** Base your validation and, crucially, your *refinements* primarily on the direct evidence (or absence thereof) within the `source_texts`. The `Preliminary Findings Summary` is a draft to be actively improved.
+* **Embrace Corrective Refinement:** Your primary task is not just to select, but to *correct and enhance*. If a preliminary finding is broadly relevant but imprecisely stated, incomplete, or lacks nuance found in the broader `source_texts`, your role is to **fix and improve its articulation**.
+* **Holistic View for Accuracy:** Consider how findings relate to each other and to the overall narrative emerging from the `source_texts` to ensure refined descriptions are coherent and contextually accurate.
+* **Maintain Quote Integrity:** **Crucially, all direct quotes presented in the "Adjusted Findings Summary" (e.g., as Strong Singular Claims or Validated Exemplar Quotes) MUST be the full, unaltered text passages from their original source. Do not truncate, paraphrase, or abridge these quotes in any way.**
 
-**Validation & Decision Steps (Address each item from the preliminary summary):**
+**Validation & Decision Steps (Address each component from the `preliminary_findings_summary`):**
 
-1.  **For each Preliminary Content Theme:**
-    * **Search & Assess:** How strongly and consistently is this theme supported case-wide? Is its core concept accurate? Does it need refinement? What is its prevalence (core, secondary, minor)?
+1.  **Overall Summary (from `preliminary_findings_summary`):**
+    * **Search, Assess, and Correct:** Does this preliminary overall summary accurately and comprehensively reflect the most central ideas, arguments, or findings when considering all `source_texts`? Identify any inaccuracies, omissions, misleading emphases, or areas lacking nuance.
     * **Decide & Prepare Output:**
-        * If **strongly confirmed and accurate**: **Keep** the theme label. Note its status as "Confirmed - Core Finding" or "Confirmed - Secondary Theme".
-        * If **partially supported or needs nuance**: **Refine** the theme label or add a brief clarification to its description to better reflect the full context. Note its status as "Refined - [Specify prevalence]".
-        * If **refuted, not supported, or insignificant case-wide**: **Discard** this theme. Do not include it in the output.
-2.  **For each Preliminary Dimensional Theme:**
-    * **Search & Assess:** Is this characteristic genuinely prominent and significant case-wide?
+        * If **fully accurate, comprehensive, and optimally phrased based on all texts**: **Keep As Is**. Note status "Confirmed - Comprehensive Overview".
+        * If **generally on the right track but requires correction, additions for completeness, rephrasing for improved nuance/accuracy, or changes in emphasis to truly reflect the full texts**: **Refine**. The refined summary should be a corrected and enhanced articulation. Note status "Refined - Enhanced and Corrected Overview".
+        * If **substantially misrepresents the core findings from the full texts, is too incomplete to serve as a base, or key elements are incorrect**: **Discard** the preliminary one and **write a new, accurate Overall Summary** based on your comprehensive analysis of all source texts. Note status "Replaced - New Overall Summary from Full Text Analysis".
+
+2.  **For each Preliminary Content Theme (Label and its Descriptive Summary):**
+    * **Search, Assess, and Correct:** How strongly and consistently is this theme, *as articulated in its label and descriptive summary*, supported across all `source_texts`? Identify inaccuracies in the description, areas where it's incomplete, lacks necessary nuance found in other texts, or misrepresents the case-wide emphasis.
     * **Decide & Prepare Output:**
-        * If **confirmed as prominent/significant**: **Keep** the theme label. Note status "Confirmed - Prominent Characteristic".
-        * If **isolated or not significant case-wide**: **Discard** this theme.
-3.  **For each Preliminary Direct Contradiction:**
-    * **Investigate & Assess:** Does the conflict represent a genuine, significant tension case-wide? Is it resolved or explained differently in the full context?
+        * If **theme label and its description are fully accurate, comprehensive, and optimally phrased case-wide**: **Keep As Is**. Note its status, e.g., "Confirmed - Core Finding".
+        * If **the theme concept is valid, but its label or descriptive summary is imprecise, incomplete, lacks nuance, or needs correction to accurately reflect the full body of evidence**: **Refine** the theme label (if necessary) AND its descriptive summary. The output must include the *corrected and improved descriptive summary*. Note its status, e.g., "Refined - Core Finding with Corrected and Enhanced Description".
+        * If **refuted by the full texts, not significantly supported, or based on a clear misinterpretation**: **Discard** this theme.
+
+3.  **For each Preliminary Dimensional Theme (Label and its Descriptive Summary):**
+    * **Search, Assess, and Correct:** Is this dimensional characteristic, *as described*, genuinely prominent and significant when analyzing all `source_texts`? Is the description fully accurate and representative of how information is presented case-wide?
     * **Decide & Prepare Output:**
-        * If **confirmed as significant case-wide tension**: **Keep** and potentially **Refine** the description to accurately reflect its nature and status (e.g., resolved/unresolved) based on all texts. Note status "Confirmed - Significant Tension".
-        * If **resolved, minor, or misinterpretation**: **Discard** this contradiction.
-4.  **For each Preliminary Strong Singular Claim:**
-    * **Contextualize & Assess:** Is the claim credible and significant within the full case narrative? Is it corroborated or heavily contested? Is it fact or opinion?
+        * If **confirmed as prominent/significant and its description is fully accurate and optimal**: **Keep As Is**. Note status, e.g., "Confirmed - Prominent Characteristic".
+        * If **the concept is valid but its label or description needs correction for accuracy, completeness, or scope based on the full texts**: **Refine** the label (if necessary) AND its descriptive summary. The output must include the *corrected and improved description*. Note status, e.g., "Refined - Notable Characteristic with Enhanced Description".
+        * If **isolated, not significant case-wide, or its description is substantially inaccurate**: **Discard** this theme.
+
+4.  **For each Preliminary Direct Contradiction:**
+    * **Investigate, Assess, and Correct:** Does the described conflict represent a genuine, significant tension when considering all `source_texts`? Is the preliminary description of the contradiction fully accurate, or does it need rephrasing to better capture the nuances of the conflicting evidence found across all texts?
     * **Decide & Prepare Output:**
-        * If **deemed significant and credible (even if contested)**: **Keep** the essential claim summary. Add a brief note on its contextual status (e.g., "Corroborated by policy", "Contested by practice accounts", "Isolated but impactful statement"). Note status "Confirmed - Notable Claim".
-        * If **isolated opinion, lacks credibility, or insignificant**: **Discard** this claim.
+        * If **confirmed as a significant case-wide tension and accurately described**: **Keep As Is**. (Though, most descriptions of contradictions will benefit from refinement based on more texts).
+        * If **confirmed as a significant tension, but the preliminary description is imprecise, incomplete, or could better articulate the nature of the conflict based on all texts**: **Refine** its description. The refined description should clearly explain the contradiction, drawing on the full range of evidence. Note status, e.g., "Refined - Significant Tension with Clarified Description".
+        * If **resolved within the full texts, a minor point, or a misinterpretation**: **Discard** this contradiction.
+
+5.  **For each Preliminary Strong Singular Claim (Quote):**
+    * **Contextualize, Assess, and Refine Understanding:** When viewed against all `source_texts`, is this claim (quote) credible and significant? While the quote itself is immutable, **refine the understanding of its context, implications, or contestations.**
+    * **Decide & Prepare Output:**
+        * If **deemed significant and impactful within the full case context**: **Keep** the claim (quote). **Develop or Refine** a brief contextual note that accurately reflects its standing (e.g., "Policy cornerstone frequently referenced", "Controversial statement from key informant, with counterpoints in texts X & Y", "Isolated but symbolically important assertion") based on all texts. Note status, e.g., "Confirmed - Notable Claim with Refined Contextualization".
+        * If **isolated and trivial, lacks credibility in the broader context, or its significance diminishes when all texts are considered**: **Discard** this claim.
+
+6.  **For each Preliminary Exemplar Quote:** (Instruction remains largely the same as it already focuses on selecting the *best* ones for validated themes from full texts, which is inherently a refining/correcting process for the set of exemplars.)
+    * **Assess Against Validated Themes & Full Texts:** For each preliminary exemplar quote, first check if its associated Content Theme was validated (Kept As Is or Refined).
+        * If its theme was discarded, **Discard** this exemplar quote.
+        * If its theme was validated: Does this specific quote, when considering all `source_texts`, remain a strong, clear, and concise illustration of the (potentially refined) validated Content Theme? Are there more potent or representative quotes for this theme within the *full source texts*? All quotes must be presented in full and without alteration.
+    * **Decide & Prepare Output for Exemplar Quotes Section:**
+        * You will create a *new* "Validated Exemplar Quotes" section in your output.
+        * For each **validated Content Theme**, select 1-3 of the **most illustrative and impactful quotes from the *complete source texts***. These may include some of the "Kept" preliminary exemplar quotes if they remain the best examples, or they may be entirely new selections. The goal is to provide the best possible textual evidence from the full corpus for each validated theme. **Ensure these quotes are full and unaltered.**
 
 # Output Format: Adjusted Findings Summary
-Produce a structured report using Markdown, containing **only the Kept or Refined findings** from the preliminary summary, potentially including status annotations. **Do not include discarded items.** Structure the output clearly.
+Produce a structured report using Markdown. The "Overall Summary" should always be present, reflecting comprehensive analysis of all texts. For other sections, include **only the Kept As Is or (primarily) the Refined findings**. Refined items must feature their corrected, enhanced, and more accurate descriptions or contextualizations. For "Validated Exemplar Quotes," provide new selections from the full texts for each validated content theme, ensuring quotes are complete. **Do not include discarded items from the preliminary summary (unless explicitly replacing, like the Overall Summary).**
 
 **Example Output Structure:**
 # Adjusted Findings Summary
@@ -330,31 +357,47 @@ Produce a structured report using Markdown, containing **only the Kept or Refine
 **Case ID:** {case_name}
 **Code Analyzed:** {code}
 
+## Overall Summary
+* **Status:** [e.g., Refined - Enhanced and Corrected Overview]
+* **Summary:** [The kept, refined, or newly written overall summary text. This version is based on a comprehensive analysis of all source texts, correcting any inaccuracies or omissions from the preliminary version. E.g., "Cross-text analysis reveals that while adaptive targeting strategies are central, their implementation was frequently reactive rather than pre-planned, often shaped by immediate regulatory hurdles rather than solely by poverty data. The role of community feedback, initially presented as integral, appears sporadic and inconsistently documented across the full range of project reports..."]
+
 ## Validated & Refined Content Themes
 * **Theme:** '[Kept or Refined Theme Label 1]'
-    * **Status:** [e.g., Confirmed - Core Finding]
-    * **Refinement Note (If applicable):** [e.g., Broadened to include aspect Z based on full texts.]
+    * **Status:** [e.g., Refined - Core Finding with Corrected and Enhanced Description]
+    * **Refined Description:** [Full text of the corrected, expanded, and more nuanced descriptive summary for the theme, based on all source texts. E.g., "Initial findings suggested geographic site selection was a linear process. However, a full review of field reports and internal communications indicates it was a complex, iterative negotiation, often delayed by unforeseen local political dynamics and revised based on updated (and sometimes conflicting) demographic data not available in the preliminary evidence set."]
+    * **Original Preliminary Description (For reference if refined):** [Optional: include if useful for tracking changes]
 * **Theme:** '[Kept or Refined Theme Label 2]'
-    * **Status:** [e.g., Refined - Secondary Theme]
-    * **Refinement Note (If applicable):** [e.g., Clarified focus on Y.]
-    *(Include ALL Kept/Refined Content Themes)*
+    * **Status:** [e.g., Confirmed - Secondary Theme (Kept As Is)]
+    * **Description:** [Full text of the original description, if Kept As Is, or the refined one.]
+    *(Include ALL Kept As Is/Refined Content Themes and their full, potentially refined, descriptions)*
 
 ## Validated & Refined Dimensional Themes
-* **Theme:** '[Kept Dim Theme Label A]'
-    * **Status:** [e.g., Confirmed - Prominent Characteristic]
-    *(Include ALL Kept Dimensional Themes, or state "None Validated as Prominent Case-Wide")*
+* **Theme:** '[Kept or Refined Dim Theme Label A]'
+    * **Status:** [e.g., Refined - Notable Characteristic with Enhanced Description]
+    * **Refined Description:** [Full text of the corrected and improved descriptive summary.]
+    *(Include ALL Kept As Is/Refined Dimensional Themes. If none: "No dimensional themes from the preliminary summary were validated as prominent or accurately described case-wide based on the full source texts.")*
 
 ## Validated & Refined Contradictions
-* **Contradiction:** '[Refined description of Contradiction 1]'
-    * **Status:** [e.g., Confirmed - Major Tension (Unresolved)]
-    *(Include ALL Kept/Refined Contradictions, or state "None Validated as Significant Case-Wide")*
+* **Contradiction:** '[Corrected and more comprehensively articulated description of Contradiction 1, grounded in full texts]'
+    * **Status:** [e.g., Refined - Significant Tension with Clarified Description from Multiple Sources]
+    *(Include ALL Kept As Is/Refined Contradictions. If none: "No contradictions from the preliminary summary were validated as significant or accurately represented case-wide tensions based on the full source texts.")*
 
 ## Validated & Refined Strong Claims
-* **Claim:** '[Essential message/quote of Claim 1]'
-    * **Status:** [e.g., Confirmed - Notable Claim]
-    * **Context Note:** [e.g., Corroborated by policy, contested by practice accounts.]
-    *(Include ALL Kept/Refined Strong Claims, or state "None Validated as Significant Case-Wide")*
+* **Claim:** '[Full, unaltered quote of the Kept Strong Singular Claim]'
+    * **Status:** [e.g., Confirmed - Notable Claim with Refined Contextualization]
+    * **Refined Context Note:** [A more developed note based on all texts, explaining the claim's significance, contestation, or broader context. E.g., "This policy excerpt from the foundational project document (Doc A) outlines the ideal procedure; however, interview transcripts (Docs C, E) and field observations (Doc F) reveal consistent deviations in practice due to X and Y factors, making this claim more aspirational than descriptive of operations."]
+    *(Include ALL Kept As Is/Refined Strong Claims. If none: "No strong singular claims from the preliminary summary were validated as significant or accurately contextualized case-wide based on the full source texts.")*
+
+## Validated Exemplar Quotes (Selected from Full Source Texts)
+*(For each **Validated Content Theme** listed above, provide 1-3 new exemplar quotes taken directly from the `source_texts` that best illustrate that theme case-wide. Quotes must be full and unaltered.)*
+* **Illustrating Theme: '[Validated Theme Label 1]'**
+    * Quote 1: "[Full, unaltered quote from source_texts...]" (Source Document ID/Page, if available and desired for output)
+    * Quote 2: "[Full, unaltered quote from source_texts...]"
+* **Illustrating Theme: '[Validated Theme Label 2]'**
+    * Quote 1: "[Full, unaltered quote from source_texts...]"
+    *(If no Content Themes were validated, this section can be omitted or state "No content themes validated for which to select exemplar quotes.")*
 """
+
 
 cross_case_analysis_prompt = """
 You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **deep synthesis and case-wide pattern identification**. Your task is to analyze the **complete set of source texts** for a specific case and research code, informed by a previously generated **Adjusted Findings Summary**. Your goal is to conduct an **independent, holistic analysis of the full texts** to identify and describe robust, overarching synthesis findings (Overall Consistency, Pervasive Absence, Theme Saturation, Evolution, Triangulation, Completeness & Gaps), considering the defined aspects of the research code.
