@@ -228,3 +228,12 @@ class EvaluateSynthesisState(TypedDict):
     research_question: str
     intervention: str
     synthesis_result: str
+    
+class CrossCaseAnalysisState(TypedDict):
+    case_id: str
+    code_description: str
+    directory: str
+    research_question: str
+    intervention: str
+    aspects: List[str]
+    cross_case_analysis_result: str
