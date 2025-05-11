@@ -933,10 +933,12 @@ def cross_case_analysis_node(state: CrossCaseAnalysisState) -> Dict[str, Dict[st
           # Format the aspects for the prompt
           aspects_text = "\n".join([f"- {aspect}" for aspect in aspects])
 
-          system_message_content = cross_case_analysis_prompt_without_summary
+          system_message_content = cross_case_analysis_prompt_without_summary.format(
+            case_name=case_id,
+            code=code_description,
+          )
           human_message_content = f"""
           Please analyze this case:
-
           # Context
           * **Case Name:** {case_id}
           * **Research Code (Name and Description):** {code_description}
@@ -944,11 +946,14 @@ def cross_case_analysis_node(state: CrossCaseAnalysisState) -> Dict[str, Dict[st
           {aspects_text}
           * **Research Question:** {research_question}
           * **Intervention:** {intervention}
+          * **Context Usage:** Use the overall context (Research Question, Intervention) to interpret the significance of the synthesis patterns you identify across the full texts as they relate to each aspect of the research code.
           
-          Source Texts:
+          # Input Data
+          **Complete Source Texts (Primary and Only Data for this Task):**
           <source_texts>
           {source_texts}
           </source_texts>
+          * You **must** base your entire deep synthesis analysis *directly and exclusively* on a fresh, holistic review of these `source_texts`. Do not refer to or expect any pre-existing summaries for this specific task.
           """
 
           messages = [SystemMessage(content=system_message_content), HumanMessage(content=human_message_content)]
@@ -986,6 +991,7 @@ case_processing_graph.add_node("synthesize_evidence_node", synthesize_evidence_n
 case_processing_graph.add_node("aggregation_synthesis_node", aggregation_synthesis_node)
 case_processing_graph.add_node("evaluate_synthesis_node", evaluate_synthesis_node)
 case_processing_graph.add_node("aggregation_synthesis_evaluation_node", aggregation_synthesis_evaluation_node)
+case_processing_graph.add_node("cross_case_analysis_node", cross_case_analysis_node)
 
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
@@ -1003,6 +1009,12 @@ case_processing_graph.add_conditional_edges(
       ["evaluate_synthesis_node"]
   )
 case_processing_graph.add_edge("evaluate_synthesis_node", "aggregation_synthesis_evaluation_node")
+case_processing_graph.add_conditional_edges(
+      "aggregation_synthesis_evaluation_node",
+      continue_to_cross_case_analysis,
+      ["cross_case_analysis_node"]
+  )
+
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
 

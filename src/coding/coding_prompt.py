@@ -419,7 +419,7 @@ Perform an **independent analysis of the complete source texts** for the Researc
 2.  **Pervasive Absence:** Based on your review of **all texts** and considering the code's definition and `{aspects}`, what expected information, discussions, or perspectives related to '{code}' are conspicuously *missing* throughout the case data? Describe the nature and potential significance of these absences. Is the absence related to particular `{aspects}`?
 3.  **Theme Saturation / Recurrence:** Which themes (especially those validated as core findings in the Adjusted Summary) are so frequently and consistently present across the **entire dataset** that they can be considered saturated? Does saturation differ across `{aspects}`?
 4.  **Evolution / Change Over Time (If Applicable):** Analyze **all relevant texts** spanning the case timeline. Is there clear evidence of evolution, development, or shifts related to '{code}' (or its specific `{aspects}`) over time? Describe these changes. If none identified, state that.
-5.  **Triangulation:** Search the **full texts** for strong examples where key findings (validated themes/claims OR newly identified points of consistency) can be substantiated by linking converging evidence from **at least two different kinds** of source texts. Describe 1-3 clear examples, noting the finding and the source types involved. Are certain `{aspects}` better triangulated than others?
+5.  **Triangulation:** Search the **full texts** for strong examples where key findings (validated themes/claims OR newly identified points of consistency) can be substantiated by linking converging evidence from **at least two different kinds** of source texts. Describe 1-10 clear examples, noting the finding and the source types involved. Are certain `{aspects}` better triangulated than others?
 6.  **Case-Wide Contradictions / Divergence:** Beyond validating specific contradictions, what are the most significant conflicting perspectives, data points, or unresolved tensions related to '{code}' emerging from the analysis of **all texts**? Do these relate to specific `{aspects}`? Describe the nature of these major tensions.
 7.  **Overall Completeness & Remaining Gaps:** Considering **all texts**, provide a concluding assessment. How comprehensive is the picture regarding '{code}' and its `{aspects}` for this case? What are the most significant remaining gaps in evidence or unanswered questions based *only* on the available data?
 
@@ -456,6 +456,85 @@ Produce a structured report using Markdown, detailing **only** the deep synthesi
 ## Overall Completeness & Remaining Gaps
 * [Concluding assessment of understanding based on all texts, highlighting key remaining questions or evidence gaps, potentially noting which aspects are less well understood.]
 """
+
+cross_case_analysis_prompt_without_summary = """
+You are an expert qualitative researcher (Ph.D. level) specializing in **deep synthesis and meta-analysis of qualitative data**. Your task is to conduct a **holistic and independent analysis of the complete set of source texts** for a specific case and research code. Your goal is to identify and describe robust, overarching patterns of evidence and phenomena related to the defined research code, focusing specifically on how these patterns manifest for **each of its defined aspects**. You will analyze the texts through the lens of several synthesis dimensions (e.g., consistency, absence, evolution) for each aspect.
+
+
+# Task: Conduct an Aspect-Centric Deep Synthesis of the Complete Source Texts
+Perform an **independent, de novo analysis of the `complete source_texts`** for the Research Code. Your primary goal is to provide a detailed synthesis **for each defined aspect** of the research code. For each aspect, you will report on the following synthesis dimensions based *solely* on your analysis of the `source_texts`.
+
+# Detailed Instructions for Aspect-Centric Deep Synthesis:
+
+For **EACH defined aspect, provide a detailed analysis covering all the synthesis dimensions listed below. Structure your report with a main heading for each aspect.
+
+**Within EACH Aspect's section, address the following synthesis dimensions:**
+
+1.  **Consistency / Convergence related to this Aspect:**
+    * Across all `source_texts` and different source *types* (e.g., interviews, reports, emails), what are the most significant points, findings, or narratives specifically related to *this aspect* that demonstrate strong agreement or consistent reiteration?
+2.  **Pervasive Absence / Silence related to this Aspect:**
+    * Considering the definition of the overall research code and *this specific aspect*, what expected information, discussions, or perspectives related to *this aspect* are conspicuously or surprisingly *missing* across the entirety of the `source_texts`? Describe the nature and potential significance of these absences for *this aspect*.
+3.  **Highly Recurrent Patterns & Narratives related to this Aspect:**
+    * Based on your review of all `source_texts`, what are the most frequently and richly detailed patterns, concepts, or narratives that emerge concerning *this aspect*? Describe these dominant recurrent elements.
+4.  **Evolution / Change Over Time related to this Aspect (If Applicable & Evident):**
+    * Based on chronological evidence within the `source_texts` (document dates, narrative timelines, relation to the intervention), is there clear evidence of evolution, development, shifts in understanding, or changes in practices specifically concerning *this aspect*? Describe these changes. If no significant evolution is identified for *this aspect*, state that.
+5.  **Triangulation of Key Insights for this Aspect:**
+    * Identify 1-2 core insights or findings specifically related to *this aspect* that can be strongly substantiated by linking converging evidence from at least two different kinds of source texts. For each example, describe the insight for *this aspect* and the different source types providing corroboration. If triangulation is weak or not possible for *this aspect*, note that.
+6.  **Contradictions / Divergence related to this Aspect:**
+    * What are the most significant unresolved tensions, conflicting perspectives, or divergent data points specifically concerning *this aspect* that emerge when considering the entire corpus of `source_texts`?
+7.  **Evidentiary Completeness & Remaining Gaps for this Aspect:**
+    * Based on your comprehensive analysis of all `source_texts`, provide a concluding assessment of the evidence base specifically for *this aspect*. How comprehensively do the available texts illuminate *this aspect*? What are the most significant remaining gaps in evidence or unanswered questions regarding *this aspect* based *only* on the available data?
+
+# Output Format: Aspect-Centric Deep Synthesis Report
+Produce a structured report using Markdown. The primary headings should be for each **aspect**. Under each aspect heading, provide sub-sections for each of the 7 synthesis dimensions as they pertain to that aspect.
+
+**Example Output Structure:**
+# Aspect-Centric Deep Synthesis Report
+
+**Case ID:** {case_name}
+**Code Analyzed:** {code}
+
+## Aspect: [Aspect_Name_1]
+    *This section provides a deep synthesis of all source texts specifically concerning [Aspect_Name_1].*
+
+### 1. Consistency / Convergence for [Aspect_Name_1]
+    * [Description of robust points of agreement across all texts/types specifically related to [Aspect_Name_1]. E.g., "Regarding [Aspect_Name_1], there is strong consistency across project reports and stakeholder interviews that X was a primary consideration..."]
+
+### 2. Pervasive Absence / Silence for [Aspect_Name_1]
+    * [Detailed description of significant information missing across all texts specifically related to [Aspect_Name_1]. E.g., "While [Aspect_Name_1] details X, there is a notable absence of discussion concerning its impact on Y group across all reviewed documents..."]
+
+### 3. Highly Recurrent Patterns & Narratives for [Aspect_Name_1]
+    * [Description of dominant, frequently detailed patterns or narratives emerging from the texts concerning [Aspect_Name_1]. E.g., "A recurrent narrative for [Aspect_Name_1] is the challenge of Z, detailed extensively in field notes..."]
+
+### 4. Evolution / Change Over Time for [Aspect_Name_1]
+    * [Description of significant shifts specifically for [Aspect_Name_1], if applicable. E.g., "The approach to [Aspect_Name_1] shows a clear shift pre- and post-intervention, with initial strategies focusing on A, later evolving to incorporate B..." Otherwise state "No significant evolution identified for [Aspect_Name_1] based on the texts.".]
+
+### 5. Triangulation of Key Insights for [Aspect_Name_1]
+    * **Insight 1 for [Aspect_Name_1]:** [Concise statement of the insight.]
+        * **Triangulating Sources:** [e.g., This is supported by internal memos outlining policy P and external evaluations describing the effects of P.]
+    * *(If applicable, Insight 2...)*
+    * *(If triangulation is weak/not possible: "Triangulation for key insights regarding [Aspect_Name_1] is limited due to reliance on a single source type for critical information.")*
+
+### 6. Contradictions / Divergence for [Aspect_Name_1]
+    * [Description of major tensions or conflicting perspectives specifically for [Aspect_Name_1]. E.g., "Regarding [Aspect_Name_1], official guidelines (Doc A) state X, but multiple interviewees (Docs B, C) report that Y was the common practice..."]
+
+### 7. Evidentiary Completeness & Remaining Gaps for [Aspect_Name_1]
+    * [Concluding assessment for [Aspect_Name_1]. E.g., "The evidence base for [Aspect_Name_1] is strong concerning initial planning, but significant gaps remain regarding its long-term maintenance and user adaptation..."]
+
+## Aspect: [Aspect_Name_2]
+    *This section provides a deep synthesis of all source texts specifically concerning [Aspect_Name_2].*
+
+### 1. Consistency / Convergence for [Aspect_Name_2]
+    * [...]
+
+### 2. Pervasive Absence / Silence for [Aspect_Name_2]
+    * [...]
+
+...(Repeat for all 7 dimensions for Aspect_Name_2)...
+
+...(Repeat for all other aspects)...
+"""
+
 
 final_synthesis_prompt = """
 You are a meticulous qualitative-methods researcher (Ph.D. level) synthesizing case study findings. Your task is to integrate insights from prior validation and deep synthesis analyses to produce a **Final Synthesized Findings Report** for a specific research code and case. This comprehensive report must structure findings clearly, provide insightful "meta-reasoning" for each, and include the **full text of all primary supporting quotes (quotes must be unaltered and shared in full)** identified from the original evidence records for direct reference and traceability.
