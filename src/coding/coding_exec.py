@@ -91,6 +91,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(TOOLS)
+llm_cross_case_analysis = llm_long_context_high_processing.bind_tools(TOOLS)
 
 
 runtime_config = {  "configurable": {
@@ -826,6 +827,11 @@ def evaluate_synthesis_node(state: EvaluateSynthesisState) -> Dict[str, Dict[str
         }
     }
 
+def aggregation_synthesis_evaluation_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates synthesis results from all codes.
+    """
+    return state
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
@@ -837,6 +843,7 @@ case_processing_graph.add_node("aggregation_node", aggregation_node)
 case_processing_graph.add_node("synthesize_evidence_node", synthesize_evidence_node)
 case_processing_graph.add_node("aggregation_synthesis_node", aggregation_synthesis_node)
 case_processing_graph.add_node("evaluate_synthesis_node", evaluate_synthesis_node)
+case_processing_graph.add_node("aggregation_synthesis_evaluation_node", aggregation_synthesis_evaluation_node)
 
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
@@ -853,8 +860,7 @@ case_processing_graph.add_conditional_edges(
       continue_to_evaluate_synthesis,
       ["evaluate_synthesis_node"]
   )
-
-
+case_processing_graph.add_edge("evaluate_synthesis_node", "aggregation_synthesis_evaluation_node")
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
 
