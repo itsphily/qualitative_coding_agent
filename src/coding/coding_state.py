@@ -197,6 +197,7 @@ class CaseProcessingState(TypedDict):
     evidence_list: Annotated[List[Evidence], append_evidence]
     synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
     revised_synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
+    cross_case_analysis_results: Annotated[Dict[str, str], merge_synthesis_results]
 
 class CodeProcessingState(TypedDict):
     file_path: str

@@ -3,7 +3,8 @@ from coding_state import (CodingState,
                           CaseProcessingState, 
                           CodeProcessingState, 
                           SynthesisState, 
-                          EvaluateSynthesisState)
+                          EvaluateSynthesisState,
+                          CrossCaseAnalysisState)
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List
@@ -23,7 +24,8 @@ from coding_prompt import (
     identify_intervention,
     identify_evidence_prompt,
     synthesize_evidence,
-    evaluate_synthesis_prompt
+    evaluate_synthesis_prompt,
+    cross_case_analysis_prompt_without_summary
 )
 from coding_utils import visualize_graph
 from coding_tools import TOOLS
@@ -91,7 +93,6 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(TOOLS)
-llm_cross_case_analysis = llm_long_context_high_processing.bind_tools(TOOLS)
 
 
 runtime_config = {  "configurable": {
@@ -100,6 +101,7 @@ runtime_config = {  "configurable": {
                     "llm_evidence_extractor": llm_evidence_extractor_with_tools,
                     "llm_synthesize_evidence": llm_short_context_high_processing,
                     "llm_evaluate_synthesis": llm_long_context_high_processing,
+                    "llm_cross_case_analysis": llm_long_context_high_processing,
                     "code_description": "unknown_code",
                     "doc_name": "unknown_doc"
                     }
@@ -832,6 +834,146 @@ def aggregation_synthesis_evaluation_node(state: CaseProcessingState) -> CasePro
     Aggregates synthesis results from all codes.
     """
     return state
+
+def continue_to_cross_case_analysis(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code with its aspects to the cross_case_analysis_node.
+    
+    Args:
+        state: Current aggregated state with all synthesis evaluation results
+        
+    Returns:
+        List of Send objects for each code with its aspects
+    """
+    case_id = state.get("case_id", "unknown")
+    directory = state.get("directory", "")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    codes = state.get("codes", {})
+    revised_synthesis_results = state.get("revised_synthesis_results", {})
+
+    if not codes or not revised_synthesis_results:
+        logging.warning(f"[continue_to_cross_case_analysis] No codes or revised synthesis results found in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description, aspects in codes.items():
+        if code_description in revised_synthesis_results:
+            cross_case_input = {
+                "case_id": case_id,
+                "code_description": code_description,
+                "directory": directory,
+                "research_question": research_question,
+                "intervention": intervention,
+                "aspects": aspects
+            }
+
+            sends.append(Send("cross_case_analysis_node", cross_case_input))
+            logging.info(f"[continue_to_cross_case_analysis] Sending code {code_description} to cross-case analysis node")
+
+    return sends
+
+def cross_case_analysis_node(state: CrossCaseAnalysisState) -> Dict[str, Dict[str, str]]:
+      """
+      Worker Node: Analyzes all texts in a directory for a specific code.
+      Creates a comprehensive cross-case analysis considering all source texts.
+      
+      Args:
+          state: Input state containing case_id, code_description, directory, etc.
+          
+      Returns:
+          Dict with cross-case analysis results to be merged into the state
+      """
+      node_name = "cross_case_analysis_node"
+      case_id = state.get("case_id", "unknown")
+      directory = state.get("directory", "")
+      code_description = state.get("code_description", "unknown")
+      research_question = state.get("research_question", "")
+      intervention = state.get("intervention", "")
+      aspects = state.get("aspects", [])
+
+      logging.info(f"[{node_name}] Performing cross-case analysis for code '{code_description[:60]}...' in case {case_id}")
+
+      # --- Aggregate all text files ---
+      source_texts = ""
+      try:
+          for root, _, files in os.walk(directory):
+              for file in files:
+                  if file.endswith('.md') or file.endswith('.txt'):
+                      file_path = os.path.join(root, file)
+                      try:
+                          with open(file_path, 'r', encoding='utf-8') as f:
+                              text_content = f.read()
+                              doc_name = os.path.basename(file_path)
+                              # Wrap the content in XML tags with document name
+                              source_texts += f"<beginning of text: {doc_name}>\n{text_content}\n<end of text: {doc_name}>\n\n"
+                      except Exception as file_e:
+                          logging.warning(f"[{node_name}] Could not read file {file_path}: {file_e}")
+                          continue
+      except Exception as e:
+          logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
+          return {"cross_case_analysis_results": {code_description: f"Error: Directory processing failed - {e}"}}
+
+      if not source_texts:
+          logging.warning(f"[{node_name}] No text files found in directory: {directory}")
+          return {"cross_case_analysis_results": {code_description: "Error: No text files found"}}
+
+      # --- Retrieve LLM from Config ---
+      try:
+          config = get_config()
+          llm_cross_case_analysis = config.get("configurable", {}).get("llm_cross_case_analysis")
+          if not llm_cross_case_analysis or not isinstance(llm_cross_case_analysis, Runnable):
+              raise ValueError("Required 'llm_cross_case_analysis' Runnable not found in config")
+      except Exception as e:
+          logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+          return {"cross_case_analysis_results": {code_description: f"Error: LLM config missing - {e}"}}
+
+      # --- Prepare LLM Input ---
+      try:
+          # Format the aspects for the prompt
+          aspects_text = "\n".join([f"- {aspect}" for aspect in aspects])
+
+          system_message_content = cross_case_analysis_prompt_without_summary
+          human_message_content = f"""
+          Please analyze this case:
+
+          # Context
+          * **Case Name:** {case_id}
+          * **Research Code (Name and Description):** {code_description}
+          * **Defined Aspects of the research code:** 
+          {aspects_text}
+          * **Research Question:** {research_question}
+          * **Intervention:** {intervention}
+          
+          Source Texts:
+          <source_texts>
+          {source_texts}
+          </source_texts>
+          """
+
+          messages = [SystemMessage(content=system_message_content), HumanMessage(content=human_message_content)]
+          logging.debug(f"[{node_name}] Prepared messages for LLM for case {case_id} and code {code_description[:60]}")
+      except Exception as e:
+          error_msg = str(e)
+          logging.error(f"[{node_name}] Error formatting messages: {error_msg}")
+          return {"cross_case_analysis_results": {code_description: f"Error: Message formatting failed - {error_msg}"}}
+
+      # --- Invoke LLM and Process Output ---
+      cross_case_result = f"Error: LLM call failed for code {code_description}"
+      try:
+          result = llm_cross_case_analysis.invoke(messages)
+          cross_case_result = result.content.strip()
+          logging.info(f"[{node_name}] Successfully completed cross-case analysis for code {code_description[:60]} in case {case_id}")
+      except Exception as e:
+          logging.error(f"[{node_name}] LLM call failed: {e}", exc_info=True)
+          cross_case_result = f"Error: LLM call failed - {e}"
+
+      # Return results to be merged into state
+      return {
+          "cross_case_analysis_results": {
+              code_description: cross_case_result
+          }
+      }
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
