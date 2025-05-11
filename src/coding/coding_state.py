@@ -203,4 +203,12 @@ class SynthesisState(TypedDict):
     code_description: str
     research_question: str
     intervention: str
-    evidence_subset: List[Dict[str, Any]] 
+    evidence_subset: List[Dict[str, Any]]
+
+class EvaluateSynthesisState(TypedDict):
+    case_id: str
+    directory: str
+    code_description: str
+    research_question: str
+    intervention: str
+    synthesis_result: str
