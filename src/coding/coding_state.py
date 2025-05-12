@@ -175,6 +175,37 @@ def merge_synthesis_results(
     current.update(new)
     return current
 
+def merge_final_insights_from_subgraph(
+    current: Optional[Dict[str, List[Any]]], 
+    new: Optional[List[Any]]
+) -> Dict[str, List[Any]]:
+    """
+    Merges final insights from subgraph into the main state's final_insights_list.
+    
+    Args:
+        current: Current final_insights_list in main state (dict keyed by code)
+        new: New final insights list from subgraph (flat list)
+    
+    Returns:
+        Updated final_insights_list with insights grouped by code_description
+    """
+    if current is None:
+        current = {}
+    if not new:
+        return current
+
+    # Group new insights by code_description
+    for item in new:
+        if not isinstance(item, dict):
+            continue
+
+        code_desc = item.get("code_description", "unknown")
+        if code_desc not in current:
+            current[code_desc] = []
+        current[code_desc].append(item)
+
+    return current
+
 class Evidence(TypedDict):
     quote: str
     reasoning: str
