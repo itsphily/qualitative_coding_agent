@@ -277,3 +277,11 @@ class CrossCaseAnalysisState(TypedDict):
     aspects: List[str]
     cross_case_analysis_result: str
 
+class FinalInsightState(TypedDict):
+      case_id: str
+      code_description: str
+      research_question: str
+      intervention: str
+      revised_synthesis_result: str
+      cross_case_analysis_result: str
+      final_insights_list: Annotated[List[FinalInsight], append_evidence]
