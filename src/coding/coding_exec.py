@@ -508,7 +508,7 @@ def agent_node(state: CodeProcessingState) -> Dict:
         return []
     # Execute the tools and collect Commands
     commands = []
-    tools_by_name = {tool.name: tool for tool in TOOLS}
+    tools_by_name = {tool.name: tool for tool in QUOTE_REASONING_TOOL}
 
     for tool_call in tool_calls:
         try:
@@ -982,6 +982,12 @@ def cross_case_analysis_node(state: CrossCaseAnalysisState) -> Dict[str, Dict[st
           }
       }
 
+def aggregation_cross_case_analysis_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates cross-case analysis results from all codes.
+    """
+    return state
+
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
 
@@ -994,7 +1000,7 @@ case_processing_graph.add_node("aggregation_synthesis_node", aggregation_synthes
 case_processing_graph.add_node("evaluate_synthesis_node", evaluate_synthesis_node)
 case_processing_graph.add_node("aggregation_synthesis_evaluation_node", aggregation_synthesis_evaluation_node)
 case_processing_graph.add_node("cross_case_analysis_node", cross_case_analysis_node)
-
+case_processing_graph.add_node("aggregation_cross_case_analysis_node", aggregation_cross_case_analysis_node)
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -1016,6 +1022,7 @@ case_processing_graph.add_conditional_edges(
       continue_to_cross_case_analysis,
       ["cross_case_analysis_node"]
   )
+case_processing_graph.add_edge("cross_case_analysis_node", "aggregation_cross_case_analysis_node")
 
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()

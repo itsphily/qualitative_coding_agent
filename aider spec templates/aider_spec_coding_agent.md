@@ -23,6 +23,15 @@
 - The directory where the files coding_prompt.py, coding_exec.py, coding_utils.py, coding_state.py are located is /Users/phili/Library/CloudStorage/Dropbox/Phil/LeoMarketing/Marketing/Coding agent/src/coding
 - When the function uses an input schema such as AgentPerCodeInputState, or CodingAgentInputState always map the input schema to the overall state (in this case respectively AgentPerCodeState, or CodingAgentState). Use the convention shown in the multiple input and output schema example below.
 - When creating a function for the graph, follow the convention shown in the example (node function example below).
+- Here are mandatory urls you need to consult before starting to code this project:
+    - https://langchain-ai.github.io/langgraph/how-tos/
+    - https://langchain-ai.github.io/langgraph/concepts/#langgraph-platform
+    - https://langchain-ai.github.io/langgraph/how-tos/map-reduce/
+    - https://langchain-ai.github.io/langgraph/how-tos/branching/
+    - https://langchain-ai.github.io/langgraph/how-tos/state-reducers/
+    - https://langchain-ai.github.io/langgraph/how-tos/state-model/
+    - https://langchain-ai.github.io/langgraph/how-tos/input_output_schema/
+    - https://langchain-ai.github.io/langgraph/how-tos/subgraph/
 
 <send API example>
 def continue_to_jokes(state: OverallState):
@@ -91,10 +100,21 @@ def generate_joke(state: JokeState):
 ## Context
 
 ### Beginning context
-- [List of files that exist at start - what files exist at start?]
+- requirements.txt
+- .env (readonly)
+- coding_prompt.py (readonly)
+- coding_exec.py
+- coding_utils.py
+- coding_state.py
 
 ### Ending context  
-- [List of files that will exist at end - what files will exist at end?]
+- requirements.txt
+- .env (readonly)
+- coding_prompt.py (readonly)
+- coding_exec.py
+- coding_utils.py
+- coding_state.py
+- coding_reducer.py
 
 ## Low-Level Tasks
 > Ordered from start to finish
