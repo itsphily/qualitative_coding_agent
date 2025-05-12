@@ -69,4 +69,4 @@ def log_quote_reasoning(
     )
 
 # Define the evidence extraction tools
-TOOLS: List[Callable[..., Any]] = [log_quote_reasoning]
+QUOTE_REASONING_TOOL: List[Callable[..., Any]] = [log_quote_reasoning]

@@ -28,7 +28,7 @@ from coding_prompt import (
     cross_case_analysis_prompt_without_summary
 )
 from coding_utils import visualize_graph
-from coding_tools import TOOLS
+from coding_tools import QUOTE_REASONING_TOOL
 from langgraph.types import Command
 import json
 
@@ -92,7 +92,8 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
 # Bind the tool to the LLM upfront
-llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(TOOLS)
+llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(QUOTE_REASONING_TOOL)
+
 
 
 runtime_config = {  "configurable": {
@@ -102,6 +103,7 @@ runtime_config = {  "configurable": {
                     "llm_synthesize_evidence": llm_short_context_high_processing,
                     "llm_evaluate_synthesis": llm_long_context_high_processing,
                     "llm_cross_case_analysis": llm_long_context_high_processing,
+                    "llm_final_insights": llm_long_context_high_processing,
                     "code_description": "unknown_code",
                     "doc_name": "unknown_doc"
                     }
