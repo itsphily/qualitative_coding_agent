@@ -219,6 +219,12 @@ class CaseInfo(TypedDict):
     description: Optional[str]
     intervention: Optional[str]
 
+class FinalInsight(TypedDict):
+    code_description: str
+    insight_label: str
+    insight_explanation: str
+    supporting_evidence_summary: str
+
 class CaseProcessingState(TypedDict):
     case_id: str
     directory: str
@@ -229,6 +235,7 @@ class CaseProcessingState(TypedDict):
     synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
     revised_synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
     cross_case_analysis_results: Annotated[Dict[str, str], merge_synthesis_results]
+    final_insights_list: Annotated[List[FinalInsight], append_evidence]
 
 class CodeProcessingState(TypedDict):
     file_path: str
@@ -270,8 +277,3 @@ class CrossCaseAnalysisState(TypedDict):
     aspects: List[str]
     cross_case_analysis_result: str
 
-class FinalInsight(TypedDict):
-    code_description: str
-    insight_label: str
-    insight_explanation: str
-    supporting_evidence_summary: str
