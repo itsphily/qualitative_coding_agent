@@ -283,6 +283,7 @@ class FinalInsightState(TypedDict):
       code_description: str
       research_question: str
       intervention: str
+      aspects: List[str]
       revised_synthesis_result: str
       cross_case_analysis_result: str
       final_insights_list: Annotated[List[FinalInsight], append_evidence]

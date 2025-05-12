@@ -1013,7 +1013,7 @@ def continue_to_final_insight(state: CaseProcessingState) -> List[Send]:
         return []
 
     sends = []
-    for code_description in codes.items():
+    for code_description, aspects in codes.items():
         # Only proceed if we have both revised synthesis and cross-case analysis for this code
         if code_description in revised_synthesis_results and code_description in cross_case_analysis_results:
             final_insight_input = {
@@ -1021,9 +1021,10 @@ def continue_to_final_insight(state: CaseProcessingState) -> List[Send]:
                 "code_description": code_description,
                 "research_question": research_question,
                 "intervention": intervention,
+                "aspects": aspects,
                 "revised_synthesis_result": revised_synthesis_results[code_description],
                 "cross_case_analysis_result": cross_case_analysis_results[code_description],
-                "final_insights_list": [] 
+                "final_insights_list": []
             }
 
             sends.append(Send("generate_final_insight_node", final_insight_input))
@@ -1045,6 +1046,7 @@ def generate_final_insight_node(state: FinalInsightState) -> Dict:
       node_name = "generate_final_insight_node"
       case_id = state.get("case_id", "unknown")
       code_description = state.get("code_description", "unknown")
+      aspects = state.get("aspects", [])
       research_question = state.get("research_question", "")
       intervention = state.get("intervention", "")
       revised_synthesis_result = state.get("revised_synthesis_result", "")
@@ -1068,7 +1070,7 @@ def generate_final_insight_node(state: FinalInsightState) -> Dict:
       system_content = final_insights_prompt.format(
           case_name=case_id,
           code=code_description,
-          aspects=state.get("aspects", []),  # We need to pass aspects from the codes dict
+          aspects=aspects,
           research_question=research_question,
           intervention=intervention,
           adjusted_summary_text=revised_synthesis_result,
@@ -1175,7 +1177,7 @@ case_processing_graph.add_conditional_edges(
       ["cross_case_analysis_node"]
   )
 case_processing_graph.add_edge("cross_case_analysis_node", "aggregation_cross_case_analysis_node")
-case_processing_graph.add_edge("aggregation_cross_case_analysis_node", continue_to_final_insight, ["generate_final_insight_node"])
+case_processing_graph.add_conditional_edges("aggregation_cross_case_analysis_node", continue_to_final_insight, ["generate_final_insight_node"])
 case_processing_graph.add_edge("generate_final_insight_node", END)
 
 # Compile the subgraph
