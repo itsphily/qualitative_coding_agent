@@ -252,6 +252,7 @@ class CodingState(TypedDict):
     codes: Annotated[Dict[str, Optional[List[str]]], merge_aspects]
     cases_info: Annotated[Dict[str, CaseInfo], merge_case_info]
     evidence_list: Annotated[Dict[str, List[Evidence]], merge_evidence_from_subgraph]
+    final_insights: Annotated[Dict[str, List[FinalInsight]], merge_final_insights_from_subgraph]
 
 class SynthesisState(TypedDict):
     case_id: str

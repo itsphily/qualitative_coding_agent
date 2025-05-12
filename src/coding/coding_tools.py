@@ -6,7 +6,7 @@ from langchain_core.tools.base import InjectedToolCallId
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langgraph.types import Command
-from coding_state import Evidence
+from coding_state import Evidence, FinalInsight
 from langgraph.prebuilt import InjectedState
 
 
@@ -68,5 +68,55 @@ def log_quote_reasoning(
         }
     )
 
+@tool
+def log_insight(
+    insight_label: str,
+    insight_explanation: str,
+    supporting_evidence_summary: str,
+    state: Annotated[dict, InjectedState],
+    tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
+    """
+    Tool for logging final insights after analyzing synthesis results.
+    
+    Args:
+        insight_label: Short, clear title for the Final Insight
+        insight_explanation: Clear and detailed explanation of the insight
+        supporting_evidence_summary: Summary of evidence supporting this insight
+        state: Injected state containing code_description
+        tool_call_id: Injected tool call ID
+    """
+    # Input validation
+    if not insight_label or not isinstance(insight_label, str):
+        raise ToolException("Insight label must be a non-empty string")
+    if not insight_explanation or not isinstance(insight_explanation, str):
+        raise ToolException("Insight explanation must be a non-empty string")
+    if not supporting_evidence_summary or not isinstance(supporting_evidence_summary, str):
+        raise ToolException("Supporting evidence summary must be a non-empty string")
+
+    # Get the current state dictionary
+    code_description = state["code_description"]
+
+    # Create final insight item
+    new_final_insight = cast(FinalInsight, {
+        "code_description": code_description,
+        "insight_label": insight_label,
+        "insight_explanation": insight_explanation,
+        "supporting_evidence_summary": supporting_evidence_summary
+    })
+
+    # Create tool message - REQUIRED for Command objects from tools
+    tool_message = ToolMessage(
+        content=f"Successfully logged insight '{insight_label}' for code '{code_description[:30]}...'",
+        tool_call_id=tool_call_id
+    )
+
+    # Return Command object with final_insights_list update
+    return Command(
+        update={
+            "final_insights_list": [new_final_insight],
+        }
+    )
+
 # Define the evidence extraction tools
 QUOTE_REASONING_TOOL: List[Callable[..., Any]] = [log_quote_reasoning]
+INSIGHT_TOOL: List[Callable[..., Any]] = [log_insight]

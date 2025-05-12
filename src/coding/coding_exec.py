@@ -4,7 +4,8 @@ from coding_state import (CodingState,
                           CodeProcessingState, 
                           SynthesisState, 
                           EvaluateSynthesisState,
-                          CrossCaseAnalysisState)
+                          CrossCaseAnalysisState, 
+                          FinalInsightState)
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List
@@ -25,10 +26,11 @@ from coding_prompt import (
     identify_evidence_prompt,
     synthesize_evidence,
     evaluate_synthesis_prompt,
-    cross_case_analysis_prompt_without_summary
+    cross_case_analysis_prompt_without_summary, 
+    final_insights_prompt
 )
 from coding_utils import visualize_graph
-from coding_tools import QUOTE_REASONING_TOOL
+from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL
 from langgraph.types import Command
 import json
 
@@ -93,7 +95,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(QUOTE_REASONING_TOOL)
-
+llm_insight_extractor_with_tools = llm_long_context_tool_use.bind_tools(INSIGHT_TOOL)
 
 
 runtime_config = {  "configurable": {
@@ -103,7 +105,7 @@ runtime_config = {  "configurable": {
                     "llm_synthesize_evidence": llm_short_context_high_processing,
                     "llm_evaluate_synthesis": llm_long_context_high_processing,
                     "llm_cross_case_analysis": llm_long_context_high_processing,
-                    "llm_final_insights": llm_long_context_high_processing,
+                    "llm_final_insights": llm_insight_extractor_with_tools,
                     "code_description": "unknown_code",
                     "doc_name": "unknown_doc"
                     }
@@ -988,6 +990,154 @@ def aggregation_cross_case_analysis_node(state: CaseProcessingState) -> CaseProc
     """
     return state
 
+def continue_to_final_insight(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code with its revised synthesis and cross-case analysis
+    to the generate_final_insight node.
+    
+    Args:
+        state: Current aggregated state with synthesis and cross-case analysis results
+        
+    Returns:
+        List of Send objects for each code with its results
+    """
+    case_id = state.get("case_id", "unknown")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    codes = state.get("codes", {})
+    revised_synthesis_results = state.get("revised_synthesis_results", {})
+    cross_case_analysis_results = state.get("cross_case_analysis_results", {})
+
+    if not codes or not revised_synthesis_results or not cross_case_analysis_results:
+        logging.warning(f"[continue_to_final_insight] Missing codes, synthesis, or cross-case analysis in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description in codes.items():
+        # Only proceed if we have both revised synthesis and cross-case analysis for this code
+        if code_description in revised_synthesis_results and code_description in cross_case_analysis_results:
+            final_insight_input = {
+                "case_id": case_id,
+                "code_description": code_description,
+                "research_question": research_question,
+                "intervention": intervention,
+                "revised_synthesis_result": revised_synthesis_results[code_description],
+                "cross_case_analysis_result": cross_case_analysis_results[code_description],
+                "final_insights_list": [] 
+            }
+
+            sends.append(Send("generate_final_insight_node", final_insight_input))
+            logging.info(f"[continue_to_final_insight] Sending code {code_description} to final insight generation")
+
+    return sends
+
+def generate_final_insight_node(state: FinalInsightState) -> Dict:
+      """
+      Worker Node: Generates final insights by analyzing revised synthesis and cross-case analysis.
+      Uses an LLM that can make tool calls to log insights.
+      
+      Args:
+          state: Input state containing case_id, code_description, synthesis results
+          
+      Returns:
+          Updated state with insights added via tool calls
+      """
+      node_name = "generate_final_insight_node"
+      case_id = state.get("case_id", "unknown")
+      code_description = state.get("code_description", "unknown")
+      research_question = state.get("research_question", "")
+      intervention = state.get("intervention", "")
+      revised_synthesis_result = state.get("revised_synthesis_result", "")
+      cross_case_analysis_result = state.get("cross_case_analysis_result", "")
+
+      logging.info(f"[{node_name}] Generating final insights for code '{code_description[:60]}...' in case {case_id}")
+
+      # Validate inputs
+      if not revised_synthesis_result or not cross_case_analysis_result:
+          logging.warning(f"[{node_name}] Missing synthesis or cross-case analysis for code {code_description} in case {case_id}")
+          return {"final_insights_list": []}
+
+      # Get LLM with tool binding from config
+      config = get_config()
+      llm_with_tools = config.get("configurable", {}).get("llm_final_insights")
+      if not llm_with_tools:
+          logging.error(f"[{node_name}] LLM for final insights not found in config")
+          return {"final_insights_list": []}
+
+      # Format the prompt
+      system_content = final_insights_prompt.format(
+          case_name=case_id,
+          code=code_description,
+          aspects=state.get("aspects", []),  # We need to pass aspects from the codes dict
+          research_question=research_question,
+          intervention=intervention,
+          adjusted_summary_text=revised_synthesis_result,
+          deep_synthesis_report_text=cross_case_analysis_result
+      )
+
+      system_msg = SystemMessage(content=system_content)
+      human_msg = HumanMessage(content="Please analyze these reports and generate final insights.")
+
+      # Set up the state object for the tool to access
+      code_state = {
+          "code_description": code_description
+      }
+
+      # Execute the LLM with tool
+      logging.info(f"[{node_name}] Preparing to execute with code_description='{code_description}'")
+      ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": code_state}})
+      logging.info(f"[{node_name}] Completed generating insights for code {code_description}, tool should have logged insights")
+
+      # Process tool calls
+      tool_calls = []
+      if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+          tool_calls = ai_message.tool_calls
+          logging.info(f"[{node_name}] Found {len(tool_calls)} tool calls in LLM response")
+      else:
+          logging.warning(f"[{node_name}] No tool calls found in LLM response")
+          return {"final_insights_list": []}
+
+      # Execute the tools and collect Commands
+      commands = []
+      tools_by_name = {tool.name: tool for tool in INSIGHT_TOOL}
+
+      for tool_call in tool_calls:
+          try:
+              # Get tool by name
+              tool_name = tool_call.get("name", "")
+              if tool_name not in tools_by_name:
+                  logging.error(f"[{node_name}] Unknown tool: {tool_name}")
+                  continue
+
+              # Execute tool with arguments from tool call
+              tool = tools_by_name[tool_name]
+              args = tool_call.get("args", {})
+              args["tool_call_id"] = tool_call.get("id", "unknown")
+
+              args["state"] = {
+                  "code_description": code_description
+              }
+
+              logging.info(f"[{node_name}] Executing tool {tool_name} with args: {args}")
+
+              # Execute tool and collect command
+              command = tool.invoke(args)
+              if isinstance(command, Command):
+                  commands.append(command)
+                  logging.info(f"[{node_name}] Added Command from tool {tool_name}")
+          except Exception as e:
+              logging.error(f"[{node_name}] Error executing tool {tool_call.get('name', 'unknown')}: {e}")
+
+      logging.info(f"[{node_name}] Returning {len(commands)} Commands to update state")
+      return commands
+
+def aggregation_final_insights_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates final insights from all codes.
+    """
+    return state
+
+
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
 
@@ -1001,6 +1151,8 @@ case_processing_graph.add_node("evaluate_synthesis_node", evaluate_synthesis_nod
 case_processing_graph.add_node("aggregation_synthesis_evaluation_node", aggregation_synthesis_evaluation_node)
 case_processing_graph.add_node("cross_case_analysis_node", cross_case_analysis_node)
 case_processing_graph.add_node("aggregation_cross_case_analysis_node", aggregation_cross_case_analysis_node)
+case_processing_graph.add_node("generate_final_insight_node", generate_final_insight_node)
+
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -1023,6 +1175,8 @@ case_processing_graph.add_conditional_edges(
       ["cross_case_analysis_node"]
   )
 case_processing_graph.add_edge("cross_case_analysis_node", "aggregation_cross_case_analysis_node")
+case_processing_graph.add_edge("aggregation_cross_case_analysis_node", continue_to_final_insight, ["generate_final_insight_node"])
+case_processing_graph.add_edge("generate_final_insight_node", END)
 
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
@@ -1043,7 +1197,6 @@ coding_graph.add_node("add_test", add_test)
 coding_graph.add_node("intervention_definition_node", intervention_definition_node)
 coding_graph.add_node("case_aggregation_node", case_aggregation_node)
 coding_graph.add_node("case_processing", case_processing_subgraph)
-
 
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
