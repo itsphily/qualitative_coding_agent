@@ -238,3 +238,9 @@ class CrossCaseAnalysisState(TypedDict):
     intervention: str
     aspects: List[str]
     cross_case_analysis_result: str
+
+class FinalInsight(TypedDict):
+    code_description: str
+    insight_label: str
+    insight_explanation: str
+    supporting_evidence_summary: str
