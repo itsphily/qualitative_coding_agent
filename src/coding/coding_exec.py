@@ -105,8 +105,8 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
 # Bind the tool to the LLM upfront
-llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(QUOTE_REASONING_TOOL)
-llm_insight_extractor_with_tools = llm_long_context_tool_use.bind_tools(INSIGHT_TOOL)
+llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
+llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
 
 
 runtime_config = {  "configurable": {
