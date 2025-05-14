@@ -62,12 +62,20 @@ class KeyAspectsOutput(BaseModel):
     key_aspects: List[str] = Field(..., description="List of concise key aspects identified from the code definition")
 
 ## OpenAI LLM initialization
-llm_long_context_tool_use = ChatOpenAI(model="o4-mini",
-                                       timeout=None,
-                                       max_retries=4,
-                                       reasoning_effort="high"
-)
 
+
+reasoning_cfg = {
+    "effort": "high",  
+    "summary": "auto",
+}
+
+llm_long_context_tool_use = ChatOpenAI(
+    model="o4-mini",
+    use_responses_api=True, 
+    model_kwargs={"reasoning": reasoning_cfg},
+    timeout=None,
+    max_retries=4
+)
 
 llm_short_context_high_processing = ChatOpenAI(model="o3",
                                                timeout=None,
@@ -97,7 +105,7 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
 # Bind the tool to the LLM upfront
-llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
+llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_tool_use.bind_tools(INSIGHT_TOOL)
 
 
@@ -1216,6 +1224,9 @@ coding_graph = coding_graph.compile()
 
 
 if __name__ == "__main__":
+
+
+
     parsed_args = parse_arguments()
 
     # --- Initialize the State ---
