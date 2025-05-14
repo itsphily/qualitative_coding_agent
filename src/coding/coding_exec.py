@@ -204,6 +204,12 @@ def aspect_definition_node(code_description: str)-> Dict[str, Any]:
         }
     }
 
+def aspect_aggregation_node(state: CodingState) -> CodingState:
+    """
+    Aggregates aspects from all codes into a single list.
+    """
+    return state
+
 def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any]]:
     """
     Worker Node: Identifies the intervention from a case's directory of texts.
@@ -1165,7 +1171,7 @@ case_processing_graph.add_node("aggregation_synthesis_evaluation_node", aggregat
 case_processing_graph.add_node("cross_case_analysis_node", cross_case_analysis_node)
 case_processing_graph.add_node("aggregation_cross_case_analysis_node", aggregation_cross_case_analysis_node)
 case_processing_graph.add_node("generate_final_insight_node", generate_final_insight_node)
-
+case_processing_graph.add_node("aggregation_final_insights_node", aggregation_final_insights_node)
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -1189,7 +1195,8 @@ case_processing_graph.add_conditional_edges(
   )
 case_processing_graph.add_edge("cross_case_analysis_node", "aggregation_cross_case_analysis_node")
 case_processing_graph.add_conditional_edges("aggregation_cross_case_analysis_node", continue_to_final_insight, ["generate_final_insight_node"])
-case_processing_graph.add_edge("generate_final_insight_node", END)
+case_processing_graph.add_edge("generate_final_insight_node", "aggregation_final_insights_node")
+case_processing_graph.add_edge("aggregation_final_insights_node", END)
 
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
@@ -1197,16 +1204,10 @@ case_processing_subgraph = case_processing_graph.compile()
 # --- Create the Main Graph ---
 coding_graph = StateGraph(CodingState)
 
-def add_test(state: CodingState) -> CodingState:
-    """
-    Test node that returns the state unchanged.
-    """
-    return state
-
 # --- Add Nodes ---
 coding_graph.add_node("start", start_llm)
 coding_graph.add_node("aspect_definition_node", aspect_definition_node)
-coding_graph.add_node("add_test", add_test)
+coding_graph.add_node("aspect_aggregation_node", aspect_aggregation_node)
 coding_graph.add_node("intervention_definition_node", intervention_definition_node)
 coding_graph.add_node("case_aggregation_node", case_aggregation_node)
 coding_graph.add_node("case_processing", case_processing_subgraph)
@@ -1214,8 +1215,8 @@ coding_graph.add_node("case_processing", case_processing_subgraph)
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
 coding_graph.add_conditional_edges("start", continue_to_aspect_definition, ['aspect_definition_node'])
-coding_graph.add_edge("aspect_definition_node", "add_test")
-coding_graph.add_conditional_edges("add_test", continue_to_intervention_definition, ['intervention_definition_node'])
+coding_graph.add_edge("aspect_definition_node", "aspect_aggregation_node")
+coding_graph.add_conditional_edges("aspect_aggregation_node", continue_to_intervention_definition, ['intervention_definition_node'])
 coding_graph.add_edge("intervention_definition_node", "case_aggregation_node")
 coding_graph.add_conditional_edges("case_aggregation_node", continue_to_case_processing, ['case_processing'])
 coding_graph.add_edge("case_processing", END)
@@ -1224,7 +1225,6 @@ coding_graph = coding_graph.compile()
 
 
 if __name__ == "__main__":
-
 
 
     parsed_args = parse_arguments()
