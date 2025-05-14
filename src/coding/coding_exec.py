@@ -76,11 +76,12 @@ llm_short_context_high_processing = ChatOpenAI(model="o3",
 )
 
 ## Google LLM initialization
-llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro-exp-03-25",
+llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro-preview-05-06",
                                                            temperature=0,
                                                            max_tokens=None,
                                                            timeout=None,
                                                            max_retries=4,
+                                                           google_api_key=os.getenv("GOOGLE_API_KEY"),
 )
 
 ## Google LLM initialization

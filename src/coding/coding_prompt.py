@@ -142,7 +142,7 @@ Analyze & Reason: For each quote, determine why it's relevant evidence, which as
 Log: Call the log_quote_reasoning tool with the quote, reasoning, list of aspects, and chronology for each piece of evidence found. Continue this process until the entire text has been analyzed.
 
 # 7. Required Output
-Your response should consist only of calls to the log_quote_reasoning tool. Do not provide any introductory text, concluding summary, or any other output besides the tool calls.
+If you identify multiple pieces of evidence (or insights), your response must be a list of tool calls, one for each distinct piece of evidence (or insight) found. Provide all corresponding log_quote_reasoning (or log_insight) tool calls in a single response, formatted as a list of tool_call objects.
 
 # 8. Prohibited Actions
 Do not paraphrase or alter quotes. Extract them verbatim.
