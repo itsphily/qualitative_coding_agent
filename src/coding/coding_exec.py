@@ -81,7 +81,7 @@ llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro
                                                            max_tokens=None,
                                                            timeout=None,
                                                            max_retries=4,
-                                                           google_api_key=os.getenv("GOOGLE_API_KEY"),
+                                                           google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
 ## Google LLM initialization
@@ -90,12 +90,14 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
                                            max_tokens=None,
                                            timeout=None,
                                            max_retries=4,
+                                           google_api_key=os.getenv("GOOGLE_API_KEY")
+
 )
 
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
 # Bind the tool to the LLM upfront
-llm_evidence_extractor_with_tools = llm_long_context_tool_use.bind_tools(QUOTE_REASONING_TOOL)
+llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_tool_use.bind_tools(INSIGHT_TOOL)
 
 
