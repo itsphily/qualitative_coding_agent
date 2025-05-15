@@ -236,6 +236,59 @@ def append_final_evidence(
 
     return current + items_to_add
 
+def associate_evidence_with_insight(
+      current_insights: Optional[List[Any]],
+      new_evidence: Optional[List[Any]]
+  ) -> List[Any]:
+      """
+      Associates evidence with its corresponding insight.
+      Finds the insight in the insights list that matches the evidence's insight_label,
+      and adds the evidence to that insight's final_evidence_list.
+      
+      Args:
+          current_insights: Current list of insights
+          new_evidence: New list of evidence to associate with insights
+          
+      Returns:
+          Updated list of insights with evidence added to the appropriate insights
+      """
+      if current_insights is None:
+          current_insights = []
+      if new_evidence is None or not new_evidence:
+          return current_insights
+
+      # Create a copy of the insights list to modify
+      updated_insights = []
+      for insight in current_insights:
+          # Create a copy of the insight with an initialized final_evidence_list if not present
+          insight_copy = dict(insight)
+          if "final_evidence_list" not in insight_copy:
+              insight_copy["final_evidence_list"] = []
+          updated_insights.append(insight_copy)
+
+      # For each evidence item, find the matching insight and add the evidence to its list
+      for evidence in new_evidence:
+          if not isinstance(evidence, dict) or "insight_label" not in evidence:
+              continue
+
+          evidence_label = evidence.get("insight_label", "")
+          found = False
+
+          for insight in updated_insights:
+              if insight.get("insight_label", "") == evidence_label:
+                  # Add the evidence to this insight's final_evidence_list
+                  if "final_evidence_list" not in insight:
+                      insight["final_evidence_list"] = []
+                  insight["final_evidence_list"].append(evidence)
+                  found = True
+                  logging.info(f"[associate_evidence_with_insight] Associated evidence with insight '{evidence_label}'")
+                  break
+
+          if not found:
+              logging.warning(f"[associate_evidence_with_insight] Could not find matching insight for evidence with label '{evidence_label}'")
+
+      return updated_insights
+
 class Evidence(TypedDict):
     quote: str
     reasoning: str

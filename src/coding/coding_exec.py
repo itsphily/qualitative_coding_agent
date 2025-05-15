@@ -1179,8 +1179,7 @@ def continue_to_find_relevant_evidence(state: CaseProcessingState) -> List[Send]
         return []
 
     sends = []
-    logging.info(f"[continue_to_find_relevant_evidence] Processing {len(final_insights_list)} final insights for evidence
-collection")
+    logging.info(f"[continue_to_find_relevant_evidence] Processing {len(final_insights_list)} final insights for evidence collection")
 
     for insight in final_insights_list:
         find_evidence_input = {
@@ -1193,8 +1192,7 @@ collection")
         }
 
         sends.append(Send("find_relevant_evidence_node", find_evidence_input))
-        logging.info(f"[continue_to_find_relevant_evidence] Sending insight '{insight.get('insight_label', '')}' for evidence
-collection")
+        logging.info(f"[continue_to_find_relevant_evidence] Sending insight '{insight.get('insight_label', '')}' for evidence collection")
 
     return sends
 
