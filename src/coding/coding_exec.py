@@ -1321,6 +1321,11 @@ def find_relevant_evidence_node(state: FindEvidenceState) -> Dict:
       logging.info(f"[{node_name}] Returning {len(commands)} Commands to update state")
       return commands
 
+def aggregation_final_evidence_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates final evidence from all codes.
+    """
+    return state
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
@@ -1337,6 +1342,9 @@ case_processing_graph.add_node("cross_case_analysis_node", cross_case_analysis_n
 case_processing_graph.add_node("aggregation_cross_case_analysis_node", aggregation_cross_case_analysis_node)
 case_processing_graph.add_node("generate_final_insight_node", generate_final_insight_node)
 case_processing_graph.add_node("aggregation_final_insights_node", aggregation_final_insights_node)
+case_processing_graph.add_node("find_relevant_evidence_node", find_relevant_evidence_node)
+case_processing_graph.add_node("aggregation_final_evidence_node", aggregation_final_evidence_node)
+
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
 case_processing_graph.add_conditional_edges(
@@ -1361,7 +1369,9 @@ case_processing_graph.add_conditional_edges(
 case_processing_graph.add_edge("cross_case_analysis_node", "aggregation_cross_case_analysis_node")
 case_processing_graph.add_conditional_edges("aggregation_cross_case_analysis_node", continue_to_final_insight, ["generate_final_insight_node"])
 case_processing_graph.add_edge("generate_final_insight_node", "aggregation_final_insights_node")
-case_processing_graph.add_edge("aggregation_final_insights_node", END)
+case_processing_graph.add_conditional_edges("aggregation_final_insights_node", continue_to_find_relevant_evidence, ["find_relevant_evidence_node"])
+case_processing_graph.add_edge("find_relevant_evidence_node", "aggregation_final_evidence_node")
+case_processing_graph.add_edge("aggregation_final_evidence_node", END)
 
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()
