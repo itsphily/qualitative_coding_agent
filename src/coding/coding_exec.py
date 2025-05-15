@@ -32,7 +32,7 @@ from coding_prompt import (
     find_evidence_prompt
 )
 from coding_utils import visualize_graph
-from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL, FINAL_EVIDENCE_TOOL
+from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL, EVIDENCE_RELATIONSHIP_TOOL
 from langgraph.types import Command
 import json
 
@@ -109,7 +109,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
-llm_evidence_finder_with_tools = llm_long_context_high_processing.bind_tools(FINAL_EVIDENCE_TOOL)
+llm_evidence_finder_with_tools = llm_long_context_high_processing.bind_tools(EVIDENCE_RELATIONSHIP_TOOL)
 
 
 runtime_config = {  "configurable": {
