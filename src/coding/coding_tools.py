@@ -6,7 +6,7 @@ from langchain_core.tools.base import InjectedToolCallId
 from langchain_core.messages import ToolMessage
 from langchain_core.tools import tool
 from langgraph.types import Command
-from coding_state import Evidence, FinalInsight
+from coding_state import Evidence, FinalInsight, FinalEvidence
 from langgraph.prebuilt import InjectedState
 
 
@@ -55,7 +55,7 @@ def log_quote_reasoning(
         "doc_name": doc_name
     })
 
-    # Create tool message - REQUIRED for Command objects from tools
+    # Create tool message
     tool_message = ToolMessage(
         content=f"Successfully logged evidence from document '{doc_name}': '{quote[:50]}...'",
         tool_call_id=tool_call_id
@@ -104,7 +104,7 @@ def log_insight(
         "supporting_evidence_summary": supporting_evidence_summary
     })
 
-    # Create tool message - REQUIRED for Command objects from tools
+    # Create tool message
     tool_message = ToolMessage(
         content=f"Successfully logged insight '{insight_label}' for code '{code_description[:30]}...'",
         tool_call_id=tool_call_id
@@ -117,6 +117,63 @@ def log_insight(
         }
     )
 
+@tool
+def log_final_evidence(
+    quote: str,
+    reasoning: str,
+    chronology: str,
+    doc_name: str,
+    state: Annotated[dict, InjectedState],
+    tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
+    """
+    Tool for logging evidence related to final insights.
+    
+    Args:
+        quote: The text passage extracted as evidence
+        reasoning: Explanation of why this quote supports the insight
+        chronology: Timing relative to intervention (before/during/after/unclear)
+        doc_name: Source document name
+        state: Injected state containing insight information
+        tool_call_id: Injected tool call ID
+    """
+    # Input validation
+    if not quote or not isinstance(quote, str):
+        raise ToolException("Quote must be a non-empty string")
+    if not reasoning or not isinstance(reasoning, str):
+        raise ToolException("Reasoning must be a non-empty string")
+    if not chronology or chronology not in ["before", "during", "after", "unclear"]:
+        raise ToolException("Chronology must be one of: before, during, after, unclear")
+    if not doc_name or not isinstance(doc_name, str):
+        raise ToolException("Doc_name must be a non-empty string")
+
+    # Get the current state dictionary
+    insight_label = state["insight_label"]
+    code_description = state["code_description"]
+
+    # Create evidence item
+    new_evidence = cast(FinalEvidence, {
+        "insight_label": insight_label,
+        "evidence_id": f"{insight_label}-{len(str(quote)[:20])}",
+        "quote": quote,
+        "reasoning": reasoning,
+        "chronology": chronology,
+        "doc_name": doc_name
+    })
+
+    # Create tool message
+    tool_message = ToolMessage(
+        content=f"Successfully logged evidence for insight '{insight_label}': '{quote[:50]}...'",
+        tool_call_id=tool_call_id
+    )
+
+    # Return Command object with final_evidence_list update
+    return Command(
+        update={
+            "final_evidence_list": [new_evidence],
+        }
+    )
+
 # Define the evidence extraction tools
 QUOTE_REASONING_TOOL: List[Callable[..., Any]] = [log_quote_reasoning]
 INSIGHT_TOOL: List[Callable[..., Any]] = [log_insight]
+FINAL_EVIDENCE_TOOL: List[Callable[..., Any]] = [log_final_evidence]
