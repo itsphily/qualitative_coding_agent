@@ -1156,6 +1156,43 @@ def aggregation_final_insights_node(state: CaseProcessingState) -> CaseProcessin
     """
     return state
 
+def continue_to_find_relevant_evidence(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each final insight to the find_relevant_evidence node.
+
+    Args:
+        state: Current state with final insights and evidence
+
+    Returns:
+        List of Send objects for each final insight
+    """
+    case_id = state.get("case_id", "unknown")
+    final_insights_list = state.get("final_insights_list", [])
+    evidence_list = state.get("evidence_list", [])
+
+    if not final_insights_list:
+        logging.warning(f"[continue_to_find_relevant_evidence] No final insights found in state for case {case_id}")
+        return []
+
+    sends = []
+    logging.info(f"[continue_to_find_relevant_evidence] Processing {len(final_insights_list)} final insights for evidence
+collection")
+
+    for insight in final_insights_list:
+        find_evidence_input = {
+            "code_description": insight.get("code_description", ""),
+            "insight_label": insight.get("insight_label", ""),
+            "insight_explanation": insight.get("insight_explanation", ""),
+            "supporting_evidence_summary": insight.get("supporting_evidence_summary", ""),
+            "evidence_list": evidence_list,
+            "final_evidence_list": []
+        }
+
+        sends.append(Send("find_relevant_evidence_node", find_evidence_input))
+        logging.info(f"[continue_to_find_relevant_evidence] Sending insight '{insight.get('insight_label', '')}' for evidence
+collection")
+
+    return sends
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
