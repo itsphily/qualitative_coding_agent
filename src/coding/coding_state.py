@@ -251,11 +251,11 @@ class CaseInfo(TypedDict):
 
 class FinalEvidence(TypedDict):
     insight_label: str
-    evidence_id: str
-    quote: str
-    reasoning: str
-    doc_name: str
-    chronology: str
+    evidence_doc_name: str
+    evidence_quote: str
+    evidence_chronology: str
+    agreement_level: str
+    original_reasoning_for_quote: str
 
 class FinalInsight(TypedDict):
     code_description: str

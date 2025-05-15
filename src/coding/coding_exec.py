@@ -5,7 +5,8 @@ from coding_state import (CodingState,
                           SynthesisState, 
                           EvaluateSynthesisState,
                           CrossCaseAnalysisState, 
-                          FinalInsightState)
+                          FinalInsightState,
+                          FindEvidenceState)
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List
@@ -27,10 +28,11 @@ from coding_prompt import (
     synthesize_evidence,
     evaluate_synthesis_prompt,
     cross_case_analysis_prompt_without_summary, 
-    final_insights_prompt
+    final_insights_prompt,
+    find_evidence_prompt
 )
 from coding_utils import visualize_graph
-from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL
+from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL, FINAL_EVIDENCE_TOOL
 from langgraph.types import Command
 import json
 
@@ -107,6 +109,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
+llm_evidence_finder_with_tools = llm_long_context_high_processing.bind_tools(FINAL_EVIDENCE_TOOL)
 
 
 runtime_config = {  "configurable": {
@@ -117,6 +120,7 @@ runtime_config = {  "configurable": {
                     "llm_evaluate_synthesis": llm_long_context_high_processing,
                     "llm_cross_case_analysis": llm_long_context_high_processing,
                     "llm_final_insights": llm_insight_extractor_with_tools,
+                    "llm_evidence_finder": llm_evidence_finder_with_tools,
                     "code_description": "unknown_code",
                     "doc_name": "unknown_doc"
                     }
@@ -1193,6 +1197,128 @@ collection")
 collection")
 
     return sends
+
+def find_relevant_evidence_node(state: FindEvidenceState) -> Dict:
+    """
+    Worker Node: Finds relevant evidence for a specific final insight.
+    Uses an LLM that can make tool calls to log evidence.
+    
+    Args:
+        state: Input state containing insight information and evidence list
+        
+    Returns:
+        Updated state with evidence added via tool calls
+    """
+    node_name = "find_relevant_evidence_node"
+    code_description = state.get("code_description", "unknown")
+    insight_label = state.get("insight_label", "")
+    insight_explanation = state.get("insight_explanation", "")
+    evidence_list = state.get("evidence_list", [])
+
+    logging.info(f"[{node_name}] Finding evidence for insight '{insight_label}' in code '{code_description[:60]}...'")
+
+    # Validate inputs
+    if not insight_label or not insight_explanation or not evidence_list:
+        logging.warning(f"[{node_name}] Missing insight or evidence data for code {code_description}")
+        return {"final_evidence_list": []}
+
+    # Format evidence for the prompt
+    formatted_evidence = {}
+    for i, evidence in enumerate(evidence_list):
+        if evidence.get("code_description") == code_description:
+            formatted_evidence[str(i)] = {
+                "chronology": evidence.get("chronology", "unclear"),
+                "Doc Name": evidence.get("doc_name", "Unknown"),
+                "Quote": evidence.get("quote", ""),
+                "Reasoning": evidence.get("reasoning", "")
+            }
+
+    if not formatted_evidence:
+        logging.warning(f"[{node_name}] No evidence found for code {code_description}")
+        return {"final_evidence_list": []}
+
+    # Get LLM with tool binding from config
+    config = get_config()
+    llm_with_tools = config.get("configurable", {}).get("llm_evidence_finder")
+    if not llm_with_tools:
+        logging.error(f"[{node_name}] LLM for evidence finding not found in config")
+        return {"final_evidence_list": []}
+
+    # Format the prompt
+    system_content = find_evidence_prompt
+    human_content = f"""
+    Here is the final insight for which you need to find supporting evidence:
+    
+    # Insight Label
+    {insight_label}
+    
+    # Insight Explanation
+    {insight_explanation}
+    
+    # Corpus of Evidence
+    <corpus of evidence>
+    {json.dumps(formatted_evidence, indent=2)}
+    </corpus of evidence>
+    
+    Please find all of evidence related to the insight.
+    """
+
+    system_msg = SystemMessage(content=system_content)
+    human_msg = HumanMessage(content=human_content)
+
+    # Set up the state object for the tool to access
+    insight_state = {
+        "code_description": code_description,
+        "insight_label": insight_label
+    }
+
+    # Execute the LLM with tool
+    logging.info(f"[{node_name}] Executing LLM to find evidence for insight '{insight_label}'")
+    ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": insight_state}})
+    logging.info(f"[{node_name}] Completed evidence finding for insight '{insight_label}'")
+
+    # Process tool calls
+    tool_calls = []
+    if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+        tool_calls = ai_message.tool_calls
+        logging.info(f"[{node_name}] Found {len(tool_calls)} tool calls in LLM response")
+    else:
+        logging.warning(f"[{node_name}] No tool calls found in LLM response")
+        return {"final_evidence_list": []}
+
+    # Execute the tools and collect Commands
+    commands = []
+    tools_by_name = {tool.name: tool for tool in FINAL_EVIDENCE_TOOL}
+
+    for tool_call in tool_calls:
+        try:
+            # Get tool by name
+            tool_name = tool_call.get("name", "")
+            if tool_name not in tools_by_name:
+                logging.error(f"[{node_name}] Unknown tool: {tool_name}")
+                continue
+
+            # Execute tool with arguments from tool call
+            tool = tools_by_name[tool_name]
+            args = tool_call.get("args", {})
+            args["tool_call_id"] = tool_call.get("id", "unknown")
+
+            args["state"] = insight_state
+
+            logging.info(f"[{node_name}] Executing tool {tool_name} with args: {args}")
+
+            # Execute tool and collect command
+            command = tool.invoke(args)
+            if isinstance(command, Command):
+                commands.append(command)
+                logging.info(f"[{node_name}] Added Command from tool {tool_name}")
+        except Exception as e:
+            logging.error(f"[{node_name}] Error executing tool {tool_call.get('name', 'unknown')}: {e}")
+
+    logging.info(f"[{node_name}] Returning {len(commands)} Commands to update state")
+    return commands
+
+
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
