@@ -206,6 +206,36 @@ def merge_final_insights_from_subgraph(
 
     return current
 
+def append_final_evidence(
+    current: Optional[List[Any]],
+    new: Optional[List[Any]]
+) -> List[Any]:
+    """
+    Appends new final evidence items to a list.
+    Handles None values gracefully.
+    Prevents duplicates by checking quote text.
+    """
+    if current is None:
+        current = []
+    if new is None:
+        return current
+
+    existing_quotes = set()
+    for item in current:
+        if isinstance(item, dict) and "quote" in item:
+            quote_id = item["quote"][:100] if item["quote"] else ""
+            existing_quotes.add(quote_id)
+
+    items_to_add = []
+    for item in new:
+        if isinstance(item, dict):
+            quote_id = item.get('quote', '')[:100] if item.get('quote', '') else ''
+            if quote_id not in existing_quotes:
+                items_to_add.append(item)
+                existing_quotes.add(quote_id)
+
+    return current + items_to_add
+
 class Evidence(TypedDict):
     quote: str
     reasoning: str
@@ -219,11 +249,20 @@ class CaseInfo(TypedDict):
     description: Optional[str]
     intervention: Optional[str]
 
+class FinalEvidence(TypedDict):
+    insight_label: str
+    evidence_id: str
+    quote: str
+    reasoning: str
+    doc_name: str
+    chronology: str
+
 class FinalInsight(TypedDict):
     code_description: str
     insight_label: str
     insight_explanation: str
     supporting_evidence_summary: str
+    final_evidence_list: Annotated[List[FinalEvidence], append_final_evidence]
 
 class CaseProcessingState(TypedDict):
     case_id: str
@@ -245,7 +284,6 @@ class CodeProcessingState(TypedDict):
     research_question: str
     case_id: str
     evidence_list: Annotated[List[Evidence], append_evidence]
-
 
 class CodingState(TypedDict):
     research_question: str
@@ -287,3 +325,11 @@ class FinalInsightState(TypedDict):
       revised_synthesis_result: str
       cross_case_analysis_result: str
       final_insights_list: Annotated[List[FinalInsight], append_evidence]
+
+class FindEvidenceState(TypedDict):
+    code_description: str
+    insight_label: str
+    insight_explanation: str
+    supporting_evidence_summary: str
+    evidence_list: List[Evidence]
+    final_evidence_list: Annotated[List[FinalEvidence], append_final_evidence]
