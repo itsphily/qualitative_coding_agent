@@ -1,0 +1,2921 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+================================================================
+File Summary
+================================================================
+
+Purpose:
+--------
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+
+File Format:
+------------
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Multiple file entries, each consisting of:
+  a. A separator line (================)
+  b. The file path (File: path/to/file)
+  c. Another separator line
+  d. The full contents of the file
+  e. A blank line
+
+Usage Guidelines:
+-----------------
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+
+Notes:
+------
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+
+Additional Info:
+----------------
+
+================================================================
+Directory Structure
+================================================================
+coding_exec.py
+coding_prompt.py
+coding_state.py
+coding_tools.py
+coding_utils.py
+
+================================================================
+Files
+================================================================
+
+================
+File: coding_exec.py
+================
+from coding_state import (CodingState, 
+                          CaseInfo, 
+                          CaseProcessingState, 
+                          CodeProcessingState, 
+                          SynthesisState, 
+                          EvaluateSynthesisState,
+                          CrossCaseAnalysisState, 
+                          FinalInsightState,
+                          FindEvidenceInputState, FinalInsight, FinalEvidence)
+from coding_utils import parse_arguments, initialize_state
+from langgraph.types import Send
+from typing import Dict, Any, List
+from langgraph.config import get_config
+import os
+import logging
+from datetime import datetime
+from dotenv import load_dotenv
+from pydantic import BaseModel, Field
+from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import SystemMessage, HumanMessage,AIMessage
+from langchain_core.runnables import Runnable
+from langgraph.graph import START, END, StateGraph
+from coding_prompt import (
+    identify_key_aspects_prompt,
+    identify_intervention,
+    identify_evidence_prompt,
+    synthesize_evidence,
+    evaluate_synthesis_prompt,
+    cross_case_analysis_prompt_without_summary, 
+    final_insights_prompt,
+    find_evidence_prompt
+)
+from coding_utils import visualize_graph
+from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL, LOG_EVIDENCE_RELATIONSHIP_TOOL
+from langgraph.types import Command
+import json
+
+
+# --- Logging Setup ---
+debug_dir = os.getenv("DEBUG_DIR", "debug")
+os.makedirs(debug_dir, exist_ok=True)
+debug_file = os.path.join(debug_dir, f'debug_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[logging.FileHandler(debug_file), logging.StreamHandler()]
+)
+logging.info(f"Starting script execution. Debug log file: {debug_file}")
+
+# --- Load Environment Variables ---
+if os.path.exists(".env"):
+    logging.info("Loading environment variables from .env file.")
+    load_dotenv()
+else:
+    logging.warning("No .env file found.")
+
+
+# --- initialize the LLMs ---
+## structured outputs needed for the LLM
+class KeyAspectsOutput(BaseModel):
+    """Structured output model for identifying key aspects of a code."""
+    key_aspects: List[str] = Field(..., description="List of concise key aspects identified from the code definition")
+
+## OpenAI LLM initialization
+
+
+reasoning_cfg = {
+    "effort": "high",  
+    "summary": "auto",
+}
+
+llm_long_context_tool_use = ChatOpenAI(
+    model="o4-mini",
+    use_responses_api=True, 
+    model_kwargs={"reasoning": reasoning_cfg},
+    timeout=None,
+    max_retries=4
+)
+
+llm_short_context_high_processing = ChatOpenAI(model="o3",
+                                               timeout=None,
+                                               max_retries=4,
+                                               reasoning_effort="high"
+)
+
+## Google LLM initialization
+llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro-preview-05-06",
+                                                           temperature=0,
+                                                           max_tokens=None,
+                                                           timeout=None,
+                                                           max_retries=10,
+                                                           google_api_key=os.getenv("GOOGLE_API_KEY")
+)
+
+## Google LLM initialization
+llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17",
+                                           temperature=0,
+                                           max_tokens=None,
+                                           timeout=None,
+                                           max_retries=10,
+                                           google_api_key=os.getenv("GOOGLE_API_KEY")
+
+)
+
+llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
+
+# Bind the tool to the LLM upfront
+llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
+llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
+llm_log_evidence_relationship_with_tools = llm_long_context_high_processing.bind_tools(LOG_EVIDENCE_RELATIONSHIP_TOOL)
+
+runtime_config = {  "configurable": {
+                    "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
+                    "llm_intervention_identifier": llm_long_context,
+                    "llm_evidence_extractor": llm_evidence_extractor_with_tools,
+                    "llm_synthesize_evidence": llm_short_context_high_processing,
+                    "llm_evaluate_synthesis": llm_long_context_high_processing,
+                    "llm_cross_case_analysis": llm_long_context_high_processing,
+                    "llm_final_insights": llm_insight_extractor_with_tools,
+                    "llm_evidence_relationship": llm_log_evidence_relationship_with_tools,
+                    "code_description": "unknown_code",
+                    "doc_name": "unknown_doc"
+                    }
+}
+
+def start_llm(state: CodingState):
+    """
+    Empty start node
+    """
+    return state
+
+def continue_to_aspect_definition(state: CodingState):
+    codes = state.get("codes", {})
+    if not codes:
+        logging.warning("No codes found in state.")
+        return []
+
+    logging.info("Dispatching %d codes", len(codes))
+
+    return [
+        Send(
+            "aspect_definition_node",
+            code_description
+        )
+        for code_description in codes
+    ]
+
+def aspect_definition_node(code_description: str)-> Dict[str, Any]:
+    """
+    Worker Node: Identifies key aspects for a code using a structured output LLM.
+    Uses the get_config() method to retrieve the LLM from runtime configuration.
+
+    Args:
+        code_description (str): The code description to analyze
+
+    Returns:
+        Dict[str, Dict[str, Any]]: An update dictionary targeting the 'codes' key
+                                   in the state, with code_description as key
+                                   and aspects list as value.
+    """
+    node_name = "aspect_definition_node" # For logging clarity
+    logging.info(f"[{node_name}] Running for code: {code_description[:60]}...")
+
+    # --- Retrieve LLM from Config using get_config() ---
+    try:
+        # Access configuration without explicit config parameter
+        config = get_config()
+        llm_aspect_identifier = config.get("configurable", {}).get("llm_aspect_identifier_structured")
+        if not llm_aspect_identifier or not isinstance(llm_aspect_identifier, Runnable):
+            raise ValueError("Required 'llm_aspect_identifier_structured' Runnable not found in config")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error retrieving LLM from config for code {code_description[:60]}: {e}")
+        return {"codes": {code_description: [f"Error: LLM config missing - {e}"]}}
+
+    # --- Prepare LLM Input ---
+    try:
+        system_message_content = identify_key_aspects_prompt
+        human_message_content = f"here is the code to deconstruct into core components: {code_description}"
+        messages = [
+            SystemMessage(content=system_message_content),
+            HumanMessage(content=human_message_content)
+        ]
+        logging.debug(f"[{node_name}] Prepared messages for LLM for code: {code_description[:60]}")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error formatting messages for code {code_description[:60]}: {e}")
+
+    # --- Invoke LLM and Parse Output ---
+    aspects_list: List[str] = ["Error: LLM Call Failed"]
+    try:
+        # Pass the current config when invoking the LLM
+        structured_output: KeyAspectsOutput = llm_aspect_identifier.invoke(messages)
+        aspects_list = structured_output.key_aspects
+        if not isinstance(aspects_list, list) or not all(isinstance(item, str) for item in aspects_list):
+             logging.warning(f"[{node_name}] LLM output for {code_description[:60]} not List[str]: {aspects_list}")
+             aspects_list = ["Error: Invalid format parsed"]
+        else:
+             logging.info(f"[{node_name}] Successfully generated {len(aspects_list)} aspects for code: {code_description[:60]}")
+    except Exception as e:
+        logging.error(f"[{node_name}] LLM call/parsing failed for code {code_description[:60]}: {e}", exc_info=True)
+        aspects_list = [f"Error: LLM/Parsing failed - {e}"]
+
+    return {
+        "codes": { 
+            code_description: aspects_list
+        }
+    }
+
+def aspect_aggregation_node(state: CodingState) -> CodingState:
+    """
+    Aggregates aspects from all codes into a single list.
+    """
+    return state
+
+def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any]]:
+    """
+    Worker Node: Identifies the intervention from a case's directory of texts.
+    Aggregates all text files, then uses an LLM to identify the single intervention.
+
+    This node participates in a map operation, receiving a CaseInfo object and 
+    returning a state update that will be merged with the main state.
+
+    Args:
+        case_info (CaseInfo): The case info object containing directory path
+
+    Returns:
+        Dict containing updates to cases_info that will be merged into the state
+    """
+    node_name = "intervention_definition_node"
+    directory = case_info["directory"]
+    description = case_info.get("description", "")
+    
+    # Get case_id by matching directory from the initial state (passed to this node)
+    # We'll get this from the continue_to_intervention_definition function
+    # which passed the entire case_info to us
+    case_id = case_info.get("case_id", None)
+    
+    # If case_id isn't available (which shouldn't happen), fall back to using a derived ID
+    if case_id is None:
+        # Derive a case_id from the directory name as fallback
+        case_id = os.path.basename(directory.rstrip("/"))
+        logging.warning(f"[{node_name}] No case_id found, using derived id: {case_id}")
+    
+    logging.info(f"[{node_name}] Processing case {case_id} with directory: {directory}")
+    
+    # --- Aggregate all text files ---
+    aggregated_texts = ""
+    try:
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.md') or file.endswith('.txt'):
+                    file_path = os.path.join(root, file)
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            text_content = f.read()
+                            aggregated_texts += f"path: {file_path}\n{text_content}\n\n"
+                    except Exception as file_e:
+                        logging.warning(f"[{node_name}] Could not read file {file_path}: {file_e}")
+                        continue
+    except Exception as e:
+        logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
+        # Return a meaningful error instead of an empty dict
+        return {"cases_info": {case_id: {"intervention": f"Error: Directory processing failed - {e}"}}}
+    
+    if not aggregated_texts:
+        logging.warning(f"[{node_name}] No text files found in directory: {directory}")
+        return {"cases_info": {case_id: {"intervention": "Error: No text files found"}}}
+    
+    # --- Retrieve LLM from Config ---
+    try:
+        config = get_config()
+        llm_intervention_identifier = config.get("configurable", {}).get("llm_intervention_identifier")
+        if not llm_intervention_identifier or not isinstance(llm_intervention_identifier, Runnable):
+            raise ValueError("Required 'llm_intervention_identifier' Runnable not found in config")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+        return {"cases_info": {case_id: {"intervention": f"Error: LLM config missing - {e}"}}}
+    
+    # --- Prepare LLM Input ---
+    try:
+        system_message_content = identify_intervention
+        human_message_content = f"here are the texts from which you need to find the **single intervention** : <texts>{aggregated_texts}</texts>"
+        messages = [
+            SystemMessage(content=system_message_content),
+            HumanMessage(content=human_message_content)
+        ]
+        logging.debug(f"[{node_name}] Prepared messages for LLM for case with directory: {directory}")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error formatting messages for directory {directory}: {e}")
+        return {"cases_info": {case_id: {"intervention": f"Error: Message formatting failed - {e}"}}}
+    
+    # --- Invoke LLM and Parse Output ---
+    intervention = "Error: LLM Call Failed"
+    try:
+        result = llm_intervention_identifier.invoke(messages)
+        intervention = result.content.strip()
+        logging.info(f"[{node_name}] Successfully identified intervention for case {case_id}: {intervention[:60]}...")
+    except Exception as e:
+        logging.error(f"[{node_name}] LLM call failed for directory {directory}: {e}", exc_info=True)
+        intervention = f"Error: LLM call failed - {e}"
+    
+    # Use the case_id as the key, not the directory
+    return {
+        "cases_info": {
+            case_id: {"intervention": intervention}
+        }
+    }
+
+def continue_to_intervention_definition(state: CodingState) -> List[Send]:
+    """
+    Dispatches each case to the intervention_definition_node to identify interventions.
+    Includes the case_id in the case_info to ensure proper tracking.
+    """
+    cases_info = state.get("cases_info", {})
+    if not cases_info:
+        logging.warning("No cases found in state.")
+        return []
+
+    logging.info("Dispatching %d cases for intervention identification", len(cases_info))
+
+    # Create sends with case_id included in the case_info
+    sends = []
+    for case_id, case_info in cases_info.items():
+        # Create a copy of the case_info with case_id added
+        case_info_with_id = dict(case_info)
+        case_info_with_id["case_id"] = case_id
+        
+        sends.append(Send("intervention_definition_node", case_info_with_id))
+    
+    return sends
+
+def case_aggregation_node(state: CodingState) -> CodingState:
+    """
+    Aggregation node that ensures all parallel updates are properly combined 
+    in the state before continuing to case processing.
+    
+    This node doesn't modify the state but ensures updates from aspect_definition_node
+    and intervention_definition_node are fully applied before proceeding.
+    
+    Args:
+        state: Current state of the graph
+        
+    Returns:
+        The same state, ensuring all updates are aggregated
+    """
+    logging.info(f"[case_aggregation_node] Aggregating state before case processing")
+    
+    codes = state.get("codes", {})
+    cases_info = state.get("cases_info", {})
+    
+    logging.info(f"[case_aggregation_node] State contains {len(codes)} codes and {len(cases_info)} cases")
+    
+    for code, aspects in codes.items():
+        logging.info(f"[case_aggregation_node] Code: {code[:60]}... has aspects: {aspects}")
+    
+    for case_id, info in cases_info.items():
+        intervention = info.get("intervention", "No intervention specified")
+        # Safely handle None values when displaying intervention
+        intervention_display = intervention[:60] + "..." if intervention else "None"
+        logging.info(f"[case_aggregation_node] Case: {case_id} has intervention: {intervention_display}")
+    
+    return state
+
+# --- Add Routing to Subgraph ---
+def continue_to_case_processing(state: CodingState) -> List[Send]:
+    """
+    Routes each case to the case_processing subgraph.
+    Passes only the necessary information for each case.
+    
+    Args:
+        state: Main graph state with codes and cases
+        
+    Returns:
+        List of Send objects, one for each case
+    """
+    cases_info = state.get("cases_info", {})
+    codes = state.get("codes", {})
+    research_question = state.get("research_question", "")
+    
+    if not cases_info or not codes:
+        logging.warning("[continue_to_case_processing] Missing cases or codes in state, cannot route to case processing")
+        return []
+    
+    sends = []
+    for case_id, case_info in cases_info.items():
+        directory = case_info.get("directory", "")
+        intervention = case_info.get("intervention", "")
+        
+        if not directory:
+            logging.warning(f"[continue_to_case_processing] Missing directory for case {case_id}, skipping")
+            continue
+        
+        # Create proper case-specific state to send to subgraph
+        sends.append(
+            Send(
+                "case_processing",
+                {
+                    "case_id": case_id,  # Use the case_id from the loop
+                    "directory": directory,  # Use the directory from case_info
+                    "intervention": intervention,  # Use the intervention from case_info
+                    "research_question": research_question,
+                    "codes": codes,  # Pass all codes to each case
+                    "evidence_list": [],  # Initialize as empty list
+                    "messages": []  # Initialize as empty list
+                }
+            )
+        )
+    
+    logging.info(f"[continue_to_case_processing] Dispatching {len(sends)} cases for evidence extraction")
+    return sends
+
+def case_subgraph_start(state: CaseProcessingState):
+    """
+    Starting node for the case processing subgraph.
+    Converts input dictionary to CaseProcessingState.
+    """
+    return state
+
+def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code + file combination directly to the agent_node.
+    
+    Args:
+        state: Current subgraph state containing case info and codes
+        
+    Returns:
+        List of Send objects for each code-file combination
+    """
+    directory = state.get("directory", "")
+    codes = state.get("codes", {})
+    case_id = state.get("case_id", "unknown")
+    intervention = state.get("intervention", "")
+    research_question = state.get("research_question", "")
+    
+    if not directory or not codes:
+        logging.warning(f"[continue_to_identify_evidence] Missing directory or codes in state for case {case_id}")
+        return []
+    
+    sends = []
+    
+    text_files = []
+    try:
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.md') or file.endswith('.txt'):
+                    file_path = os.path.join(root, file)
+                    text_files.append(file_path)
+                    
+        logging.info(f"[continue_to_identify_evidence] Found {len(text_files)} text files in {directory} and subdirectories for case {case_id}")
+    except Exception as e:
+        logging.error(f"[continue_to_identify_evidence] Error walking directory {directory}: {e}")
+        return []
+    
+    # Iterate over all codes and files
+    for code_description in codes:
+        aspects = codes.get(code_description, [])
+        for file_path in text_files:
+                code_state: CodeProcessingState = {
+                  "file_path": file_path,
+                  "code_description": code_description,
+                  "aspects": aspects,
+                  "intervention": intervention,
+                  "research_question": research_question,
+                  "case_id": case_id,
+                  "evidence_list": []
+              }
+                sends.append(Send("agent_node", code_state))
+                logging.info(f"[continue_to_identify_evidence] Dispatching {len(sends)} evidence extraction tasks for case {case_id}")
+                
+    return sends
+
+def agent_node(state: CodeProcessingState) -> Dict:
+    """
+    Analyzes text using an LLM to identify evidence.
+    Properly initializes messages on first call and preserves context.
+    
+    Args:
+        state: Current state with file path, code description, aspects, etc.
+        
+    Returns:
+        Updated state with messages from the LLM and preserved context
+    """
+    # Get file information
+    file_path = state.get("file_path")
+    if not file_path or not os.path.exists(file_path):
+        logging.error(f"[agent_node] Invalid or missing file: {file_path}")
+        return {"messages": [HumanMessage(content=f"Error: Invalid file path {file_path}")]}
+    
+    # Extract filename for doc_name
+    doc_name = os.path.basename(file_path)
+    code_description = state.get("code_description", "Unknown code")
+
+    # Read the text file
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            text_content = f.read()
+    except Exception as e:
+        logging.error(f"[agent_node] Error reading file {file_path}: {e}")
+        return {"evidence_list": []}
+    
+    # Get LLM from config
+    config = get_config()
+    llm_with_tools = config.get("configurable", {}).get("llm_evidence_extractor")
+    if not llm_with_tools:
+        logging.error(f"[agent_node] LLM for evidence extraction not found in config")
+        return {"evidence_list": []}
+   
+    # format the prompt
+    system_content = identify_evidence_prompt.format(
+        code= state.get("code_description", "Unknown code"),
+        aspects="\n".join([f"- {aspect}" for aspect in state.get("aspects", [])]),
+        research_question=state.get("research_question", ""),
+        intervention=state.get("intervention", "Unknown intervention")
+    )
+
+    system_msg = SystemMessage(content=system_content)
+    human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
+    logging.info(f"[agent_node] Preparing to execute with CONFIGURATION: code_description='{code_description}', doc_name='{doc_name}'")
+    ai_message = llm_with_tools.invoke([system_msg, human_msg])
+    logging.info(f"[agent_node] Completed processing file {doc_name}, tool should have logged evidence")
+    
+    # Following the pattern from the update-state-from-tools documentation
+    tool_calls = []
+    if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+        tool_calls = ai_message.tool_calls
+        logging.info(f"[agent_node] Found {len(tool_calls)} tool calls in LLM response")
+    else:
+        logging.warning(f"[agent_node] No tool calls found in LLM response")
+        return []
+    # Execute the tools and collect Commands
+    commands = []
+    tools_by_name = {tool.name: tool for tool in QUOTE_REASONING_TOOL}
+
+    for tool_call in tool_calls:
+        try:
+            # Get tool by name
+            tool_name = tool_call.get("name", "")
+            if tool_name not in tools_by_name:
+                logging.error(f"[agent_node] Unknown tool: {tool_name}")
+                continue
+
+            # Execute tool with arguments from tool call
+            tool = tools_by_name[tool_name]
+            args = tool_call.get("args", {})
+            args["tool_call_id"] = tool_call.get("id", "unknown")
+
+            args["state"] = {
+                "code_description": state.get("code_description", "Unknown code"),
+                "file_path": state.get("file_path", "Unknown file")
+                }
+
+            logging.info(f"[agent_node] Executing tool {tool_name} with args: {args}")
+
+            # Following exactly the pattern from documentation
+            command = tool.invoke(args)
+            if isinstance(command, Command):
+                commands.append(command)
+                logging.info(f"[agent_node] Added Command from tool {tool_name}")
+        except Exception as e:
+            logging.error(f"[agent_node] Error executing tool {tool_call.get('name', 'unknown')}: {e}")
+
+    logging.info(f"[agent_node] Returning {len(commands)} Commands to update state")
+    return commands
+
+def aggregation_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates evidence from all cases and codes.
+    """
+    return state
+
+def continue_to_synthesize_evidence(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code with its relevant evidence to the synthesize_evidence_node.
+    
+    Args:
+        state: Current aggregated state with all evidence
+        
+    Returns:
+        List of Send objects for each code with its evidence
+    """
+    case_id = state.get("case_id", "unknown")
+    codes = state.get("codes", {})
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    evidence_list = state.get("evidence_list", [])
+
+    if not codes:
+        logging.warning(f"[continue_to_synthesize_evidence] No codes found in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description in codes:
+        evidence_subset = []
+        for evidence in evidence_list:
+            if evidence.get("code_description") == code_description:
+                filtered_evidence = {
+                    "chronology": evidence.get("chronology", ""),
+                    "quote": evidence.get("quote", ""),
+                    "reasoning": evidence.get("reasoning", ""),
+                    "aspect": evidence.get("aspect", [])
+                }
+                evidence_subset.append(filtered_evidence)
+
+        if evidence_subset:
+            synthesis_input = {
+                "case_id": case_id,
+                "code_description": code_description,
+                "research_question": research_question,
+                "intervention": intervention,
+                "evidence_subset": evidence_subset
+            }
+
+            sends.append(Send("synthesize_evidence_node", synthesis_input))
+            logging.info(f"[continue_to_synthesize_evidence] Sending {len(evidence_subset)} evidence items for code {code_description} to synthesis node")
+
+    return sends
+    
+def synthesize_evidence_node(state: SynthesisState) -> Dict[str, Dict[str, str]]:
+    """
+    Worker Node: Synthesizes evidence for a specific code within a case.
+    Formats evidence records according to the synthesize_evidence prompt 
+    and invokes an LLM to generate synthesis.
+    
+    Args:
+        state: Input state containing case_id, code, and filtered evidence
+        
+    Returns:
+        Dict with synthesis results to be merged into the state
+    """
+    node_name = "synthesize_evidence_node"
+    case_id = state.get("case_id", "unknown")
+    code_description = state.get("code_description", "unknown")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    evidence_subset = state.get("evidence_subset", [])
+
+    logging.info(f"[{node_name}] Processing {len(evidence_subset)} evidence items for code '{code_description[:60]}...' in case {case_id}")
+
+    if not evidence_subset:
+        logging.warning(f"[{node_name}] No evidence to synthesize for code {code_description} in case {case_id}")
+        return {"synthesis_results": {code_description: "No evidence to synthesize"}}
+
+    # --- Retrieve LLM from Config ---
+    try:
+        config = get_config()
+        llm_synthesize_evidence = config.get("configurable", {}).get("llm_synthesize_evidence")
+        if not llm_synthesize_evidence or not isinstance(llm_synthesize_evidence, Runnable):
+            raise ValueError("Required 'llm_synthesize_evidence' Runnable not found in config")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+        return {"synthesis_results": {code_description: f"Error: LLM config missing - {e}"}}
+
+    # --- Format Evidence for Prompt using new Markdown format ---
+    evidence_text = ""
+    for i, evidence in enumerate(evidence_subset):
+        # Format each evidence item in Markdown as specified in the prompt
+        evidence_text += f"# Evidence#{i}: \n"
+        evidence_text += f"- chronology: \"{evidence.get('chronology', '')}\"\n"
+        evidence_text += f"- quote: \"{evidence.get('quote', '').replace('\"', '\\\"')}\"\n"
+        evidence_text += f"- reasoning: \"{evidence.get('reasoning', '').replace('\"', '\\\"')}\"\n"
+
+        # Format the aspect list
+        aspects = evidence.get("aspect", [])
+        aspects_str = str(aspects).replace("'", "\"")
+        evidence_text += f"- aspect: {aspects_str}\n\n"
+
+    # --- Prepare LLM Input ---
+    try:
+        # Log a sample to debug
+        sample = evidence_text[:200] + "..." if len(evidence_text) > 200 else evidence_text
+        logging.info(f"[{node_name}] Evidence format sample: {sample}")
+
+        system_message_content = synthesize_evidence.format(
+            case_name=case_id,
+            code=code_description,
+            research_question=research_question,
+            intervention=intervention,
+            data=evidence_text
+        )
+
+        messages = [SystemMessage(content=system_message_content)]
+        logging.debug(f"[{node_name}] Prepared messages for LLM for case {case_id} and code {code_description[:60]}")
+    except Exception as e:
+        error_msg = str(e)
+        logging.error(f"[{node_name}] Error formatting messages: {error_msg}")
+        return {"synthesis_results": {code_description: f"Error: Message formatting failed - {error_msg}"}}
+
+    # --- Invoke LLM and Process Output ---
+    synthesis_result = f"Error: LLM call failed for code {code_description}"
+    try:
+        result = llm_synthesize_evidence.invoke(messages)
+        synthesis_result = result.content.strip()
+        logging.info(f"[{node_name}] Successfully synthesized evidence for code {code_description[:60]} in case {case_id}")
+    except Exception as e:
+        logging.error(f"[{node_name}] LLM call failed: {e}", exc_info=True)
+        synthesis_result = f"Error: LLM call failed - {e}"
+
+    # Return results to be merged into state
+    return {
+        "synthesis_results": {
+            code_description: synthesis_result
+        }
+    }
+
+def aggregation_synthesis_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates synthesis results from all codes.
+    """
+    return state
+
+def continue_to_evaluate_synthesis(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each synthesis result with case context to the evaluate_synthesis_node.
+    
+    Args:
+        state: Current aggregated state with all synthesis results
+        
+    Returns:
+        List of Send objects for each synthesis result
+    """
+    case_id = state.get("case_id", "unknown")
+    directory = state.get("directory", "")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    synthesis_results = state.get("synthesis_results", {})
+
+    if not synthesis_results:
+        logging.warning(f"[continue_to_evaluate_synthesis] No synthesis results found in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description, synthesis_result in synthesis_results.items():
+        # Create input state for evaluate_synthesis_node
+        evaluation_input = {
+            "case_id": case_id,
+            "directory": directory,
+            "code_description": code_description,
+            "research_question": research_question,
+            "intervention": intervention,
+            "synthesis_result": synthesis_result
+        }
+
+        sends.append(Send("evaluate_synthesis_node", evaluation_input))
+        logging.info(f"[continue_to_evaluate_synthesis] Sending synthesis for code {code_description} to evaluation node")
+
+    return sends
+
+def evaluate_synthesis_node(state: EvaluateSynthesisState) -> Dict[str, Dict[str, str]]:
+    """
+    Worker Node: Evaluates synthesis for a specific code against all source texts.
+    
+    Args:
+        state: Input state containing case_id, directory, code_description, etc.
+        
+    Returns:
+        Dict with revised synthesis results to be merged into the state
+    """
+    node_name = "evaluate_synthesis_node"
+    case_id = state.get("case_id", "unknown")
+    directory = state.get("directory", "")
+    code_description = state.get("code_description", "unknown")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    synthesis_result = state.get("synthesis_result", "")
+
+    logging.info(f"[{node_name}] Evaluating synthesis for code '{code_description[:60]}...' in case {case_id}")
+
+    if not synthesis_result:
+        logging.warning(f"[{node_name}] No synthesis to evaluate for code {code_description} in case {case_id}")
+        return {"revised_synthesis_results": {code_description: "No synthesis to evaluate"}}
+
+    # --- Aggregate all text files ---
+    source_texts = ""
+    try:
+        for root, _, files in os.walk(directory):
+            for file in files:
+                if file.endswith('.md') or file.endswith('.txt'):
+                    file_path = os.path.join(root, file)
+                    try:
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            text_content = f.read()
+                            doc_name = os.path.basename(file_path)
+                            # Wrap the content in XML tags with document name
+                            source_texts += f"<beginning of text: {doc_name}>\n{text_content}\n<end of text: {doc_name}>\n\n"
+                    except Exception as file_e:
+                        logging.warning(f"[{node_name}] Could not read file {file_path}: {file_e}")
+                        continue
+    except Exception as e:
+        logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
+        return {"revised_synthesis_results": {code_description: f"Error: Directory processing failed - {e}"}}
+
+    if not source_texts:
+        logging.warning(f"[{node_name}] No text files found in directory: {directory}")
+        return {"revised_synthesis_results": {code_description: "Error: No text files found"}}
+
+    # --- Retrieve LLM from Config ---
+    try:
+        config = get_config()
+        llm_evaluate_synthesis = config.get("configurable", {}).get("llm_evaluate_synthesis")
+        if not llm_evaluate_synthesis or not isinstance(llm_evaluate_synthesis, Runnable):
+            raise ValueError("Required 'llm_evaluate_synthesis' Runnable not found in config")
+    except Exception as e:
+        logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+        return {"revised_synthesis_results": {code_description: f"Error: LLM config missing - {e}"}}
+
+    # --- Prepare LLM Input ---
+    try:
+
+        system_message_content = evaluate_synthesis_prompt
+        human_message_content = f"""
+        Please evaluate this synthesis result:
+
+        # Context
+        * **Case Name:** {case_id}
+        * **Research Code (Name and Description):** {code_description}
+        * **Research Question (Optional Context):** {research_question}
+        * **Intervention (Optional Context):** {intervention}
+        * **Context Usage:** Use the overall context (Research Question, Intervention) to judge the significance, relevance, and necessary refinements (for accuracy, completeness, and nuance) of findings during the validation process across all source texts.
+
+        Synthesis Result:
+        <preliminary_findings_summary>
+        {synthesis_result}
+        </preliminary_findings_summary>
+
+        Source Texts:
+        <Complete Source Texts>
+        {source_texts}
+        </Complete Source Texts>
+        """
+
+        messages = [SystemMessage(content=system_message_content), HumanMessage(content=human_message_content)]
+        logging.debug(f"[{node_name}] Prepared messages for LLM for case {case_id} and code {code_description[:60]}")
+    except Exception as e:
+        error_msg = str(e)
+        logging.error(f"[{node_name}] Error formatting messages: {error_msg}")
+        return {"revised_synthesis_results": {code_description: f"Error: Message formatting failed - {error_msg}"}}
+
+    # --- Invoke LLM and Process Output ---
+    revised_synthesis_result = f"Error: LLM call failed for code {code_description}"
+    try:
+        result = llm_evaluate_synthesis.invoke(messages)
+        revised_synthesis_result = result.content.strip()
+        logging.info(f"[{node_name}] Successfully evaluated synthesis for code {code_description[:60]} in case {case_id}")
+    except Exception as e:
+        logging.error(f"[{node_name}] LLM call failed: {e}", exc_info=True)
+        revised_synthesis_result = f"Error: LLM call failed - {e}"
+
+    # Return results to be merged into state
+    return {
+        "revised_synthesis_results": {
+            code_description: revised_synthesis_result
+        }
+    }
+
+def aggregation_synthesis_evaluation_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates synthesis results from all codes.
+    """
+    return state
+
+def continue_to_cross_case_analysis(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code with its aspects to the cross_case_analysis_node.
+    
+    Args:
+        state: Current aggregated state with all synthesis evaluation results
+        
+    Returns:
+        List of Send objects for each code with its aspects
+    """
+    case_id = state.get("case_id", "unknown")
+    directory = state.get("directory", "")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    codes = state.get("codes", {})
+    revised_synthesis_results = state.get("revised_synthesis_results", {})
+
+    if not codes or not revised_synthesis_results:
+        logging.warning(f"[continue_to_cross_case_analysis] No codes or revised synthesis results found in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description, aspects in codes.items():
+        if code_description in revised_synthesis_results:
+            cross_case_input = {
+                "case_id": case_id,
+                "code_description": code_description,
+                "directory": directory,
+                "research_question": research_question,
+                "intervention": intervention,
+                "aspects": aspects
+            }
+
+            sends.append(Send("cross_case_analysis_node", cross_case_input))
+            logging.info(f"[continue_to_cross_case_analysis] Sending code {code_description} to cross-case analysis node")
+
+    return sends
+
+def cross_case_analysis_node(state: CrossCaseAnalysisState) -> Dict[str, Dict[str, str]]:
+      """
+      Worker Node: Analyzes all texts in a directory for a specific code.
+      Creates a comprehensive cross-case analysis considering all source texts.
+      
+      Args:
+          state: Input state containing case_id, code_description, directory, etc.
+          
+      Returns:
+          Dict with cross-case analysis results to be merged into the state
+      """
+      node_name = "cross_case_analysis_node"
+      case_id = state.get("case_id", "unknown")
+      directory = state.get("directory", "")
+      code_description = state.get("code_description", "unknown")
+      research_question = state.get("research_question", "")
+      intervention = state.get("intervention", "")
+      aspects = state.get("aspects", [])
+
+      logging.info(f"[{node_name}] Performing cross-case analysis for code '{code_description[:60]}...' in case {case_id}")
+
+      # --- Aggregate all text files ---
+      source_texts = ""
+      try:
+          for root, _, files in os.walk(directory):
+              for file in files:
+                  if file.endswith('.md') or file.endswith('.txt'):
+                      file_path = os.path.join(root, file)
+                      try:
+                          with open(file_path, 'r', encoding='utf-8') as f:
+                              text_content = f.read()
+                              doc_name = os.path.basename(file_path)
+                              # Wrap the content in XML tags with document name
+                              source_texts += f"<beginning of text: {doc_name}>\n{text_content}\n<end of text: {doc_name}>\n\n"
+                      except Exception as file_e:
+                          logging.warning(f"[{node_name}] Could not read file {file_path}: {file_e}")
+                          continue
+      except Exception as e:
+          logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
+          return {"cross_case_analysis_results": {code_description: f"Error: Directory processing failed - {e}"}}
+
+      if not source_texts:
+          logging.warning(f"[{node_name}] No text files found in directory: {directory}")
+          return {"cross_case_analysis_results": {code_description: "Error: No text files found"}}
+
+      # --- Retrieve LLM from Config ---
+      try:
+          config = get_config()
+          llm_cross_case_analysis = config.get("configurable", {}).get("llm_cross_case_analysis")
+          if not llm_cross_case_analysis or not isinstance(llm_cross_case_analysis, Runnable):
+              raise ValueError("Required 'llm_cross_case_analysis' Runnable not found in config")
+      except Exception as e:
+          logging.error(f"[{node_name}] Error retrieving LLM from config: {e}")
+          return {"cross_case_analysis_results": {code_description: f"Error: LLM config missing - {e}"}}
+
+      # --- Prepare LLM Input ---
+      try:
+          # Format the aspects for the prompt
+          aspects_text = "\n".join([f"- {aspect}" for aspect in aspects])
+
+          system_message_content = cross_case_analysis_prompt_without_summary.format(
+            case_name=case_id,
+            code=code_description,
+          )
+          human_message_content = f"""
+          Please analyze this case:
+          # Context
+          * **Case Name:** {case_id}
+          * **Research Code (Name and Description):** {code_description}
+          * **Defined Aspects of the research code:** 
+          {aspects_text}
+          * **Research Question:** {research_question}
+          * **Intervention:** {intervention}
+          * **Context Usage:** Use the overall context (Research Question, Intervention) to interpret the significance of the synthesis patterns you identify across the full texts as they relate to each aspect of the research code.
+          
+          # Input Data
+          **Complete Source Texts (Primary and Only Data for this Task):**
+          <source_texts>
+          {source_texts}
+          </source_texts>
+          * You **must** base your entire deep synthesis analysis *directly and exclusively* on a fresh, holistic review of these `source_texts`. Do not refer to or expect any pre-existing summaries for this specific task.
+          """
+
+          messages = [SystemMessage(content=system_message_content), HumanMessage(content=human_message_content)]
+          logging.debug(f"[{node_name}] Prepared messages for LLM for case {case_id} and code {code_description[:60]}")
+      except Exception as e:
+          error_msg = str(e)
+          logging.error(f"[{node_name}] Error formatting messages: {error_msg}")
+          return {"cross_case_analysis_results": {code_description: f"Error: Message formatting failed - {error_msg}"}}
+
+      # --- Invoke LLM and Process Output ---
+      cross_case_result = f"Error: LLM call failed for code {code_description}"
+      try:
+          result = llm_cross_case_analysis.invoke(messages)
+          cross_case_result = result.content.strip()
+          logging.info(f"[{node_name}] Successfully completed cross-case analysis for code {code_description[:60]} in case {case_id}")
+      except Exception as e:
+          logging.error(f"[{node_name}] LLM call failed: {e}", exc_info=True)
+          cross_case_result = f"Error: LLM call failed - {e}"
+
+      # Return results to be merged into state
+      return {
+          "cross_case_analysis_results": {
+              code_description: cross_case_result
+          }
+      }
+
+def aggregation_cross_case_analysis_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates cross-case analysis results from all codes.
+    """
+    return state
+
+def continue_to_final_insight(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each code with its revised synthesis and cross-case analysis
+    to the generate_final_insight node.
+    
+    Args:
+        state: Current aggregated state with synthesis and cross-case analysis results
+        
+    Returns:
+        List of Send objects for each code with its results
+    """
+    case_id = state.get("case_id", "unknown")
+    research_question = state.get("research_question", "")
+    intervention = state.get("intervention", "")
+    codes = state.get("codes", {})
+    revised_synthesis_results = state.get("revised_synthesis_results", {})
+    cross_case_analysis_results = state.get("cross_case_analysis_results", {})
+
+    if not codes or not revised_synthesis_results or not cross_case_analysis_results:
+        logging.warning(f"[continue_to_final_insight] Missing codes, synthesis, or cross-case analysis in state for case {case_id}")
+        return []
+
+    sends = []
+    for code_description, aspects in codes.items():
+        # Only proceed if we have both revised synthesis and cross-case analysis for this code
+        if code_description in revised_synthesis_results and code_description in cross_case_analysis_results:
+            final_insight_input = {
+                "case_id": case_id,
+                "code_description": code_description,
+                "research_question": research_question,
+                "intervention": intervention,
+                "aspects": aspects,
+                "revised_synthesis_result": revised_synthesis_results[code_description],
+                "cross_case_analysis_result": cross_case_analysis_results[code_description],
+                "final_insights_list": []
+            }
+
+            sends.append(Send("generate_final_insight_node", final_insight_input))
+            logging.info(f"[continue_to_final_insight] Sending code {code_description} to final insight generation")
+
+    return sends
+
+def generate_final_insight_node(state: FinalInsightState) -> Dict:
+      """
+      Worker Node: Generates final insights by analyzing revised synthesis and cross-case analysis.
+      Uses an LLM that can make tool calls to log insights.
+      
+      Args:
+          state: Input state containing case_id, code_description, synthesis results
+          
+      Returns:
+          Updated state with insights added via tool calls
+      """
+      node_name = "generate_final_insight_node"
+      case_id = state.get("case_id", "unknown")
+      code_description = state.get("code_description", "unknown")
+      aspects = state.get("aspects", [])
+      research_question = state.get("research_question", "")
+      intervention = state.get("intervention", "")
+      revised_synthesis_result = state.get("revised_synthesis_result", "")
+      cross_case_analysis_result = state.get("cross_case_analysis_result", "")
+
+      logging.info(f"[{node_name}] Generating final insights for code '{code_description[:60]}...' in case {case_id}")
+
+      # Validate inputs
+      if not revised_synthesis_result or not cross_case_analysis_result:
+          logging.warning(f"[{node_name}] Missing synthesis or cross-case analysis for code {code_description} in case {case_id}")
+          return {"final_insights_list": []}
+
+      # Get LLM with tool binding from config
+      config = get_config()
+      llm_with_tools = config.get("configurable", {}).get("llm_final_insights")
+      if not llm_with_tools:
+          logging.error(f"[{node_name}] LLM for final insights not found in config")
+          return {"final_insights_list": []}
+
+      # Format the prompt
+      system_content = final_insights_prompt.format(
+          case_name=case_id,
+          code=code_description,
+          aspects=aspects,
+          research_question=research_question,
+          intervention=intervention,
+          adjusted_summary_text=revised_synthesis_result,
+          deep_synthesis_report_text=cross_case_analysis_result
+      )
+
+      system_msg = SystemMessage(content=system_content)
+      human_msg = HumanMessage(content="Please analyze these reports and generate final insights.")
+
+      # Set up the state object for the tool to access
+      code_state = {
+          "code_description": code_description
+      }
+
+      # Execute the LLM with tool
+      logging.info(f"[{node_name}] Preparing to execute with code_description='{code_description}'")
+      ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": code_state}})
+      logging.info(f"[{node_name}] Completed generating insights for code {code_description}, tool should have logged insights")
+
+      # Process tool calls
+      tool_calls = []
+      if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+          tool_calls = ai_message.tool_calls
+          logging.info(f"[{node_name}] Found {len(tool_calls)} tool calls in LLM response")
+      else:
+          logging.warning(f"[{node_name}] No tool calls found in LLM response")
+          return {"final_insights_list": []}
+
+      # Execute the tools and collect Commands
+      commands = []
+      tools_by_name = {tool.name: tool for tool in INSIGHT_TOOL}
+
+      for tool_call in tool_calls:
+          try:
+              # Get tool by name
+              tool_name = tool_call.get("name", "")
+              if tool_name not in tools_by_name:
+                  logging.error(f"[{node_name}] Unknown tool: {tool_name}")
+                  continue
+
+              # Execute tool with arguments from tool call
+              tool = tools_by_name[tool_name]
+              args = tool_call.get("args", {})
+              args["tool_call_id"] = tool_call.get("id", "unknown")
+
+              args["state"] = {
+                  "code_description": code_description
+              }
+
+              logging.info(f"[{node_name}] Executing tool {tool_name} with args: {args}")
+
+              # Execute tool and collect command
+              command = tool.invoke(args)
+              if isinstance(command, Command):
+                  commands.append(command)
+                  logging.info(f"[{node_name}] Added Command from tool {tool_name}")
+          except Exception as e:
+              logging.error(f"[{node_name}] Error executing tool {tool_call.get('name', 'unknown')}: {e}")
+
+      logging.info(f"[{node_name}] Returning {len(commands)} Commands to update state")
+      return commands
+
+def aggregation_final_insights_node(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates final insights from all codes and prepares them for evidence finding.
+    """
+    final_insights_list = state.get("final_insights_list", [])
+
+    # Ensure each final insight has a final_evidence_list field initialized
+    for insight in final_insights_list:
+        if "final_evidence_list" not in insight:
+            insight["final_evidence_list"] = []
+
+    logging.info(f"[aggregation_final_insights_node] Aggregated {len(final_insights_list)} final insights")
+    return state
+
+def aggregation_relevant_evidence(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates evidence relationship results from all insights.
+    Ensures each insight has its evidence properly associated.
+    
+    Args:
+        state: Current state with all insights and their evidence
+        
+    Returns:
+        Updated state with insights and their associated evidence
+    """
+    final_insights_list = state.get("final_insights_list", [])
+
+    # Log the aggregated insights and their evidence
+    for insight in final_insights_list:
+        insight_label = insight.get("insight_label", "unknown")
+        evidence_count = len(insight.get("final_evidence_list", []))
+        logging.info(f"[aggregation_relevant_evidence] Insight '{insight_label[:30]}...' has {evidence_count} pieces of evidence")
+
+    return state
+
+def continue_to_find_evidence_for_insights(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each final insight to the find_relevant_evidence_node
+    along with the full evidence corpus.
+    
+    Args:
+        state: Current state with final insights and evidence corpus
+        
+    Returns:
+        List of Send objects, one for each final insight, or END if no insights to process
+    """
+    case_id = state.get("case_id", "unknown")
+    final_insights_list = state.get("final_insights_list", [])
+    evidence_list = state.get("evidence_list", [])
+    
+    if not final_insights_list:
+        logging.warning(f"[continue_to_find_evidence_for_insights] No insights to process for case {case_id}")
+        return [END]  # Return END if no insights to process
+    
+    if not evidence_list:
+        logging.warning(f"[continue_to_find_evidence_for_insights] No evidence corpus available for case {case_id}")
+        return [END]  # Return END if no evidence to process
+    
+    logging.info(f"[continue_to_find_evidence_for_insights] Processing {len(final_insights_list)} insights with {len(evidence_list)} evidence items")
+    
+    sends = []
+    for insight in final_insights_list:
+        insight_label = insight.get("insight_label", "unknown")
+        # Create input state for find_relevant_evidence_node
+        evidence_input = FindEvidenceInputState(
+            current_final_insight=insight,
+            full_evidence_list=evidence_list,
+            processed_evidence_for_insight=[]  # Initialize as empty list
+        )
+        
+        sends.append(Send("find_relevant_evidence_node", evidence_input))
+        logging.info(f"[continue_to_find_evidence_for_insights] Sending insight '{insight_label[:30]}...' to evidence finder")
+    
+    return sends
+
+def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
+    """
+    Worker Node: Identifies evidence relevant to a specific final insight.
+    Manually processes tool calls from the LLM to populate the insight's evidence list.
+    Returns a single updated FinalInsight object.
+    """
+    node_name = "find_relevant_evidence_node"
+    current_final_insight = state.get("current_final_insight", {})
+    full_evidence_list = state.get("full_evidence_list", [])
+
+    if not isinstance(current_final_insight, dict) or not current_final_insight.get("insight_label"):
+        logging.error(f"[{node_name}] Invalid or incomplete current_final_insight: {current_final_insight}")
+        # Return a structure that won't break the reducer, or raise error
+        return FinalInsight(code_description="Error", insight_label="Error", insight_explanation="Invalid input insight", supporting_evidence_summary="", final_evidence_list=[])
+
+
+    insight_label = current_final_insight.get("insight_label", "unknown_insight_label") # Should always exist due to check above
+    insight_explanation = current_final_insight.get("insight_explanation", "")
+
+    logging.info(f"[{node_name}] Finding evidence for insight '{insight_label[:50]}...'")
+
+    if not insight_explanation:
+        logging.warning(f"[{node_name}] Missing insight explanation for insight '{insight_label}'. Returning original.")
+        # Ensure it has final_evidence_list initialized
+        if "final_evidence_list" not in current_final_insight:
+             current_final_insight["final_evidence_list"] = []
+        return current_final_insight
+
+    if not full_evidence_list:
+        logging.warning(f"[{node_name}] No evidence corpus for insight '{insight_label}'. Returning original.")
+        if "final_evidence_list" not in current_final_insight:
+             current_final_insight["final_evidence_list"] = []
+        return current_final_insight
+
+    config_from_graph = get_config() # Renamed to avoid conflict
+    llm_with_tools = config_from_graph.get("configurable", {}).get("llm_evidence_relationship")
+    if not llm_with_tools:
+        logging.error(f"[{node_name}] LLM for evidence relationship not found in config for insight '{insight_label}'")
+        if "final_evidence_list" not in current_final_insight:
+             current_final_insight["final_evidence_list"] = []
+        return current_final_insight
+
+    evidence_corpus_for_prompt = {}
+    for idx, evidence_item in enumerate(full_evidence_list):
+        evidence_corpus_for_prompt[str(idx)] = {
+            "chronology": evidence_item.get("chronology", "unclear"),
+            "Doc Name": os.path.basename(evidence_item.get("doc_name", "Unknown Document")),
+            "Quote": evidence_item.get("quote", ""),
+            "Reasoning": evidence_item.get("reasoning", "")
+        }
+    formatted_evidence_corpus_str = json.dumps(evidence_corpus_for_prompt, indent=2)
+    
+    # The find_evidence_prompt is the system message.
+    # The human message provides the specific data for this run.
+    system_content = find_evidence_prompt 
+    human_content = f"""
+Single Final Insight to process:
+{{
+  "insight_label": "{insight_label}",
+  "insight_explanation": "{insight_explanation.replace('"', '\\"')}",
+  "supporting_evidence_summary": "{current_final_insight.get('supporting_evidence_summary','').replace('"', '\\"')}"
+}}
+
+Corpus of Evidence to search:
+<corpus_of_evidence>
+{formatted_evidence_corpus_str}
+</corpus_of_evidence>
+
+Remember to call the `log_evidence_relationship` tool for EVERY piece of evidence that has a discernible relationship to the insight explanation.
+"""
+    system_msg = SystemMessage(content=system_content)
+    human_msg = HumanMessage(content=human_content)
+
+    logging.info(f"[{node_name}] Preparing to execute LLM for insight_label='{insight_label}'")
+    
+    # The 'state' for InjectedState in the tool is the FindEvidenceInputState of this worker
+    ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": state}})
+    logging.info(f"[{node_name}] Completed LLM execution for insight '{insight_label}'")
+
+    processed_evidence_list_for_this_insight = [] # This will hold FinalEvidence items
+
+    # Check if the tool directly updated state.processed_evidence_for_insight via Command
+    # This is the more LangGraph-idiomatic way if the tool's Command is correctly processed
+    # by the time this node's code continues after llm.invoke().
+    # However, direct processing of ai_message.tool_calls is more robust if Command processing is tricky.
+    
+    # For robustness, let's prioritize manually parsing tool_calls from ai_message,
+    # as this is explicitly what the LLM returned.
+    if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+        logging.info(f"[{node_name}] Found {len(ai_message.tool_calls)} tool calls in LLM response for insight '{insight_label}'")
+        for tool_call in ai_message.tool_calls:
+            if tool_call.get("name") == "log_evidence_relationship":
+                args = tool_call.get("args", {})
+                try:
+                    final_evidence_item = FinalEvidence(
+                        insight_label=insight_label,
+                        evidence_doc_name=args.get("evidence_doc_name", "N/A from tool call"),
+                        evidence_quote=args.get("evidence_quote", "N/A from tool call"),
+                        evidence_chronology=args.get("evidence_chronology", "unclear from tool call"),
+                        agreement_level=args.get("agreement_level", "unknown from tool call"),
+                        original_reasoning_for_quote=args.get("original_reasoning_for_quote", "N/A from tool call")
+                    )
+                    processed_evidence_list_for_this_insight.append(final_evidence_item)
+                    logging.debug(f"[{node_name}] Manually processed tool call for insight '{insight_label}': {args.get('evidence_quote', 'N/A')[:30]}...")
+                except KeyError as e:
+                    logging.error(f"[{node_name}] Missing argument in tool call for log_evidence_relationship: {e}. Args: {args}")
+                except Exception as e: # Catch any other error during FinalEvidence creation
+                    logging.error(f"[{node_name}] Error creating FinalEvidence from tool call args: {e}. Args: {args}")
+            else:
+                logging.warning(f"[{node_name}] Encountered unexpected tool call: {tool_call.get('name')}")
+    else:
+        logging.warning(f"[{node_name}] No tool calls found in LLM response for insight '{insight_label}'")
+        # If state.get("processed_evidence_for_insight") was populated by Command, use it as fallback
+        if state.get("processed_evidence_for_insight"):
+             logging.info(f"[{node_name}] Using processed_evidence_for_insight from state as fallback for insight '{insight_label}'.")
+             processed_evidence_list_for_this_insight = list(state.get("processed_evidence_for_insight", []))
+
+
+    updated_insight = dict(current_final_insight) # Make a copy to modify
+    updated_insight["final_evidence_list"] = processed_evidence_list_for_this_insight
+
+    logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(updated_insight['final_evidence_list'])} pieces of evidence.")
+    return updated_insight
+
+# --- Create and Compile the Case Processing Subgraph ---
+case_processing_graph = StateGraph(CaseProcessingState)
+
+# Add nodes directly to the subgraph
+case_processing_graph.add_node("case_start", case_subgraph_start)
+case_processing_graph.add_node("agent_node", agent_node)
+case_processing_graph.add_node("aggregation_node", aggregation_node)
+case_processing_graph.add_node("synthesize_evidence_node", synthesize_evidence_node)
+case_processing_graph.add_node("aggregation_synthesis_node", aggregation_synthesis_node)
+case_processing_graph.add_node("evaluate_synthesis_node", evaluate_synthesis_node)
+case_processing_graph.add_node("aggregation_synthesis_evaluation_node", aggregation_synthesis_evaluation_node)
+case_processing_graph.add_node("cross_case_analysis_node", cross_case_analysis_node)
+case_processing_graph.add_node("aggregation_cross_case_analysis_node", aggregation_cross_case_analysis_node)
+case_processing_graph.add_node("generate_final_insight_node", generate_final_insight_node)
+case_processing_graph.add_node("aggregation_final_insights_node", aggregation_final_insights_node)
+case_processing_graph.add_node("find_relevant_evidence_node", find_relevant_evidence_node)
+case_processing_graph.add_node("aggregation_relevant_evidence", aggregation_relevant_evidence)
+
+# Add edges to implement the ReAct pattern
+case_processing_graph.add_edge(START, "case_start")
+case_processing_graph.add_conditional_edges(
+    "case_start",
+    continue_to_identify_evidence,
+    ["agent_node"]
+)
+case_processing_graph.add_edge("agent_node", "aggregation_node")
+case_processing_graph.add_conditional_edges("aggregation_node", continue_to_synthesize_evidence, ["synthesize_evidence_node"])
+case_processing_graph.add_edge("synthesize_evidence_node", "aggregation_synthesis_node")
+case_processing_graph.add_conditional_edges(
+      "aggregation_synthesis_node",
+      continue_to_evaluate_synthesis,
+      ["evaluate_synthesis_node"]
+  )
+case_processing_graph.add_edge("evaluate_synthesis_node", "aggregation_synthesis_evaluation_node")
+case_processing_graph.add_conditional_edges(
+      "aggregation_synthesis_evaluation_node",
+      continue_to_cross_case_analysis,
+      ["cross_case_analysis_node"]
+  )
+case_processing_graph.add_edge("cross_case_analysis_node", "aggregation_cross_case_analysis_node")
+case_processing_graph.add_conditional_edges("aggregation_cross_case_analysis_node", continue_to_final_insight, ["generate_final_insight_node"])
+case_processing_graph.add_edge("generate_final_insight_node", "aggregation_final_insights_node")
+case_processing_graph.add_conditional_edges("aggregation_final_insights_node",continue_to_find_evidence_for_insights,["find_relevant_evidence_node"] )
+case_processing_graph.add_edge("find_relevant_evidence_node", "aggregation_relevant_evidence")
+case_processing_graph.add_edge("aggregation_relevant_evidence", END)
+
+# Compile the subgraph
+case_processing_subgraph = case_processing_graph.compile()
+
+# --- Create the Main Graph ---
+coding_graph = StateGraph(CodingState)
+
+# --- Add Nodes ---
+coding_graph.add_node("start", start_llm)
+coding_graph.add_node("aspect_definition_node", aspect_definition_node)
+coding_graph.add_node("aspect_aggregation_node", aspect_aggregation_node)
+coding_graph.add_node("intervention_definition_node", intervention_definition_node)
+coding_graph.add_node("case_aggregation_node", case_aggregation_node)
+coding_graph.add_node("case_processing", case_processing_subgraph)
+
+# --- Add Edges ---
+coding_graph.add_edge(START, "start")
+coding_graph.add_conditional_edges("start", continue_to_aspect_definition, ['aspect_definition_node'])
+coding_graph.add_edge("aspect_definition_node", "aspect_aggregation_node")
+coding_graph.add_conditional_edges("aspect_aggregation_node", continue_to_intervention_definition, ['intervention_definition_node'])
+coding_graph.add_edge("intervention_definition_node", "case_aggregation_node")
+coding_graph.add_conditional_edges("case_aggregation_node", continue_to_case_processing, ['case_processing'])
+coding_graph.add_edge("case_processing", END)
+
+coding_graph = coding_graph.compile()
+
+
+if __name__ == "__main__":
+
+
+    parsed_args = parse_arguments()
+
+    # --- Initialize the State ---
+    initial_state = initialize_state(parsed_args)
+    visualize_graph(coding_graph, "coding_graph")
+    coding_graph.invoke(initial_state, config=runtime_config)
+
+    print("\n--- Initial State Content ---")
+    print(f"Research Question: {initial_state['research_question']}")
+    print(f"\nCodes ({len(initial_state['codes'])}):")
+    for desc, aspects in initial_state["codes"].items():
+        print(f'  – {desc[:60]}...  →  {aspects}')
+    print(f"\nCases ({len(initial_state['cases_info'])}):")
+    for case_name, case_obj in initial_state['cases_info'].items():
+        print(f"  - Key: \"{case_name}\"")
+
+    print("\n--- Graph Definition and Execution Starts Here ---")
+
+================
+File: coding_prompt.py
+================
+identify_key_aspects_prompt = """
+You are an expert qualitative researcher skilled at deconstructing complex theoretical concepts (code) into their core components for analysis.
+
+Your task is to analyze the provided qualitative code, which might consists of a name and a definition used in research. Break down this code into its distinct key aspects or sub-components. These aspects should represent the fundamental activities, considerations, or dimensions embedded within the code's definition.
+
+**Instructions:**
+1.  **Analyze:** Carefully read the code name and definition. Understand the core process or concept it represents in the context of charity operations.
+2.  **Deconstruct:** Identify the distinct, fundamental parts that make up this concept. Think about:
+    * What specific actions or stages are involved in this process?
+    * What key factors or elements are being considered or managed?
+    * What are the essential dimensions or facets of this code?
+3.  **Formulate Aspects:** Express each distinct part as a concise key aspect (a short phrase or descriptive statement). Aim for a level of granularity that is useful for detailed analysis (typically 3-6 aspects, but adjust based on code complexity).
+4.  **Ensure Distinction:** Each aspect should capture a unique facet of the code, avoiding significant overlap.
+5.  **Format Output:** Present the results **strictly** as a JSON object. This object must contain a single key named `key_aspects`. The value for this key must be a list of strings, where each string is one identified key aspect.
+
+**Example Input:**
+
+* **Name:** `Pre-intervention data collection`
+* **Definition:** `Collecting information about the charitable cause before implementing the charity’s intervention.`
+
+**Example Output Format:**
+
+```json
+{
+  "key_aspects": [
+    "Identifying information needs relevant to the cause",
+    "Choosing data collection methods/sources",
+    "Executing data gathering activities",
+    "Timing data collection before intervention starts",
+    "Analyzing/using collected data to inform intervention"
+  ]
+}
+(Note: The actual aspects generated by the AI for the example might differ slightly, this is illustrative)
+
+Constraint Checklist:
+Output MUST be valid JSON.
+JSON object MUST have only one key: key_aspects.
+The value of key_aspects MUST be a list of strings.
+Each string in the list MUST be a concise key aspect.
+Do NOT include explanations or text outside the JSON object.
+Now, analyze the provided Input Code and generate the JSON output containing the key aspects.
+"""
+
+identify_intervention = """
+You are a qualitative research analyst.
+Case texts:  
+  <texts>
+  {texts}
+  </texts>
+
+TASK  
+1. Read the case texts, ignoring markdown formatting.  
+2. From all available details, pinpoint the **single intervention** (i.e. the main action, program, policy, or practice that is implemented in this case).
+
+OUTPUT  
+Write **one clear sentence (≤ 30 words)** that describes that intervention.  
+- Start with an action verb.  
+- Make the sentence self-contained; include enough context so it can stand alone.  
+- Return *only* that sentence—no labels, headings, or extra text.
+"""
+
+identify_evidence_prompt = """
+You are a meticulous qualitative-methods researcher (Ph.D. level). Your task is to analyze the provided text based on the defined research focus and extract relevant evidence using the `log_quote_reasoning` tool (you must use this tool everytime you identify evidence in the text, and you can use it multiple times if you find multiple pieces of evidence).
+
+# 1. Research Focus
+This research investigates:
+<code>
+{code}
+</code>
+
+Key aspects being examined:
+<aspects>
+{aspects}
+</aspects>
+
+Central Research Question:
+<research_question>
+{research_question}
+</research_question>
+
+The Intervention Studied:
+<intervention>
+{intervention}
+</intervention>
+
+Note: The research_question and other Research Focus details are included intentionally. Use this context to accurately interpret the purpose, significance, and chronology of the evidence you identify in the text.
+
+# 2. Your Task
+Read the provided text carefully. Identify and extract all passages (evidence) that are **relevant to the research `<code>` and relate to at least one defined `aspect`**.
+
+For **each piece of evidence** you identify, you **must** log it using the `log_quote_reasoning` tool. [IMPORTANT] There can be multiple pieces of evidence in the text, for each piece of evidence you must call the `log_quote_reasoning` tool once (call the tool once per evidence found).
+
+# 3. Chronological Awareness
+The intervention serves as a key temporal marker. For every piece of evidence extracted, determine its timing relative to the intervention **based on the context of the full text**:
+
+* `before`: The event/statement clearly precedes the intervention period.
+* `during`: The event/statement occurs while the intervention is actively running.
+* `after`: The event/statement occurs after the intervention period has concluded.
+* `unclear`: The timing relative to the intervention cannot be reliably determined from the text.
+
+Consider if the `<code>` definition or a specific `aspect` implies a relevant timeframe. If timing is significant for understanding the evidence's link to the code/aspect, mention this in your reasoning.
+
+# 4. Definition of Evidence
+Evidence can include:
+1. Direct statements: Explicit passages discussing the code or an aspect.
+2. Descriptive narratives: Stories or examples illustrating the code or an aspect in action.
+3. Contextual explanations: Background information that clarifies *how or why* something related to the code/aspect occurred.
+4. Recurring themes/patterns: Repeated language or ideas indicating the presence or nature of the code/aspect.
+5. Contradictions / Ambiguities / Multiple Meanings: Passages presenting conflicting views, uncertainty, or statements potentially open to multiple plausible interpretations (e.g., literal meaning vs. strategic intent like a publicity stunt) related to the code/aspect.
+6. Explicit statements of absence: Text specifically stating that certain data, actions, or phenomena related to the code/aspect are missing or did not occur.
+7. Exception-to-rule statements: Passages noting that a usual **practice or aspect was skipped, modified, or done differently** (e.g., “We did not collect baseline data this time due to time pressure”). Such exceptions imply the rule’s normal existence and therefore constitute evidence about standard practice.
+
+# 5. Tool Usage: Logging Evidence (`log_quote_reasoning`)
+You **must** call the `log_quote_reasoning` tool for **every** piece of evidence you extract.
+
+## Tool Schema: log_quote_reasoning
+```json
+{{
+  "quote":       "<string>",            
+  "reasoning":   "<string>",            
+  "aspect":      ["<aspect>", …],  
+  "chronology":  "before" | "during" | "after" | "unclear"  
+}}
+```
+Tool Input Field Descriptions:
+- quote: The full, unaltered text passage extracted as evidence. Do not truncate or paraphrase.
+- reasoning: Your explanation for logging this quote. Address the following points clearly:
+1. Relevance: Explain *precisely* why this quote serves as evidence for the research `<code>` and how it relates to the specified `aspect`(s).
+2. Timing Context: Briefly note significant timing details relative to the intervention (as defined by `chronology`), if applicable and insightful for understanding the evidence.
+3. Motivation/Cause Analysis (If Text Allows): Analyze and explain the apparent *reason or motivation* behind the action or statement described in the quote, based *only* on information present in the text.
+4. Handling Multiple Interpretations (If Applicable): Explicitly identify if the quote (especially a statement) could support multiple plausible interpretations (e.g., literal vs. strategic/performative). State that acknowledging this complexity is part of the analysis and does not automatically weaken the quote's value as evidence.
+5. Exception Analysis (If Applicable): If the quote describes an exception to a norm, explain how it implicitly clarifies or confirms the standard practice.
+- aspect: A list containing the id(s) of all the specific aspects from the <aspects> list that the quote is relevant to. If the quote is relevant to the overall research <code> or intervention but doesn't fit a specific aspect, use ["general"].
+- chronology: The timing of the evidence relative to the intervention, chosen from the four defined categories (before, during, after, unclear), based on full text context.
+
+
+# 6. Instructions
+Understand: Thoroughly read and internalize the research <code>, <aspects>, <research_question>, and <intervention> details.
+Scan & Identify: Read the provided text, actively looking for passages that constitute evidence (as defined in #4) related to the <code> and any of the aspects.
+Extract: Carefully copy the full, exact quote for each piece of evidence.
+Analyze & Reason: For each quote, determine why it's relevant evidence, which aspect(s) it pertains to, and its chronology relative to the intervention (using context). Formulate your reasoning.
+Log: Call the log_quote_reasoning tool with the quote, reasoning, list of aspects, and chronology for each piece of evidence found. Continue this process until the entire text has been analyzed.
+
+# 7. Required Output
+If you identify multiple pieces of evidence (or insights), your response must be a list of tool calls, one for each distinct piece of evidence (or insight) found. Provide all corresponding log_quote_reasoning (or log_insight) tool calls in a single response, formatted as a list of tool_call objects.
+
+# 8. Prohibited Actions
+Do not paraphrase or alter quotes. Extract them verbatim.
+Do not infer evidence from the absence of mention unless the text explicitly states something is missing (see Evidence type #6).
+Do not provide any output other than calls to the log_quote_reasoning tool.
+"""
+
+synthesize_evidence = """
+You are a meticulous qualitative-methods researcher (Ph.D. level) performing thematic analysis and critical assessment of evidence. Your task is to analyze the provided set of extracted evidence records related to a specific research code within a case study. Your goal is to identify dominant content themes, note relevant dimensional characteristics, flag any direct contradictions or strong singular claims present in the data, and select representative quotes. Your analysis must be systematic and grounded solely in the provided data records.
+
+# Context
+Use the context (Research Question, Research Code, and Intervention) to understand the significance of the themes and findings you identify within the provided records as they relate to the specific Research Code.
+## Case Name:
+{case_name}
+## Research Code (name and description):
+{code}
+## Research Question (Optional Context):
+{research_question}
+## Intervention:
+{intervention}
+
+# Input Data Format
+You will be provided with a batch of evidence records below under "data to analyze". Each record contains the following fields:
+- `chronology`: The timing of the evidence relative to the intervention, chosen from the four defined categories (before, during, after, unclear), based on full text context.
+- `quote`: The full, unaltered text passage extracted as evidence.
+- `reasoning`: The reasoning for extracting this quote (should not be used as the primary source of information, but can be used to guide your analysis)
+- `aspect`: Aspects are the distinct key aspects or sub-components of the research code.cThese aspects should represent the fundamental activities, considerations, or dimensions embedded within the code's definition.
+Each evidence record will be provided in a markdown format.
+# Evidence#0:
+- chronology: "before"
+- quote: "quote"
+- reasoning: "reasoning"
+- aspect: ["aspect1", "aspect2"]
+
+# Task Overview
+Analyze the provided batch data to:
+0.  **Craft an Overall Summary** of the central idea(s).
+1.  Identify the most prominent **Content Themes**.
+2.  Identify any prominent **Dimensional Themes**.
+3.  Identify any **Direct Contradictions** within this batch.
+4.  Identify any **Strong Singular Claims** within this batch.
+5.  Select **Exemplar Quotes** representing the core content themes.
+
+# Detailed Instructions
+## General Guidance: Prioritize Direct Evidence (Quotes)
+**Core Principle:** Your analysis MUST be primarily based on the `quote` field for each record. The `quote` contains direct evidence extracted from the source text and is the most reliable data point.
+**Using Reasoning:** Treat the associated `reasoning` field as a potentially helpful *initial interpretation* generated previously by an LLM. It can guide your understanding or suggest potential themes, but **you must critically evaluate it and always verify any insights derived from the `reasoning` against the actual `quote` content.**
+**Hierarchy:** If the `reasoning` seems inconsistent with, misinterprets, or contradicts the `quote`, **the information directly present in the `quote` takes precedence.** The quote is the ground truth for your analysis in this phase.
+
+## 0. Crafting an Overall Summary (Focus: Big Picture Insights from all Evidence)
+- 0.1 Holistically review all provided `quote` and `reasoning` pairs. Consider the Research Code, Research Question (if provided), and Intervention context.
+- 0.2 Identify the 1-3 most central ideas, arguments, or findings that emerge from the collective evidence. What is the main story or key message conveyed by the data regarding the `{code}` within this specific batch?
+- 0.3 Synthesize these central ideas into a concise paragraph (typically 3-5 sentences). This summary should provide a high-level overview of the most significant takeaways from the provided evidence, making sense of the quote/reasoning pairs collectively.
+- 0.4 Ensure this summary is self-contained, well-supported by the evidence, and does not introduce information not present in the quotes/reasoning.
+
+## 1. Identifying Content Themes (Focus: What is being discussed?)
+- 1.1 Analyze: Primarily analyze the `quote` content across all records to identify themes. Refer to the `reasoning` and `aspect` fields as supplementary guides or initial hypotheses about the quote's relevance/meaning, **always validating against the `quote` itself.
+- 1.2 Identify Concepts: Look for recurring concepts, activities, beliefs, etc., related to Research Code.
+- 1.3 Group & Synthesize: Group records discussing similar concepts. For each group representing a distinct and significant theme within the dataset:
+    - 1.3.a Articulate its **core concept or central idea**.
+    - 1.3.b Write a **concise (1-3 sentence) summary** that explains the theme by synthesizing key information and insights directly from the supporting `quote`(s). This summary should be understandable on its own and give a sense of *what the evidence says* about this theme.
+- 1.4 Create a **short, descriptive word label** for each theme.
+
+## 2. Identifying Dimensional Themes (Focus: How is it being discussed?)
+- 2.1 Analyze: Look for recurring characteristics in *how* the evidence related to the research code is presented across the records.
+- 2.2 Identify dimensional characteristics **if** they are notably prominent or recurring across a significant portion of the provided records.
+- 2.3 For each identified dimensional theme:
+    - 2.3.a Articulate its **core characteristic**.
+    - 2.3.b Write a **concise (1-2 sentence) summary** that explains the dimensional theme by synthesizing observations about *how* the information is presented in the supporting `quote`(s). This summary should be understandable on its own.
+- 2.4 Create a **short, descriptive label** for each.
+
+## 3. Identifying Direct Contradictions (Focus: Conflicting Statements within this Batch)
+- 3.1 Scan Critically:** Specifically search the records for instances where the `quote` content presents directly opposing information, claims, or perspectives regarding the research code '{code}'. Use the `reasoning` field *only cautiously* as a potential pointer to conflicts, but **base the identification of a contradiction primarily on conflicting `quote` texts.
+- 3.2 Report Findings: If contradictions are found, list each instance clearly. For each, provide a concise explanation of the conflicting points, drawing from the quotes involved, to make the contradiction clear without needing to refer back to specific record IDs. If none are found in this batch, state that explicitly.
+- 3.3 Example: "Contradiction found regarding standard practice for pre-intervention data collection: some evidence states it is always done (e.g., 'baseline data collection is a mandatory first step'), while other evidence suggests it is often skipped or done hastily (e.g., 'due to time pressure, we proceeded without the usual baseline survey')."
+
+## 4. Identifying Strong Singular Claims (Focus: Definitive Statements)
+- 4.1 Scan Critically: Look for individual records where the `quote` contains a particularly strong, definitive, absolute, or impactful statement [...]. **Focus solely on the quote text** for identifying these claims.
+- 4.2 Report Findings:** If such claims are found, list the `record_id` and the full `quote`. Limit this to 1-3 truly notable examples per batch, if found. If none are found, state that explicitly.
+* **Example:** "Strong Claim Identified: Standard practice requires baseline surveys always be completed before fund disbursement." OR "Strong Claim Identified: 'It is impossible to measure impact without baseline data.'"
+
+## 5. Selecting Exemplar Quotes (Focus: Representing Dominant Themes)
+- 5.1 Review Content Themes:** Refer back to the primary Content Themes identified in step 1.
+- 5.2 Select Quotes:** From the *entire batch*, select 1-10 quotes based on these criteria (the quotes must never be truncated or paraphrased):
+    * **Representativeness:** Clearly illustrates one or more *most central/frequent* Content Themes.
+    * **Conciseness & Clarity:** Prefer shorter, clearer quotes.
+- 5.3 Extract Details:** Provide the original `record_id` and the full `quote` text for each.
+
+# Data to analyze
+<data to analyze>
+{data}
+</data to analyze>
+
+# Output Format
+Provide your complete output as a clearly structured text report using Markdown headings. Do not include any introductory or concluding explanatory text outside the specified structure. Ensure the output is self-contained and does not reference specific record IDs (except where explicitly asked for Strong Singular Claims and Exemplar Quotes, where the record ID is for your internal reference if needed but the output should be understandable without it).
+
+# Example Output Structure:
+## Overall Summary
+[A concise paragraph (typically 3-10 sentences) synthesizing the 1-10 most central ideas, arguments, or findings from the collective evidence regarding the research code. This should be a high-level overview making sense of the quote/reasoning pairs collectively. For example: "The evidence collectively highlights the complexities of program rollout, emphasizing the need for careful geographic site selection based on poverty indicators and regulatory approvals, alongside the iterative development and adaptation of targeting criteria like proxy means tests. Community feedback plays a role in shaping these criteria, though the extent of its formal solicitation can vary. Operational capacity and navigating local regulations are also significant recurring considerations."]
+
+## Content Themes
+* **Theme Label 1:**  (1-10 sentence) summary explaining what the evidence reveals about this theme. For example: "Geographic site selection involves identifying sufficiently poor districts and navigating lengthy approval processes for new operational areas, with considerations for control groups in research."
+(...)
+
+## Dimensional Themes
+* **Dimensional Label A:** (1-10 sentence) summary explaining this dimension. For example: "Evidence indicates a pattern of adapting processes, like poverty targeting criteria, to specific local conditions encountered in different counties or countries."
+(...)
+
+## Direct Contradictions
+* [explanation of contradiction 1, summarizing the conflicting points from the quotes to make it understandable, e.g., "Regarding X, some quotes state Y, while others assert Z."]
+* [explanation of contradiction 2...]
+    *(If none: No direct contradictions were identified within this batch of records.)*
+
+## Strong Singular Claims
+* [Full text of quote 1 containing a strong claim...]
+(...)
+    *(If none: No strong singular claims were identified within this batch of records.)*
+
+## Exemplar Quotes (Representing Content Themes)
+* [Full text of quote 1, quotes must never be truncated or paraphrased...]
+(...)
+"""
+
+evaluate_synthesis_prompt = """
+You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **critical validation, holistic synthesis, and the corrective refinement of preliminary findings**. Your task is to evaluate a **Preliminary Findings Summary** (generated from an initial analysis of extracted quotes) against the **complete set of source texts** for a specific case and research code. Your goal is to **transform the Preliminary Findings Summary into an Adjusted Findings Summary by rigorously correcting, refining, expanding, and validating each component**. This Adjusted Summary must accurately, comprehensively, and nuancedly reflect the evidence across the entire corpus of source texts. You must never adjust the quotes in any way, all the quotes must be the full, unaltered text passages from their original source.
+
+
+# Input Data
+1.  **Preliminary Findings Summary (`synthesis_result`):** This input contains an "Overall Summary," potential "Content Themes" (each with a label and a descriptive summary), "Dimensional Themes" (each with a label and a descriptive summary), "Direct Contradictions," "Strong Singular Claims," and "Exemplar Quotes" identified from extracted evidence.
+    *Important Note:* This summary is a first-pass interpretation based on analyzing each text individually. It requires careful scrutiny, correction, and enhancement against the complete source texts. Some nuances or contradictions might not be apparent from the individual texts, but become clear when considering the full corpus. For instance, if a statement was made (ex: "we care about the environment") in one text, but in another we learn that the organization is actually a big polluter, this contradiction might not be apparent from the individual texts, but becomes clear when considering the full corpus.
+
+2.  **Complete Source Texts:** You will be provided with the full corpus of original documents for the case. You **must** use these texts as the definitive source for validation, correction, refinement, and selection of final evidence.
+
+
+# Task: Produce Adjusted Findings Summary
+Systematically review **each component listed** in the Preliminary Findings Summary. For each item (the Overall Summary, each listed Content Theme and its description, each Dimensional Theme and its description, each Contradiction, each Strong Claim, and each Exemplar Quote), search and analyze the **complete source texts**. Your primary goal is to **identify and implement necessary corrections, refinements, or expansions** to ensure each finding's accuracy, nuance, and completeness case-wide, then confirm its validity. Based on this assessment:
+* **Keep As Is:** Only if the preliminary item is fully validated by the complete texts AND its current phrasing is optimal in terms of accuracy, completeness, and nuance.
+* **Refine (Correct, Enhance, Rephrase):** If the preliminary item is generally valid but requires modification to accurately and comprehensively reflect the evidence from the *full corpus*. This is the most common action and involves actively improving the item.
+* **Discard:** If the preliminary item is refuted, insignificant, or a misinterpretation when judged against the full texts.
+
+Your output will be a new summary containing *only* the Kept As Is or Refined items, ensuring all claims and descriptions are robustly substantiated and accurately articulated based on the complete source texts.
+
+# Detailed Instructions for Validation & Refinement:
+
+**General Guidance:**
+* **Prioritize Full Texts for Correction and Substantiation:** Base your validation and, crucially, your *refinements* primarily on the direct evidence (or absence thereof) within the `source_texts`. The `Preliminary Findings Summary` is a draft to be actively improved.
+* **Embrace Corrective Refinement:** Your primary task is not just to select, but to *correct and enhance*. If a preliminary finding is broadly relevant but imprecisely stated, incomplete, or lacks nuance found in the broader `source_texts`, your role is to **fix and improve its articulation**.
+* **Holistic View for Accuracy:** Consider how findings relate to each other and to the overall narrative emerging from the `source_texts` to ensure refined descriptions are coherent and contextually accurate.
+* **Maintain Quote Integrity:** **Crucially, all direct quotes presented in the "Adjusted Findings Summary" (e.g., as Strong Singular Claims or Validated Exemplar Quotes) MUST be the full, unaltered text passages from their original source. Do not truncate, paraphrase, or abridge these quotes in any way.**
+
+**Validation & Decision Steps (Address each component from the `preliminary_findings_summary`):**
+
+1.  **Overall Summary (from `preliminary_findings_summary`):**
+    * **Search, Assess, and Correct:** Does this preliminary overall summary accurately and comprehensively reflect the most central ideas, arguments, or findings when considering all `source_texts`? Identify any inaccuracies, omissions, misleading emphases, or areas lacking nuance.
+    * **Decide & Prepare Output:**
+        * If **fully accurate, comprehensive, and optimally phrased based on all texts**: **Keep As Is**. Note status "Confirmed - Comprehensive Overview".
+        * If **generally on the right track but requires correction, additions for completeness, rephrasing for improved nuance/accuracy, or changes in emphasis to truly reflect the full texts**: **Refine**. The refined summary should be a corrected and enhanced articulation. Note status "Refined - Enhanced and Corrected Overview".
+        * If **substantially misrepresents the core findings from the full texts, is too incomplete to serve as a base, or key elements are incorrect**: **Discard** the preliminary one and **write a new, accurate Overall Summary** based on your comprehensive analysis of all source texts. Note status "Replaced - New Overall Summary from Full Text Analysis".
+
+2.  **For each Preliminary Content Theme (Label and its Descriptive Summary):**
+    * **Search, Assess, and Correct:** How strongly and consistently is this theme, *as articulated in its label and descriptive summary*, supported across all `source_texts`? Identify inaccuracies in the description, areas where it's incomplete, lacks necessary nuance found in other texts, or misrepresents the case-wide emphasis.
+    * **Decide & Prepare Output:**
+        * If **theme label and its description are fully accurate, comprehensive, and optimally phrased case-wide**: **Keep As Is**. Note its status, e.g., "Confirmed - Core Finding".
+        * If **the theme concept is valid, but its label or descriptive summary is imprecise, incomplete, lacks nuance, or needs correction to accurately reflect the full body of evidence**: **Refine** the theme label (if necessary) AND its descriptive summary. The output must include the *corrected and improved descriptive summary*. Note its status, e.g., "Refined - Core Finding with Corrected and Enhanced Description".
+        * If **refuted by the full texts, not significantly supported, or based on a clear misinterpretation**: **Discard** this theme.
+
+3.  **For each Preliminary Dimensional Theme (Label and its Descriptive Summary):**
+    * **Search, Assess, and Correct:** Is this dimensional characteristic, *as described*, genuinely prominent and significant when analyzing all `source_texts`? Is the description fully accurate and representative of how information is presented case-wide?
+    * **Decide & Prepare Output:**
+        * If **confirmed as prominent/significant and its description is fully accurate and optimal**: **Keep As Is**. Note status, e.g., "Confirmed - Prominent Characteristic".
+        * If **the concept is valid but its label or description needs correction for accuracy, completeness, or scope based on the full texts**: **Refine** the label (if necessary) AND its descriptive summary. The output must include the *corrected and improved description*. Note status, e.g., "Refined - Notable Characteristic with Enhanced Description".
+        * If **isolated, not significant case-wide, or its description is substantially inaccurate**: **Discard** this theme.
+
+4.  **For each Preliminary Direct Contradiction:**
+    * **Investigate, Assess, and Correct:** Does the described conflict represent a genuine, significant tension when considering all `source_texts`? Is the preliminary description of the contradiction fully accurate, or does it need rephrasing to better capture the nuances of the conflicting evidence found across all texts?
+    * **Decide & Prepare Output:**
+        * If **confirmed as a significant case-wide tension and accurately described**: **Keep As Is**. (Though, most descriptions of contradictions will benefit from refinement based on more texts).
+        * If **confirmed as a significant tension, but the preliminary description is imprecise, incomplete, or could better articulate the nature of the conflict based on all texts**: **Refine** its description. The refined description should clearly explain the contradiction, drawing on the full range of evidence. Note status, e.g., "Refined - Significant Tension with Clarified Description".
+        * If **resolved within the full texts, a minor point, or a misinterpretation**: **Discard** this contradiction.
+
+5.  **For each Preliminary Strong Singular Claim (Quote):**
+    * **Contextualize, Assess, and Refine Understanding:** When viewed against all `source_texts`, is this claim (quote) credible and significant? While the quote itself is immutable, **refine the understanding of its context, implications, or contestations.**
+    * **Decide & Prepare Output:**
+        * If **deemed significant and impactful within the full case context**: **Keep** the claim (quote). **Develop or Refine** a brief contextual note that accurately reflects its standing (e.g., "Policy cornerstone frequently referenced", "Controversial statement from key informant, with counterpoints in texts X & Y", "Isolated but symbolically important assertion") based on all texts. Note status, e.g., "Confirmed - Notable Claim with Refined Contextualization".
+        * If **isolated and trivial, lacks credibility in the broader context, or its significance diminishes when all texts are considered**: **Discard** this claim.
+
+6.  **For each Preliminary Exemplar Quote:** (Instruction remains largely the same as it already focuses on selecting the *best* ones for validated themes from full texts, which is inherently a refining/correcting process for the set of exemplars.)
+    * **Assess Against Validated Themes & Full Texts:** For each preliminary exemplar quote, first check if its associated Content Theme was validated (Kept As Is or Refined).
+        * If its theme was discarded, **Discard** this exemplar quote.
+        * If its theme was validated: Does this specific quote, when considering all `source_texts`, remain a strong, clear, and concise illustration of the (potentially refined) validated Content Theme? Are there more potent or representative quotes for this theme within the *full source texts*? All quotes must be presented in full and without alteration.
+    * **Decide & Prepare Output for Exemplar Quotes Section:**
+        * You will create a *new* "Validated Exemplar Quotes" section in your output.
+        * For each **validated Content Theme**, select 1-3 of the **most illustrative and impactful quotes from the *complete source texts***. These may include some of the "Kept" preliminary exemplar quotes if they remain the best examples, or they may be entirely new selections. The goal is to provide the best possible textual evidence from the full corpus for each validated theme. **Ensure these quotes are full and unaltered.**
+
+# Output Format: Adjusted Findings Summary
+Produce a structured report using Markdown. The "Overall Summary" should always be present, reflecting comprehensive analysis of all texts. For other sections, include **only the Kept As Is or (primarily) the Refined findings**. Refined items must feature their corrected, enhanced, and more accurate descriptions or contextualizations. For "Validated Exemplar Quotes," provide new selections from the full texts for each validated content theme, ensuring quotes are complete. **Do not include discarded items from the preliminary summary (unless explicitly replacing, like the Overall Summary).**
+
+**Example Output Structure:**
+# Adjusted Findings Summary
+
+**Case ID:** {case_name}
+**Code Analyzed:** {code}
+
+## Overall Summary
+* **Status:** [e.g., Refined - Enhanced and Corrected Overview]
+* **Summary:** [The kept, refined, or newly written overall summary text. This version is based on a comprehensive analysis of all source texts, correcting any inaccuracies or omissions from the preliminary version. E.g., "Cross-text analysis reveals that while adaptive targeting strategies are central, their implementation was frequently reactive rather than pre-planned, often shaped by immediate regulatory hurdles rather than solely by poverty data. The role of community feedback, initially presented as integral, appears sporadic and inconsistently documented across the full range of project reports..."]
+
+## Validated & Refined Content Themes
+* **Theme:** '[Kept or Refined Theme Label 1]'
+    * **Status:** [e.g., Refined - Core Finding with Corrected and Enhanced Description]
+    * **Refined Description:** [Full text of the corrected, expanded, and more nuanced descriptive summary for the theme, based on all source texts. E.g., "Initial findings suggested geographic site selection was a linear process. However, a full review of field reports and internal communications indicates it was a complex, iterative negotiation, often delayed by unforeseen local political dynamics and revised based on updated (and sometimes conflicting) demographic data not available in the preliminary evidence set."]
+    * **Original Preliminary Description (For reference if refined):** [Optional: include if useful for tracking changes]
+* **Theme:** '[Kept or Refined Theme Label 2]'
+    * **Status:** [e.g., Confirmed - Secondary Theme (Kept As Is)]
+    * **Description:** [Full text of the original description, if Kept As Is, or the refined one.]
+    *(Include ALL Kept As Is/Refined Content Themes and their full, potentially refined, descriptions)*
+
+## Validated & Refined Dimensional Themes
+* **Theme:** '[Kept or Refined Dim Theme Label A]'
+    * **Status:** [e.g., Refined - Notable Characteristic with Enhanced Description]
+    * **Refined Description:** [Full text of the corrected and improved descriptive summary.]
+    *(Include ALL Kept As Is/Refined Dimensional Themes. If none: "No dimensional themes from the preliminary summary were validated as prominent or accurately described case-wide based on the full source texts.")*
+
+## Validated & Refined Contradictions
+* **Contradiction:** '[Corrected and more comprehensively articulated description of Contradiction 1, grounded in full texts]'
+    * **Status:** [e.g., Refined - Significant Tension with Clarified Description from Multiple Sources]
+    *(Include ALL Kept As Is/Refined Contradictions. If none: "No contradictions from the preliminary summary were validated as significant or accurately represented case-wide tensions based on the full source texts.")*
+
+## Validated & Refined Strong Claims
+* **Claim:** '[Full, unaltered quote of the Kept Strong Singular Claim]'
+    * **Status:** [e.g., Confirmed - Notable Claim with Refined Contextualization]
+    * **Refined Context Note:** [A more developed note based on all texts, explaining the claim's significance, contestation, or broader context. E.g., "This policy excerpt from the foundational project document (Doc A) outlines the ideal procedure; however, interview transcripts (Docs C, E) and field observations (Doc F) reveal consistent deviations in practice due to X and Y factors, making this claim more aspirational than descriptive of operations."]
+    *(Include ALL Kept As Is/Refined Strong Claims. If none: "No strong singular claims from the preliminary summary were validated as significant or accurately contextualized case-wide based on the full source texts.")*
+
+## Validated Exemplar Quotes (Selected from Full Source Texts)
+*(For each **Validated Content Theme** listed above, provide 1-3 new exemplar quotes taken directly from the `source_texts` that best illustrate that theme case-wide. Quotes must be full and unaltered.)*
+* **Illustrating Theme: '[Validated Theme Label 1]'**
+    * Quote 1: "[Full, unaltered quote from source_texts...]" (Source Document ID/Page, if available and desired for output)
+    * Quote 2: "[Full, unaltered quote from source_texts...]"
+* **Illustrating Theme: '[Validated Theme Label 2]'**
+    * Quote 1: "[Full, unaltered quote from source_texts...]"
+    *(If no Content Themes were validated, this section can be omitted or state "No content themes validated for which to select exemplar quotes.")*
+"""
+
+
+cross_case_analysis_prompt = """
+You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **deep synthesis and case-wide pattern identification**. Your task is to analyze the **complete set of source texts** for a specific case and research code, informed by a previously generated **Adjusted Findings Summary**. Your goal is to conduct an **independent, holistic analysis of the full texts** to identify and describe robust, overarching synthesis findings (Overall Consistency, Pervasive Absence, Theme Saturation, Evolution, Triangulation, Completeness & Gaps), considering the defined aspects of the research code.
+
+# Context
+* **Case Name:** {case_name}
+* **Research Code (Name and Description):** {code}
+* **Defined Aspects of the research code:** {aspects}
+* **Research Question:** {research_question}
+* **Intervention:** {intervention}
+* **Context Usage:** Use the overall context (Research Question, Intervention, Code Aspects) to frame your synthesis and interpret the significance of the patterns you identify across the full texts.
+
+# Input Data
+1.  **Adjusted Findings Summary (Context & Starting Point):** Contains themes, contradictions, and claims previously validated against the full texts. **Use this primarily to understand established core findings, but DO NOT limit your analysis only to these items.**
+    <adjusted_findings_summary>
+    {adjusted_findings_summary}
+    </adjusted_findings_summary>
+
+2.  **Complete Source Texts (Primary Data):** You have access to the full corpus of original documents for Case '{case_name}'. You **must** base your synthesis analysis *directly and primarily* on a holistic review of these texts.
+    <source_texts>
+    {source_texts}
+    </source_texts>
+
+# Task: Conduct Deep Synthesis Across All Texts ONLY
+Perform an **independent analysis of the complete source texts** for the Research Code '{code}'. Identify and describe the overarching patterns listed below. While informed by the Adjusted Findings Summary, your synthesis must reflect insights gleaned from the **entire corpus**. Consider the defined `{aspects}` of the code throughout your analysis. **Do NOT simply repeat or slightly modify the Adjusted Findings Summary.** <notes> it isn't clear enough what the aspects are used for </notes>
+
+# Detailed Instructions for Synthesis:
+
+1.  **Overall Consistency / Convergence:** Based on **all texts**, what are the most significant points, findings, or themes (including but not limited to those validated in the summary) related to '{code}' that demonstrate strong agreement or consistency across multiple source texts and different source *types*? Note if consistency is particularly strong for specific `{aspects}`.
+2.  **Pervasive Absence:** Based on your review of **all texts** and considering the code's definition and `{aspects}`, what expected information, discussions, or perspectives related to '{code}' are conspicuously *missing* throughout the case data? Describe the nature and potential significance of these absences. Is the absence related to particular `{aspects}`?
+3.  **Theme Saturation / Recurrence:** Which themes (especially those validated as core findings in the Adjusted Summary) are so frequently and consistently present across the **entire dataset** that they can be considered saturated? Does saturation differ across `{aspects}`?
+4.  **Evolution / Change Over Time (If Applicable):** Analyze **all relevant texts** spanning the case timeline. Is there clear evidence of evolution, development, or shifts related to '{code}' (or its specific `{aspects}`) over time? Describe these changes. If none identified, state that.
+5.  **Triangulation:** Search the **full texts** for strong examples where key findings (validated themes/claims OR newly identified points of consistency) can be substantiated by linking converging evidence from **at least two different kinds** of source texts. Describe 1-10 clear examples, noting the finding and the source types involved. Are certain `{aspects}` better triangulated than others?
+6.  **Case-Wide Contradictions / Divergence:** Beyond validating specific contradictions, what are the most significant conflicting perspectives, data points, or unresolved tensions related to '{code}' emerging from the analysis of **all texts**? Do these relate to specific `{aspects}`? Describe the nature of these major tensions.
+7.  **Overall Completeness & Remaining Gaps:** Considering **all texts**, provide a concluding assessment. How comprehensive is the picture regarding '{code}' and its `{aspects}` for this case? What are the most significant remaining gaps in evidence or unanswered questions based *only* on the available data?
+
+# Output Format: Deep Synthesis Report ONLY
+Produce a structured report using Markdown, detailing **only** the deep synthesis findings based on your independent analysis of the complete source texts. Reference specific aspects where relevant.
+
+**Example Output Structure:**
+# Deep Synthesis Findings Report
+
+**Case ID:** {case_name}
+**Code Analyzed:** {code}
+
+## Overall Consistency / Convergence
+* [Description of robust points of agreement across all texts/types. E.g., Strong consistency found regarding aspect 'X', supported by reports and interviews...]
+* [...]
+
+## Pervasive Absence
+* [Detailed description of significant information missing across all texts. E.g., Notable lack of discussion regarding aspect 'Y' in participant accounts...]
+* [...]
+
+## Theme Saturation / Recurrence
+* [Identification of which validated themes are considered core/saturated case-wide. E.g., Theme 'Z' demonstrates high saturation, particularly for aspect 'A'.]
+
+## Evolution / Change Over Time
+* [Description of significant shifts observed across the case timeline related to the code/aspects, if applicable. Otherwise state "No significant evolution identified based on the texts.".]
+
+## Triangulation Notes
+* [Specific example 1 demonstrating triangulation across source types for finding related to aspect 'X'.]
+* [Specific example 2...]
+
+## Case-Wide Contradictions / Divergence
+* [Description of major tensions or conflicting perspectives identified from analyzing all texts, potentially linked to specific aspects.]
+
+## Overall Completeness & Remaining Gaps
+* [Concluding assessment of understanding based on all texts, highlighting key remaining questions or evidence gaps, potentially noting which aspects are less well understood.]
+"""
+
+cross_case_analysis_prompt_without_summary = """
+You are an expert qualitative researcher (Ph.D. level) specializing in **deep synthesis and meta-analysis of qualitative data**. Your task is to conduct a **holistic and independent analysis of the complete set of source texts** for a specific case and research code. Your goal is to identify and describe robust, overarching patterns of evidence and phenomena related to the defined research code, focusing specifically on how these patterns manifest for **each of its defined aspects**. You will analyze the texts through the lens of several synthesis dimensions (e.g., consistency, absence, evolution) for each aspect.
+
+
+# Task: Conduct an Aspect-Centric Deep Synthesis of the Complete Source Texts
+Perform an **independent, de novo analysis of the `complete source_texts`** for the Research Code. Your primary goal is to provide a detailed synthesis **for each defined aspect** of the research code. For each aspect, you will report on the following synthesis dimensions based *solely* on your analysis of the `source_texts`.
+
+# Detailed Instructions for Aspect-Centric Deep Synthesis:
+
+For **EACH defined aspect, provide a detailed analysis covering all the synthesis dimensions listed below. Structure your report with a main heading for each aspect.
+
+**Within EACH Aspect's section, address the following synthesis dimensions:**
+
+1.  **Consistency / Convergence related to this Aspect:**
+    * Across all `source_texts` and different source *types* (e.g., interviews, reports, emails), what are the most significant points, findings, or narratives specifically related to *this aspect* that demonstrate strong agreement or consistent reiteration?
+2.  **Pervasive Absence / Silence related to this Aspect:**
+    * Considering the definition of the overall research code and *this specific aspect*, what expected information, discussions, or perspectives related to *this aspect* are conspicuously or surprisingly *missing* across the entirety of the `source_texts`? Describe the nature and potential significance of these absences for *this aspect*.
+3.  **Highly Recurrent Patterns & Narratives related to this Aspect:**
+    * Based on your review of all `source_texts`, what are the most frequently and richly detailed patterns, concepts, or narratives that emerge concerning *this aspect*? Describe these dominant recurrent elements.
+4.  **Evolution / Change Over Time related to this Aspect (If Applicable & Evident):**
+    * Based on chronological evidence within the `source_texts` (document dates, narrative timelines, relation to the intervention), is there clear evidence of evolution, development, shifts in understanding, or changes in practices specifically concerning *this aspect*? Describe these changes. If no significant evolution is identified for *this aspect*, state that.
+5.  **Triangulation of Key Insights for this Aspect:**
+    * Identify 1-2 core insights or findings specifically related to *this aspect* that can be strongly substantiated by linking converging evidence from at least two different kinds of source texts. For each example, describe the insight for *this aspect* and the different source types providing corroboration. If triangulation is weak or not possible for *this aspect*, note that.
+6.  **Contradictions / Divergence related to this Aspect:**
+    * What are the most significant unresolved tensions, conflicting perspectives, or divergent data points specifically concerning *this aspect* that emerge when considering the entire corpus of `source_texts`?
+7.  **Evidentiary Completeness & Remaining Gaps for this Aspect:**
+    * Based on your comprehensive analysis of all `source_texts`, provide a concluding assessment of the evidence base specifically for *this aspect*. How comprehensively do the available texts illuminate *this aspect*? What are the most significant remaining gaps in evidence or unanswered questions regarding *this aspect* based *only* on the available data?
+
+# Output Format: Aspect-Centric Deep Synthesis Report
+Produce a structured report using Markdown. The primary headings should be for each **aspect**. Under each aspect heading, provide sub-sections for each of the 7 synthesis dimensions as they pertain to that aspect.
+
+**Example Output Structure:**
+# Aspect-Centric Deep Synthesis Report
+
+**Case ID:** {case_name}
+**Code Analyzed:** {code}
+
+## Aspect: [Aspect_Name_1]
+    *This section provides a deep synthesis of all source texts specifically concerning [Aspect_Name_1].*
+
+### 1. Consistency / Convergence for [Aspect_Name_1]
+    * [Description of robust points of agreement across all texts/types specifically related to [Aspect_Name_1]. E.g., "Regarding [Aspect_Name_1], there is strong consistency across project reports and stakeholder interviews that X was a primary consideration..."]
+
+### 2. Pervasive Absence / Silence for [Aspect_Name_1]
+    * [Detailed description of significant information missing across all texts specifically related to [Aspect_Name_1]. E.g., "While [Aspect_Name_1] details X, there is a notable absence of discussion concerning its impact on Y group across all reviewed documents..."]
+
+### 3. Highly Recurrent Patterns & Narratives for [Aspect_Name_1]
+    * [Description of dominant, frequently detailed patterns or narratives emerging from the texts concerning [Aspect_Name_1]. E.g., "A recurrent narrative for [Aspect_Name_1] is the challenge of Z, detailed extensively in field notes..."]
+
+### 4. Evolution / Change Over Time for [Aspect_Name_1]
+    * [Description of significant shifts specifically for [Aspect_Name_1], if applicable. E.g., "The approach to [Aspect_Name_1] shows a clear shift pre- and post-intervention, with initial strategies focusing on A, later evolving to incorporate B..." Otherwise state "No significant evolution identified for [Aspect_Name_1] based on the texts.".]
+
+### 5. Triangulation of Key Insights for [Aspect_Name_1]
+    * **Insight 1 for [Aspect_Name_1]:** [Concise statement of the insight.]
+        * **Triangulating Sources:** [e.g., This is supported by internal memos outlining policy P and external evaluations describing the effects of P.]
+    * *(If applicable, Insight 2...)*
+    * *(If triangulation is weak/not possible: "Triangulation for key insights regarding [Aspect_Name_1] is limited due to reliance on a single source type for critical information.")*
+
+### 6. Contradictions / Divergence for [Aspect_Name_1]
+    * [Description of major tensions or conflicting perspectives specifically for [Aspect_Name_1]. E.g., "Regarding [Aspect_Name_1], official guidelines (Doc A) state X, but multiple interviewees (Docs B, C) report that Y was the common practice..."]
+
+### 7. Evidentiary Completeness & Remaining Gaps for [Aspect_Name_1]
+    * [Concluding assessment for [Aspect_Name_1]. E.g., "The evidence base for [Aspect_Name_1] is strong concerning initial planning, but significant gaps remain regarding its long-term maintenance and user adaptation..."]
+
+## Aspect: [Aspect_Name_2]
+    *This section provides a deep synthesis of all source texts specifically concerning [Aspect_Name_2].*
+
+### 1. Consistency / Convergence for [Aspect_Name_2]
+    * [...]
+
+### 2. Pervasive Absence / Silence for [Aspect_Name_2]
+    * [...]
+
+...(Repeat for all 7 dimensions for Aspect_Name_2)...
+
+...(Repeat for all other aspects)...
+"""
+
+final_insights_prompt = """
+You are an expert qualitative researcher. Your task is to critically analyze and integrate findings from two distinct analytical reports for a given case study (`adjusted_summary` and `deep_synthesis_report`). The `adjusted_summary` has been generated by looking at each text from a case individually, extracting the quotes that relate to the research code into an intermediairy summary, and then combining all the intermediairy summaries from each text into the adjusted_summary for all texts. Therefore the `adjusted_summary` offers a more granular view of the case, and might lose some insights that would be derived from looking a the whole case. The `deep_synthesis_report` has been generated by looking at all the cases and extracting themes/insights/patterns, given that this report is generated by looking at all the cases simultaneously it might have lost some more granular details. Based on this critical integration, you must formulate a set of **Final Synthesis Insights** that represent the most significant, consolidated, and nuanced conclusions about the research code for this case. Lastly, You will use the `log_insight` tool to record each distinct insight you formulate (You must not output anything, and must use the tool call to log your insights/patterns/conclusions). For each insight you must use the `log_insight` tool once, which means for each analysis you must call the log_insight tool multiple times if you find multiple insights.
+
+# Background on Input Reports
+You will receive two reports:
+1.  **`adjusted_summary`**: This summary was created by first analyzing each text document individually, extracting relevant quotes, summarizing findings per document, and then combining and refining these findings across all documents. It offers a detailed, theme-focused view built up from individual texts but might sometimes miss nuances only apparent when viewing all texts together holistically.
+2.  **`deep_synthesis_report`**: This report was created by analyzing all text documents together as a whole corpus, focusing on identifying broader patterns (like consistency, absence, evolution) structured by predefined aspects of the research code. It offers a holistic, structural view but might sometimes overlook granular details present in individual texts.
+
+# Context
+* **Case Name:** `{case_name}`
+* **Research Code (Name and Description):** `{code}`
+* **Aspects (for context):** `{aspects}`
+* **Research Question (Optional):** `{research_question}`
+* **Intervention (Optional):** `{intervention}`
+
+# Input Data
+1.  **Adjusted Findings Summary (`adjusted_summary`):**
+    <adjusted_summary>
+    {adjusted_summary_text}
+    </adjusted_summary>
+
+2.  **Aspect-Centric Deep Synthesis Report (`deep_synthesis_report`):**
+    <deep_synthesis_report>
+    {deep_synthesis_report_text}
+    </deep_synthesis_report>
+
+# Your Task: Create and Log Final Insights
+
+1.  **Compare Reports (Internal Thought Process):**
+    * Read both the `adjusted_summary` and `deep_synthesis_report` carefully.
+    * Identify where they **agree**.
+    * Note where one report **adds detail or context** to the other (complementarity).
+    * Pay close attention to where they seem to **differ or present tensions**. Consider why these differences might exist based on how each report was generated (granular vs. holistic view). For example, a specific statement highlighted in the `adjusted_summary` might be contradicted or re-contextualized by broader patterns identified in the `deep_synthesis_report` (like the "environmentally friendly" example).
+
+<"environmentally friendly" example>
+* **Example of Handling Differences:** Imagine the `adjusted_summary` strongly reflects manager statements found in several individual texts, leading to a theme like "Company states commitment to environmental friendliness." However, imagine the `deep_synthesis_report`, looking across all texts holistically, finds consistent evidence of unsustainable operational practices AND perhaps even internal communications suggesting managers were instructed to emphasize environmental friendliness regardless of practice.
+
+* **How to Interpret and Formulate Insights:**
+    1.  **Recognize the Conflict:** Identify the discrepancy between the *stated* commitment (potentially prominent in individual texts, reflected in `adjusted_summary`) and the *observed reality* or *deeper context* (revealed by patterns, absences, or specific contradictory evidence across all texts in `deep_synthesis_report`).
+    2.  **Prioritize Holistic Evidence:** Give more weight to the findings derived from the holistic, cross-text analysis (`deep_synthesis_report`) when it provides crucial context or contradicts isolated statements or themes based on potentially curated statements. The goal is the most accurate overall picture.
+    3.  **Formulate Nuanced Insights:** Do **NOT** create two directly contradictory Final Insights (e.g., FSI 1: "Company is Environmentally Friendly," FSI 2: "Company is Not Environmentally Friendly"). Instead, formulate one or more insights that capture the **resolved understanding** or the **nature of the tension itself**. Possible valid insights from this example could be:
+        * `Insight Label: Gap Between Stated Environmental Goals and Operational Reality`
+            `Insight Explanation: Analysis reveals a significant discrepancy where the company's public messaging and stated commitments to environmental friendliness are not consistently supported by evidence of sustainable operational practices found across multiple sources.`
+        * `Insight Label: Potential 'Greenwashing' Indicated by Conflicting Evidence`
+            `Insight Explanation: While environmental claims are present, the holistic view across texts suggests these may function as 'greenwashing,' given substantial evidence of non-sustainable practices and possible internal directives to manage public perception.`
+        * Or potentially two related insights: `Insight A: Unsustainable Practices Identified in Operations` and `Insight B: Evidence Suggests Coordinated Environmental Messaging Despite Practices`.
+</"environmentally friendly" example>
+
+* The key is that the Final Insight(s) accurately reflect the complexity revealed by comparing both reports, leaning towards the interpretation best supported by the *entire* body of evidence.
+* Determine the most accurate, overall understanding by integrating both perspectives. If there's a conflict, lean towards the interpretation best supported by the holistic view (`deep_synthesis_report`) if it provides critical context, but also consider if important granular details from the `adjusted_summary` need to be incorporated.
+
+**Step 2: Create Final Insights**
+* Based on comparing the reports in Step 1, create distinct **Final Insights**.
+* Each insight should be a key conclusion about the `{code}`, showing the combined understanding from both input reports.
+* **Consider the Aspects:** Use the `{aspects}` list (provided in Context) to help shape your insights. Think about whether each insight:
+    * Relates mainly to one aspect?
+    * Connects multiple aspects?
+    * Applies to the overall `{code}` or its implementation?
+    * Use aspects to clarify your insights, but focus only on the most important conclusions from your comparison – you don't need an insight for every aspect.
+* Insights **must address any significant differences or tensions** found when comparing the reports. Clearly state the final interpretation or describe the tension (e.g., "Stated goals conflict with observed practices"). Do **not** create directly opposing insights.
+
+3.  **Log Insights using `log_insight` Tool:**
+    * For **each** Final Insight created in Step 2, call the `log_insight` tool **once** (since each report consists of multiple insights, you will likely call the tool multiple times).
+    * Fill in the tool's fields based on your insight.
+
+# Tool Usage: `log_insight`
+
+Call `log_insight` for **every** Final Insight you create.
+
+## Tool Schema: `log_insight`
+```json
+{{
+  "insight_label": "<string>",
+  "insight_explanation": "<string>",
+  "supporting_evidence_summary": "<string>"
+}}
+
+Field Explanations:
+insight_label: Short, clear title for the Final Insight (e.g., "Iterative Adaptation Focuses on Operations over Community Input").
+insight_explanation: Clear and detailled explanation of the insight. Explain its meaning and how it combines findings from both input reports, addressing any complexities or differences noted during your comparison.
+supporting_evidence_summary: State which parts or types of findings in the input reports support this insight. Example: "Supported by theme X on adaptation (Adjusted Summary) and findings on absent community feedback mechanisms (Deep Synthesis Report)." Do not include specific quotes here.
+
+Final Output Instructions
+Compare the two input reports.
+Create detailled and exhaustive Final Insights reflecting the combined understanding (explaining agreements and differences).
+For each Final Insight, prepare the required information (insight_label, insight_explanation, supporting_evidence_summary).
+Call the log_insight tool once for each Final Insight.
+Produce only calls to the log_insight tool as your output. No other text before, between, or after the tool calls.
+"""
+
+find_evidence_prompt = """
+You are a meticulous research analyst specializing in nuanced evidence assessment. Your task is to analyze a provided "Final Insight" and cross-reference it against a "Corpus of Evidence." For each piece of evidence in the corpus, you must determine its relationship to the given Final Insight and classify this relationship using a defined agreement scale.
+
+For **each** piece of evidence that has a discernible relationship (either supporting or contradicting) to the Final Insight, you **must** call the `log_evidence_relationship` tool.
+
+**1. Understand the Provided Insight:**
+You will be given a single "Final Insight" in JSON format. It contains:
+* `insight_label`: A concise title for the insight.
+* `insight_explanation`: A detailed explanation of the insight, its meaning, and how it integrates different findings. **This is the most crucial part for you to understand to assess the relationship of evidence.**
+* `supporting_evidence_summary`: A high-level summary of what types of findings support the insight (this is for context, but your assessment must be more granular).
+
+**Example Final Insight Format:**
+```json
+{
+  "insight_label": "Adaptation Cycle: Strong on Operational Reactivity, Lighter on Proactive Socio-Cultural Integration",
+  "insight_explanation": "Malaria Consortium demonstrates a robust capacity to modify its SMC programs based on ongoing monitoring, operational research, and emergent challenges... However, the deep synthesis suggests that while epidemiological and basic health system factors are assessed upfront, the identification and integration of nuanced, location-specific socio-cultural factors... tend to occur more reactively...",
+  "supporting_evidence_summary": "Supported by themes on 'Evidence-Driven Adaptation' (Adjusted Summary), and findings on 'Pervasive Absence' of proactive deep socio-cultural integration (Deep Synthesis Report...)"
+}
+2. Understand the Corpus of Evidence:
+You will be given a "Corpus of Evidence" in JSON format. This is a collection of all evidence items extracted for the case. Each evidence item includes:
+
+chronology: The timing of the evidence relative to an intervention ("before", "during", "after", "unclear").
+Doc Name: The name of the source document for the quote.
+Quote: The verbatim text passage extracted as evidence.
+Reasoning: The original reasoning provided when this quote was first extracted. (See instruction #5 on how to handle this field).
+Example Evidence Corpus Format (Illustrative Snippet):
+
+{
+  "0": {
+    "chronology": "unclear",
+    "Doc Name": "2012-05-12 Interview Notes.md",
+    "Quote": "In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs...",
+    "Reasoning": "This quote demonstrates Malaria Consortium's practice of adapting its implementation strategy..."
+  },
+  "1": {
+    // ... other evidence items
+  }
+}
+3. Your Core Task: Assessing Evidence Relationship to the Insight
+
+Carefully read and deeply understand the insight_explanation of the single Final Insight provided. What is its core argument, central claim, key nuances, or described pattern?
+Iterate through each piece of evidence in the Corpus of Evidence.
+For each piece of evidence, evaluate: What is the relationship of this Quote (considering its chronology) to the core meaning, claims, or nuances articulated in the insight_explanation?
+Based on your evaluation, assign an agreement_level using the definitions in section #4.
+4. Agreement Scale Definitions:
+You must classify the relationship of each relevant piece of evidence to the Final Insight using one of the following four levels:
+
+strongly_agrees: The Quote provides direct, unambiguous, and powerful confirmation of a core assertion or a key nuance of the Final Insight. The evidence strongly and clearly supports the insight without significant caveats related to the point of agreement.
+
+Example: If the insight states "community engagement was minimal," a quote like "No community meetings were held throughout the project's duration" would strongly agree.
+agrees: The Quote provides supporting information that aligns with the Final Insight or one of its components, but the support may be less direct, less comprehensive, address a subsidiary aspect, or have minor caveats. The evidence tends to confirm the insight but is not as forceful or central as strongly_agrees.
+
+Example: If the insight states "community engagement was minimal," a quote like "Project staff mentioned they mostly interacted with local leaders rather than the broader community" would agree.
+disagrees: The Quote presents information, a perspective, or specific details that are contrary to, challenge, or raise questions about a part of the Final Insight. However, it may not entirely invalidate the whole insight, especially if the insight is multi-faceted. The evidence tends to contradict a component of the insight.
+
+Example: If the insight states "community engagement was minimal," a quote like "We conducted several focus groups with community members in the initial phase" would disagree (it suggests some engagement, challenging "minimal").
+strongly_disagrees: The Quote provides direct, unambiguous, and powerful evidence that fundamentally contradicts or refutes a core assertion or a key nuance of the Final Insight.
+
+Example: If the insight states "community engagement was minimal," a quote like "The project's success was built upon daily collaborative sessions with diverse community representatives over a six-month period" would strongly disagree.
+If a piece of evidence is entirely irrelevant to the Final Insight or its relationship is too ambiguous to classify using the scale above, do not call the tool for that piece of evidence.
+
+5. Crucial Instruction on Using Evidence Fields for Assessment:
+
+Your decision to classify the relationship and assign an agreement_level MUST primarily be based on the content of the Quote and the context provided by its chronology in relation to the Final Insight.
+DO NOT use the Reasoning field associated with an evidence item to decide its relationship to the current Final Insight. The original Reasoning was for the initial extraction, which might have been for a different purpose. While you will include this original Reasoning in your tool call (for traceability), it should not influence your relationship assessment for this specific task.
+6. Tool Usage: log_evidence_relationship
+For every piece of evidence for which you can discern a relationship (as defined by the agreement scale) to the Final Insight, you must call the log_evidence_relationship tool once.
+
+Tool Schema: log_evidence_relationship
+{
+  "insight_label": "<string>",
+  "evidence_doc_name": "<string>",
+  "evidence_quote": "<string>",
+  "evidence_chronology": "<string>",
+  "agreement_level": "<'strongly_agrees' | 'agrees' | 'disagrees' | 'strongly_disagrees'>",
+  "original_reasoning_for_quote": "<string>"
+}
+
+Tool Input Field Descriptions:
+
+insight_label: The insight_label from the provided Final Insight.
+evidence_doc_name: The Doc Name from the assessed piece of evidence.
+evidence_quote: The exact, unaltered Quote from the assessed piece of evidence.
+evidence_chronology: The chronology from the assessed piece of evidence.
+agreement_level: Your classification of the evidence's relationship to the insight, chosen from the four defined levels.
+original_reasoning_for_quote: The Reasoning string from the assessed piece of evidence (for traceability).
+7. Instructions:
+
+Receive the single Final Insight (JSON) and the Corpus of Evidence (JSON).
+Thoroughly understand the insight_explanation of the Final Insight.
+For each evidence item in the Corpus of Evidence: a. Analyze its Quote and chronology in relation to the Final Insight. b. Determine if a discernible relationship exists and classify it using the agreement_level scale (strongly_agrees, agrees, disagrees, strongly_disagrees). c. If a relationship is classified, prepare the information for the log_evidence_relationship tool. d. Call the log_evidence_relationship tool with these details.
+Continue until all evidence items in the corpus have been evaluated against the Final Insight.
+8. Output Requirements:
+
+Your response MUST be a list of one or more calls to the log_evidence_relationship tool if evidence with a discernible relationship is found.
+If, after reviewing all evidence, you find no pieces of evidence that have a classifiable relationship (according to the defined scale) to the provided Final Insight, you should output an empty list [] of tool calls.
+Provide only the tool calls as your output. Do not include any other explanatory text, summaries, or notes outside of the tool call structures.
+"""
+
+
+# Export the variables
+__all__ = [
+    'identify_key_aspects_prompt', 
+    'identify_intervention', 
+    'identify_evidence_prompt',
+    'synthesize_evidence', 
+    'evaluate_evidence_vs_full_prompt',
+    'cross_case_analysis_prompt',
+    'final_synthesis_prompt',
+]
+
+================
+File: coding_state.py
+================
+from typing import TypedDict, List, Dict, Optional, Annotated, Any
+import logging
+
+def merge_aspects(
+    current: Optional[Dict[str, Optional[List[str]]]],
+    new: Optional[Dict[str, List[str]]],
+) -> Dict[str, Optional[List[str]]]:
+    """
+    Merges new code aspects into the current state.
+    current: Dictionary mapping code descriptions to their aspects
+    new: Dictionary containing updates of code descriptions to their aspects
+    """
+    if current is None:
+        current = {}
+    if new is None:
+        return current
+
+    current.update(new)
+    return current
+
+def merge_case_info(
+    current: Optional[Dict[str, Dict[str, Any]]],
+    new: Optional[Dict[str, Dict[str, Any]]],
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Merges new case info into the current state.
+    
+    Args:
+        current: Dictionary mapping case ids to CaseInfo objects
+        new: Dictionary containing updates of case ids to CaseInfo objects
+    
+    Returns:
+        Updated dictionary with merged case info
+    """
+    if current is None:
+        current = {}
+    if new is None:
+        return current
+    
+    # For each case_id in the new dictionary
+    for case_id, new_info in new.items():
+        if case_id in current:
+            # If the case_id exists in current, update its fields with new values
+            current[case_id].update(new_info)
+        else:
+            # If the case_id doesn't exist, add it
+            current[case_id] = new_info
+    
+    return current
+
+def merge_evidence_list(
+    current: Optional[Dict[str, List[Dict[str, Any]]]],
+    new: Optional[Dict[str, List[Dict[str, Any]]]],
+) -> Dict[str, List[Dict[str, Any]]]:
+    """
+    Merges new evidence into the current state based on case descriptions.
+    
+    Args:
+        current: Dictionary mapping case descriptions to their evidence lists
+        new: Dictionary containing updates of case descriptions to evidence lists
+    
+    Returns:
+        Updated dictionary with merged evidence lists
+    """
+    if current is None:
+        current = {}
+    if new is None:
+        return current
+    
+    # For each case_description in the new dictionary
+    for case_description, new_evidence_list in new.items():
+        if case_description in current:
+            # If the case_description exists in current, extend its evidence list
+            current[case_description].extend(new_evidence_list)
+        else:
+            # If the case_description doesn't exist, add it with its evidence list
+            current[case_description] = new_evidence_list
+    
+    return current
+
+def merge_evidence_from_subgraph(
+    current: Optional[Dict[str, List[Any]]], 
+    new: Optional[List[Any]]
+) -> Dict[str, List[Any]]:
+    """
+    Merges evidence from subgraph into the main state's evidence_list.
+    
+    Args:
+        current: Current evidence_list in main state (dict keyed by code)
+        new: New evidence list from subgraph (flat list)
+    
+    Returns:
+        Updated evidence_list with evidence grouped by code_description
+    """
+    if current is None:
+        current = {}
+    if not new:
+        return current
+    
+    # Group new evidence by code_description
+    for item in new:
+        if not isinstance(item, dict):
+            continue
+            
+        code_desc = item.get("code_description", "unknown")
+        if code_desc not in current:
+            current[code_desc] = []
+        current[code_desc].append(item)
+    
+    return current
+
+def merge_synthesis_results(
+    current: Optional[Dict[str, str]],
+    new: Optional[Dict[str, str]]
+) -> Dict[str, str]:
+    """
+    Merges new synthesis results into the current state.
+    
+    Args:
+        current: Dictionary mapping code descriptions to their synthesis results
+        new: Dictionary containing new synthesis results for codes
+    
+    Returns:
+        Updated dictionary with merged synthesis results
+    """
+    if current is None:
+        current = {}
+    if new is None:
+        return current
+    
+    current.update(new)
+    return current
+
+def merge_final_insights_from_subgraph(
+    current: Optional[Dict[str, List[Any]]], 
+    new: Optional[List[Any]]
+) -> Dict[str, List[Any]]:
+    """
+    Merges final insights from subgraph into the main state's final_insights_list.
+    
+    Args:
+        current: Current final_insights_list in main state (dict keyed by code)
+        new: New final insights list from subgraph (flat list)
+    
+    Returns:
+        Updated final_insights_list with insights grouped by code_description
+    """
+    if current is None:
+        current = {}
+    if not new:
+        return current
+
+    # Group new insights by code_description
+    for item in new:
+        if not isinstance(item, dict):
+            continue
+
+        code_desc = item.get("code_description", "unknown")
+        if code_desc not in current:
+            current[code_desc] = []
+        current[code_desc].append(item)
+
+    return current
+
+def append_evidence(
+    current: Optional[List[Any]],
+    new: Optional[List[Any]]
+) -> List[Any]:
+    """
+    Reducer for lists, especially CaseProcessingState.evidence_list and CaseProcessingState.final_insights_list.
+    - For FinalInsight objects: Updates existing insight if label matches, otherwise appends.
+    - For Evidence objects: Appends if quote is unique for that document.
+    - For FinalEvidence objects (tool output for FindEvidenceInputState.processed_evidence_for_insight): Appends.
+    - For other types: Appends if not an exact duplicate.
+    """
+    if current is None:
+        current = []
+    if new is None: # If new is None, just return the current list
+        return current
+
+    logging.info(f"[append_evidence_reducer] Called with {len(current)} current items and {len(new)} new items.")
+
+    # --- Part 1: Handle FinalInsight objects (typically when reducing CaseProcessingState.final_insights_list) ---
+    # These are complete FinalInsight objects, potentially updated by worker nodes.
+    
+    # Create a map of current FinalInsights for efficient update/lookup.
+    # These are the FinalInsight objects already in the `current` list being reduced.
+    current_final_insights_map = {
+        fi['insight_label']: fi
+        for fi in current
+        if isinstance(fi, dict) and "insight_label" in fi and "insight_explanation" in fi # Identifies FinalInsight
+    }
+
+    # Identify FinalInsight objects coming from `new`
+    new_final_insight_updates = [
+        item for item in new
+        if isinstance(item, dict) and "insight_label" in item and "insight_explanation" in item # Identifies FinalInsight
+    ]
+
+    for insight_update in new_final_insight_updates:
+        label = insight_update['insight_label']
+        # This replaces the existing entry in the map or adds a new one.
+        # The insight_update is assumed to be the more complete/recent version from a worker.
+        current_final_insights_map[label] = insight_update
+        logging.info(f"[append_evidence_reducer] Processed (updated/added) FinalInsight '{label}' with {len(insight_update.get('final_evidence_list', []))} evidence items.")
+
+    # --- Part 2: Reconstruct the list and handle other item types ---
+
+    # Start with items from the original `current` list that are NOT FinalInsights
+    result_list = [
+        item for item in current
+        if not (isinstance(item, dict) and "insight_label" in item and "insight_explanation" in item)
+    ]
+
+    # Add all unique FinalInsights (original, updated, or newly added) from the map
+    # This ensures that if 'current' had FinalInsights not present in 'new', they are preserved,
+    # and if 'new' had updates, those updates are used.
+    result_list.extend(list(current_final_insights_map.values()))
+    
+    # Identify items in `new` that were not FinalInsight updates (already handled by map)
+    other_new_items_to_process = [
+        item for item in new
+        if not (isinstance(item, dict) and "insight_label" in item and "insight_explanation" in item)
+    ]
+
+    # Create sets for de-duplication of Evidence and FinalEvidence items
+    # These sets are built from the current state of `result_list` *after* FinalInsights are merged.
+    existing_regular_evidence_ids = set()
+    for item in result_list:
+        if isinstance(item, dict) and "quote" in item and "doc_name" in item and \
+           not ("insight_label" in item and "insight_explanation" in item): # Is Evidence
+            existing_regular_evidence_ids.add((item["doc_name"], item["quote"][:100]))
+
+    existing_final_evidence_ids = set()
+    for item in result_list:
+         if isinstance(item, dict) and "insight_label" in item and "agreement_level" in item: # Is FinalEvidence
+            key = (item["insight_label"], item.get("evidence_doc_name"), item.get("evidence_quote", "")[:100])
+            existing_final_evidence_ids.add(key)
+
+
+    for item in other_new_items_to_process:
+        if isinstance(item, dict):
+            # Handling for regular Evidence objects (e.g. from log_quote_reasoning)
+            if "quote" in item and "doc_name" in item and \
+               not ("insight_label" in item and "insight_explanation" in item): # Is Evidence
+                evidence_id = (item["doc_name"], item["quote"][:100])
+                if evidence_id not in existing_regular_evidence_ids:
+                    result_list.append(item)
+                    existing_regular_evidence_ids.add(evidence_id)
+                    logging.info(f"[append_evidence_reducer] Added new regular Evidence from doc '{item['doc_name']}': {item['quote'][:30]}...")
+                else:
+                    logging.info(f"[append_evidence_reducer] Skipping duplicate regular Evidence from doc '{item['doc_name']}': {item['quote'][:30]}...")
+            
+            # Handling for FinalEvidence objects (e.g. from log_evidence_relationship)
+            # This is primarily for the `processed_evidence_for_insight` list within FindEvidenceInputState
+            elif "insight_label" in item and "agreement_level" in item: # Is FinalEvidence
+                final_evidence_id = (item["insight_label"], item.get("evidence_doc_name"), item.get("evidence_quote","")[:100])
+                if final_evidence_id not in existing_final_evidence_ids:
+                    result_list.append(item)
+                    existing_final_evidence_ids.add(final_evidence_id)
+                    logging.info(f"[append_evidence_reducer] Added new FinalEvidence for insight '{item['insight_label']}': {item.get('evidence_quote', '')[:30]}...")
+                else:
+                    logging.info(f"[append_evidence_reducer] Skipping duplicate FinalEvidence for insight '{item['insight_label']}': {item.get('evidence_quote', '')[:30]}...")
+            
+            # Fallback for other dictionary types not explicitly handled above
+            else:
+                is_present = False
+                for existing_item in result_list:
+                    if existing_item == item: # Simple equality check for other dicts
+                        is_present = True
+                        break
+                if not is_present:
+                    result_list.append(item)
+                    logging.info(f"[append_evidence_reducer] Added other new dict item: {str(item)[:50]}...")
+                else:
+                    logging.info(f"[append_evidence_reducer] Skipping duplicate other dict item: {str(item)[:50]}...")
+        else:
+            # For non-dict items, append if not an exact duplicate in the list
+            if item not in result_list:
+                result_list.append(item)
+                logging.info(f"[append_evidence_reducer] Added other non-dict item: {str(item)[:50]}...")
+            else:
+                logging.info(f"[append_evidence_reducer] Skipping duplicate other non-dict item: {str(item)[:50]}...")
+                
+    logging.info(f"[append_evidence_reducer] Returning merged list of {len(result_list)} items.")
+    return result_list
+
+class Evidence(TypedDict):
+    quote: str
+    reasoning: str
+    aspect: List[str]
+    chronology: str
+    code_description: str 
+    doc_name: str  
+
+class CaseInfo(TypedDict):
+    directory: str
+    description: Optional[str]
+    intervention: Optional[str]
+
+class FinalEvidence(TypedDict):
+    insight_label: str
+    evidence_doc_name: str
+    evidence_quote: str
+    evidence_chronology: str
+    agreement_level: str 
+    original_reasoning_for_quote: str 
+
+class FinalInsight(TypedDict):
+    code_description: str
+    insight_label: str
+    insight_explanation: str
+    supporting_evidence_summary: str
+    final_evidence_list: List[FinalEvidence]
+
+class CaseProcessingState(TypedDict):
+    case_id: str
+    directory: str
+    intervention: str
+    research_question: str
+    codes: Dict[str, List[str]]
+    evidence_list: Annotated[List[Evidence], append_evidence]
+    synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
+    revised_synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
+    cross_case_analysis_results: Annotated[Dict[str, str], merge_synthesis_results]
+    final_insights_list: Annotated[List[FinalInsight], append_evidence]
+
+class CodeProcessingState(TypedDict):
+    file_path: str
+    code_description: str
+    aspects: List[str]
+    intervention: str
+    research_question: str
+    case_id: str
+    evidence_list: Annotated[List[Evidence], append_evidence]
+
+class CodingState(TypedDict):
+    research_question: str
+    codes: Annotated[Dict[str, Optional[List[str]]], merge_aspects]
+    cases_info: Annotated[Dict[str, CaseInfo], merge_case_info]
+    evidence_list: Annotated[Dict[str, List[Evidence]], merge_evidence_from_subgraph]
+    final_insights: Annotated[Dict[str, List[FinalInsight]], merge_final_insights_from_subgraph]
+
+class SynthesisState(TypedDict):
+    case_id: str
+    code_description: str
+    research_question: str
+    intervention: str
+    evidence_subset: List[Dict[str, Any]]
+
+class EvaluateSynthesisState(TypedDict):
+    case_id: str
+    directory: str
+    code_description: str
+    research_question: str
+    intervention: str
+    synthesis_result: str
+    
+class CrossCaseAnalysisState(TypedDict):
+    case_id: str
+    code_description: str
+    directory: str
+    research_question: str
+    intervention: str
+    aspects: List[str]
+    cross_case_analysis_result: str
+
+class FinalInsightState(TypedDict):
+      case_id: str
+      code_description: str
+      research_question: str
+      intervention: str
+      aspects: List[str]
+      revised_synthesis_result: str
+      cross_case_analysis_result: str
+      final_insights_list: Annotated[List[FinalInsight], append_evidence]
+
+class FindEvidenceInputState(TypedDict):
+      current_final_insight: FinalInsight
+      full_evidence_list: List[Evidence]
+      processed_evidence_for_insight: Annotated[List[FinalEvidence], append_evidence]
+
+================
+File: coding_tools.py
+================
+from typing import List, Annotated, cast,Callable, List, Any
+from langchain_core.tools import tool
+from langchain_core.messages import ToolMessage
+from langchain_core.tools import tool, ToolException
+from langchain_core.tools.base import InjectedToolCallId
+from langchain_core.messages import ToolMessage
+from langchain_core.tools import tool
+from langgraph.types import Command
+from coding_state import Evidence, FinalInsight, FinalEvidence
+from langgraph.prebuilt import InjectedState
+
+
+# --- logging tool ---
+@tool
+def log_quote_reasoning(
+    quote: str,
+    reasoning: str,
+    aspect: List[str],
+    chronology: str,
+    state: Annotated[dict, InjectedState],
+    tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
+    """
+    Tool for logging evidence found during text analysis.
+    
+    Args:
+        quote: The text passage extracted as evidence
+        reasoning: Explanation of why this quote is evidence
+        aspect: List of aspects this quote relates to
+        chronology: Timing relative to intervention (before/during/after/unclear)
+        tool_call_id: Injected tool call ID
+        code_description: The code this evidence relates to
+        doc_name: Source document name
+    """
+    # Input validation
+    if not quote or not isinstance(quote, str):
+        raise ToolException("Quote must be a non-empty string")
+    if not reasoning or not isinstance(reasoning, str):
+        raise ToolException("Reasoning must be a non-empty string")
+    if not aspect or not isinstance(aspect, list):
+        raise ToolException("Aspect must be a non-empty list")
+    if not chronology or chronology not in ["before", "during", "after", "unclear"]:
+        raise ToolException("Chronology must be one of: before, during, after, unclear")
+    
+    # Get the current state dictionary
+    code_description = state["code_description"]
+    doc_name = state["file_path"]
+    
+    # Create evidence item
+    new_evidence = cast(Evidence, {
+        "quote": quote,
+        "reasoning": reasoning,
+        "aspect": aspect,
+        "chronology": chronology,
+        "code_description": code_description,
+        "doc_name": doc_name
+    })
+
+    # Create tool message
+    tool_message = ToolMessage(
+        content=f"Successfully logged evidence from document '{doc_name}': '{quote[:50]}...'",
+        tool_call_id=tool_call_id
+    )
+    
+    # Return Command object with both evidence_list and messages updates
+    return Command(
+        update={
+            "evidence_list": [new_evidence],
+        }
+    )
+
+@tool
+def log_insight(
+    insight_label: str,
+    insight_explanation: str,
+    supporting_evidence_summary: str,
+    state: Annotated[dict, InjectedState],
+    tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
+    """
+    Tool for logging final insights after analyzing synthesis results.
+    
+    Args:
+        insight_label: Short, clear title for the Final Insight
+        insight_explanation: Clear and detailed explanation of the insight
+        supporting_evidence_summary: Summary of evidence supporting this insight
+        state: Injected state containing code_description
+        tool_call_id: Injected tool call ID
+    """
+    # Input validation
+    if not insight_label or not isinstance(insight_label, str):
+        raise ToolException("Insight label must be a non-empty string")
+    if not insight_explanation or not isinstance(insight_explanation, str):
+        raise ToolException("Insight explanation must be a non-empty string")
+    if not supporting_evidence_summary or not isinstance(supporting_evidence_summary, str):
+        raise ToolException("Supporting evidence summary must be a non-empty string")
+
+    # Get the current state dictionary
+    code_description = state["code_description"]
+
+    # Create final insight item
+    new_final_insight = cast(FinalInsight, {
+        "code_description": code_description,
+        "insight_label": insight_label,
+        "insight_explanation": insight_explanation,
+        "supporting_evidence_summary": supporting_evidence_summary,
+        "final_evidence_list": [] 
+    })
+
+    # Create tool message
+    tool_message = ToolMessage(
+        content=f"Successfully logged insight '{insight_label}' for code '{code_description[:30]}...'",
+        tool_call_id=tool_call_id
+    )
+
+    # Return Command object with final_insights_list update
+    return Command(
+        update={
+            "final_insights_list": [new_final_insight],
+        }
+    )
+
+
+@tool
+def log_evidence_relationship(
+    quote: str,
+    reasoning: str,
+    chronology: str,
+    agreement_level: str,
+    state: Annotated[dict, InjectedState],
+    tool_call_id: Annotated[str, InjectedToolCallId]
+) -> Command:
+    """
+    Tool for logging evidence that relates to a final insight.
+    
+    Args:
+        quote: The text passage extracted as evidence
+        reasoning: Original reasoning for this evidence
+        chronology: Timing relative to intervention (before/during/after/unclear)
+        agreement_level: How strongly this evidence supports the insight 
+                        ('strongly_agrees', 'agrees', 'disagrees', 'strongly_disagrees')
+        state: Injected state containing the current_final_insight
+        tool_call_id: Injected tool call ID
+    """
+    # Input validation
+    if not quote or not isinstance(quote, str):
+        raise ToolException("Quote must be a non-empty string")
+    if not reasoning or not isinstance(reasoning, str):
+        raise ToolException("Reasoning must be a non-empty string")
+    if not chronology or chronology not in ["before", "during", "after", "unclear"]:
+        raise ToolException("Chronology must be one of: before, during, after, unclear")
+    if not agreement_level or agreement_level not in ["strongly_agrees", "agrees",
+"disagrees", "strongly_disagrees"]:
+        raise ToolException("Agreement level must be one of: strongly_agrees, agrees,disagrees, strongly_disagrees")
+
+    # Get the current state dictionary
+    insight_label = state["current_final_insight"]["insight_label"]
+    doc_name = state.get("current_final_insight", {}).get("doc_name", "Unknown document")
+
+    # Create final evidence item
+    new_evidence = cast(FinalEvidence, {
+        "insight_label": insight_label,
+        "quote": quote,
+        "reasoning": reasoning,
+        "doc_name": doc_name,
+        "chronology": chronology,
+        "agreement_level": agreement_level
+    })
+
+    # Create tool message
+    tool_message = ToolMessage(
+        content=f"Successfully logged evidence with agreement level '{agreement_level}' for insight '{insight_label[:50]}...'",
+        tool_call_id=tool_call_id
+    )
+
+    # Return Command object with evidence update
+    return Command(
+        update={
+            "processed_evidence_for_insight": [new_evidence],
+        }
+    )
+
+# Define the evidence extraction tools
+QUOTE_REASONING_TOOL: List[Callable[..., Any]] = [log_quote_reasoning]
+INSIGHT_TOOL: List[Callable[..., Any]] = [log_insight]
+LOG_EVIDENCE_RELATIONSHIP_TOOL: List[Callable[..., Any]] = [log_evidence_relationship]
+
+================
+File: coding_utils.py
+================
+from __future__ import annotations
+import argparse, json, logging
+from typing import Dict, List, Tuple, Optional, cast
+from coding_state import CodingState, CaseInfo
+from langchain_core.runnables.graph import MermaidDrawMethod
+
+def _parse_code_string(raw: str) -> str:
+    """
+    Normalises an input like 'Name: Definition' or just 'Definition'
+    into the key we store in the state.
+    """
+    name, sep, definition = raw.partition(":")
+    if sep:
+        name, definition = name.strip(), definition.strip()
+        return f"{name}: {definition}" if definition else name
+    return raw.strip()
+
+def parse_arguments() -> argparse.Namespace:
+    """Parses command-line arguments for the main execution script."""
+    parser = argparse.ArgumentParser(description="Run Multi-Phase Qualitative Analysis Workflow using LangGraph")
+    parser.add_argument(
+        "--research_question",
+        required=True,
+        help="Overall research question guiding the analysis."
+    )
+    parser.add_argument(
+        "--code_list",
+        required=True,
+        nargs='+',
+        help="List of code strings, typically 'Name: Definition' or just 'Description'."
+    )
+    parser.add_argument(
+        "--charities",
+        required=True,
+        type=json.loads,
+        help='JSON string representing a list of dictionaries, each with "charity_id", "charity_directory", and optional "charity_overview".'
+    )
+    return parser.parse_args()
+
+
+def initialize_state(args: argparse.Namespace) -> CodingState:
+    """Creates the initial LangGraph state from CLI arguments."""
+    logging.info("‑‑‑ Initialising graph state ‑‑‑")
+
+    # 1. Codes → dict keyed by description
+    codes: Dict[str, Optional[List[str]]] = {}
+    for raw in args.code_list:
+        key = _parse_code_string(raw)
+        if key in codes:
+            logging.warning("Duplicate code skipped: %s", key)
+            continue
+        codes[key] = None  # Initialize with None, will be replaced with aspects list
+    logging.info("Added %d code entries", len(codes))
+
+    # 2. Charities / cases
+    cases: Dict[str, CaseInfo] = {}
+    for item in args.charities:
+        if not isinstance(item, dict):
+            logging.warning("Charity entry is not a dict: %s", item); continue
+        cid, directory = item.get("charity_id"), item.get("charity_directory")
+        if not (cid and directory):
+            logging.warning("Missing id/directory in charity entry: %s", item); continue
+        cases[cid] = CaseInfo(
+            directory=directory,
+            description=item.get("charity_overview"),
+            intervention=None,
+        )
+    logging.info("Added %d case entries", len(cases))
+
+    # 3. Assemble and return CodingState
+    state: CodingState = cast(CodingState, {
+        "research_question": args.research_question,
+        "codes": codes,
+        "cases_info": cases,
+        "evidence_list": {},  # Initialize with empty dictionary
+    })
+    logging.info("‑‑‑ Initial state ready ‑‑‑")
+    return state
+
+
+def visualize_graph(graph, name):
+    """Visualize the graph."""
+    try:
+        png_data = graph.get_graph(xray=2).draw_mermaid_png(
+            draw_method=MermaidDrawMethod.API,
+        )
+        with open(f'{name}.png', 'wb') as f:
+            f.write(png_data)
+        print(f"Graph visualization saved to '{name}.png'")
+    except Exception as e:
+        print(f"Error saving graph visualization: {e}")
+
+
+
+================================================================
+End of Codebase
+================================================================
