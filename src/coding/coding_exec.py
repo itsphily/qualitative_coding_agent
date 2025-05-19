@@ -6,7 +6,7 @@ from coding_state import (CodingState,
                           EvaluateSynthesisState,
                           CrossCaseAnalysisState, 
                           FinalInsightState,
-                          FindEvidenceState)
+                          FindEvidenceInputState, FinalInsight, FinalEvidence)
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List
@@ -32,7 +32,7 @@ from coding_prompt import (
     find_evidence_prompt
 )
 from coding_utils import visualize_graph
-from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL, EVIDENCE_RELATIONSHIP_TOOL
+from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL, LOG_EVIDENCE_RELATIONSHIP_TOOL
 from langgraph.types import Command
 import json
 
@@ -90,7 +90,7 @@ llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro
                                                            temperature=0,
                                                            max_tokens=None,
                                                            timeout=None,
-                                                           max_retries=4,
+                                                           max_retries=10,
                                                            google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
@@ -109,8 +109,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
-llm_evidence_finder_with_tools = llm_long_context_high_processing.bind_tools(EVIDENCE_RELATIONSHIP_TOOL)
-
+llm_log_evidence_relationship_with_tools = llm_long_context_high_processing.bind_tools(LOG_EVIDENCE_RELATIONSHIP_TOOL)
 
 runtime_config = {  "configurable": {
                     "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
@@ -120,7 +119,7 @@ runtime_config = {  "configurable": {
                     "llm_evaluate_synthesis": llm_long_context_high_processing,
                     "llm_cross_case_analysis": llm_long_context_high_processing,
                     "llm_final_insights": llm_insight_extractor_with_tools,
-                    "llm_evidence_finder": llm_evidence_finder_with_tools,
+                    "llm_evidence_relationship": llm_log_evidence_relationship_with_tools,
                     "code_description": "unknown_code",
                     "doc_name": "unknown_doc"
                     }
@@ -1156,174 +1155,202 @@ def generate_final_insight_node(state: FinalInsightState) -> Dict:
 
 def aggregation_final_insights_node(state: CaseProcessingState) -> CaseProcessingState:
     """
-    Aggregates final insights from all codes.
+    Aggregates final insights from all codes and prepares them for evidence finding.
     """
+    final_insights_list = state.get("final_insights_list", [])
+
+    # Ensure each final insight has a final_evidence_list field initialized
+    for insight in final_insights_list:
+        if "final_evidence_list" not in insight:
+            insight["final_evidence_list"] = []
+
+    logging.info(f"[aggregation_final_insights_node] Aggregated {len(final_insights_list)} final insights")
     return state
 
-def continue_to_find_relevant_evidence(state: CaseProcessingState) -> List[Send]:
+def aggregation_relevant_evidence(state: CaseProcessingState) -> CaseProcessingState:
     """
-    Routing function that sends each final insight to the find_relevant_evidence node.
-
+    Aggregates evidence relationship results from all insights.
+    Ensures each insight has its evidence properly associated.
+    
     Args:
-        state: Current state with final insights and evidence
-
+        state: Current state with all insights and their evidence
+        
     Returns:
-        List of Send objects for each final insight
+        Updated state with insights and their associated evidence
+    """
+    final_insights_list = state.get("final_insights_list", [])
+
+    # Log the aggregated insights and their evidence
+    for insight in final_insights_list:
+        insight_label = insight.get("insight_label", "unknown")
+        evidence_count = len(insight.get("final_evidence_list", []))
+        logging.info(f"[aggregation_relevant_evidence] Insight '{insight_label[:30]}...' has {evidence_count} pieces of evidence")
+
+    return state
+
+def continue_to_find_evidence_for_insights(state: CaseProcessingState) -> List[Send]:
+    """
+    Routing function that sends each final insight to the find_relevant_evidence_node
+    along with the full evidence corpus.
+    
+    Args:
+        state: Current state with final insights and evidence corpus
+        
+    Returns:
+        List of Send objects, one for each final insight, or END if no insights to process
     """
     case_id = state.get("case_id", "unknown")
     final_insights_list = state.get("final_insights_list", [])
     evidence_list = state.get("evidence_list", [])
-
+    
     if not final_insights_list:
-        logging.warning(f"[continue_to_find_relevant_evidence] No final insights found in state for case {case_id}")
-        return []
-
+        logging.warning(f"[continue_to_find_evidence_for_insights] No insights to process for case {case_id}")
+        return [END]  # Return END if no insights to process
+    
+    if not evidence_list:
+        logging.warning(f"[continue_to_find_evidence_for_insights] No evidence corpus available for case {case_id}")
+        return [END]  # Return END if no evidence to process
+    
+    logging.info(f"[continue_to_find_evidence_for_insights] Processing {len(final_insights_list)} insights with {len(evidence_list)} evidence items")
+    
     sends = []
-    logging.info(f"[continue_to_find_relevant_evidence] Processing {len(final_insights_list)} final insights for evidence collection")
-
     for insight in final_insights_list:
-        find_evidence_input = {
-            "code_description": insight.get("code_description", ""),
-            "insight_label": insight.get("insight_label", ""),
-            "insight_explanation": insight.get("insight_explanation", ""),
-            "supporting_evidence_summary": insight.get("supporting_evidence_summary", ""),
-            "evidence_list": evidence_list,
-            "final_evidence_list": []
-        }
-
-        sends.append(Send("find_relevant_evidence_node", find_evidence_input))
-        logging.info(f"[continue_to_find_relevant_evidence] Sending insight '{insight.get('insight_label', '')}' for evidence collection")
-
+        insight_label = insight.get("insight_label", "unknown")
+        # Create input state for find_relevant_evidence_node
+        evidence_input = FindEvidenceInputState(
+            current_final_insight=insight,
+            full_evidence_list=evidence_list,
+            processed_evidence_for_insight=[]  # Initialize as empty list
+        )
+        
+        sends.append(Send("find_relevant_evidence_node", evidence_input))
+        logging.info(f"[continue_to_find_evidence_for_insights] Sending insight '{insight_label[:30]}...' to evidence finder")
+    
     return sends
 
-def find_relevant_evidence_node(state: FindEvidenceState) -> Dict:
-      """
-      Worker Node: Finds relevant evidence for a specific final insight.
-      Uses an LLM that can make tool calls to log evidence relationships.
-      
-      Args:
-          state: Input state containing insight information and evidence list
-          
-      Returns:
-          Updated state with evidence relationships added via tool calls
-      """
-      node_name = "find_relevant_evidence_node"
-      code_description = state.get("code_description", "unknown")
-      insight_label = state.get("insight_label", "")
-      insight_explanation = state.get("insight_explanation", "")
-      supporting_evidence_summary = state.get("supporting_evidence_summary", "")
-      evidence_list = state.get("evidence_list", [])
-
-      logging.info(f"[{node_name}] Finding evidence relationships for insight '{insight_label}' in code '{code_description[:60]}...'")
-
-      # Validate inputs
-      if not insight_label or not insight_explanation or not evidence_list:
-          logging.warning(f"[{node_name}] Missing insight or evidence data for code {code_description}")
-          return {"final_evidence_list": []}
-
-      # Create insight JSON
-      insight_json = {
-          "insight_label": insight_label,
-          "insight_explanation": insight_explanation,
-          "supporting_evidence_summary": supporting_evidence_summary
-      }
-
-      # Format evidence for the prompt
-      formatted_evidence = {}
-      for i, evidence in enumerate(evidence_list):
-          if evidence.get("code_description") == code_description:
-              formatted_evidence[str(i)] = {
-                  "chronology": evidence.get("chronology", "unclear"),
-                  "Doc Name": evidence.get("doc_name", "Unknown"),
-                  "Quote": evidence.get("quote", ""),
-                  "Reasoning": evidence.get("reasoning", "")
-              }
-
-      if not formatted_evidence:
-          logging.warning(f"[{node_name}] No evidence found for code {code_description}")
-          return {"final_evidence_list": []}
-
-      # Get LLM with tool binding from config
-      config = get_config()
-      llm_with_tools = config.get("configurable", {}).get("llm_evidence_finder")
-      if not llm_with_tools:
-          logging.error(f"[{node_name}] LLM for evidence finding not found in config")
-          return {"final_evidence_list": []}
-
-      # Format the prompt
-      system_content = find_evidence_prompt
-      human_content = f"""
-      Here is the final insight for which you need to evaluate evidence relationships:
-      
-      # Final Insight
-      {json.dumps(insight_json, indent=2)}
-      
-      # Corpus of Evidence
-      {json.dumps(formatted_evidence, indent=2)}
-      
-      Please evaluate how each piece of evidence relates to this insight (agreement level), focusing on their quotes.
-      """
-
-      system_msg = SystemMessage(content=system_content)
-      human_msg = HumanMessage(content=human_content)
-
-      # Set up the state object for the tool to access
-      insight_state = {
-          "code_description": code_description,
-          "insight_label": insight_label
-      }
-
-      # Execute the LLM with tool
-      logging.info(f"[{node_name}] Executing LLM to find evidence relationships for insight '{insight_label}'")
-      ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": insight_state}})
-      logging.info(f"[{node_name}] Completed evidence relationship analysis for insight '{insight_label}'")
-
-      # Process tool calls
-      tool_calls = []
-      if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
-          tool_calls = ai_message.tool_calls
-          logging.info(f"[{node_name}] Found {len(tool_calls)} tool calls in LLM response")
-      else:
-          logging.warning(f"[{node_name}] No tool calls found in LLM response")
-          return {"final_evidence_list": []}
-
-      # Execute the tools and collect Commands
-      commands = []
-      tools_by_name = {tool.name: tool for tool in EVIDENCE_RELATIONSHIP_TOOL}
-
-      for tool_call in tool_calls:
-          try:
-              # Get tool by name
-              tool_name = tool_call.get("name", "")
-              if tool_name not in tools_by_name:
-                  logging.error(f"[{node_name}] Unknown tool: {tool_name}")
-                  continue
-
-              # Execute tool with arguments from tool call
-              tool = tools_by_name[tool_name]
-              args = tool_call.get("args", {})
-              args["tool_call_id"] = tool_call.get("id", "unknown")
-
-              args["state"] = insight_state
-
-              logging.info(f"[{node_name}] Executing tool {tool_name} with args: {args}")
-
-              # Execute tool and collect command
-              command = tool.invoke(args)
-              if isinstance(command, Command):
-                  commands.append(command)
-                  logging.info(f"[{node_name}] Added Command from tool {tool_name}")
-          except Exception as e:
-              logging.error(f"[{node_name}] Error executing tool {tool_call.get('name', 'unknown')}: {e}")
-
-      logging.info(f"[{node_name}] Returning {len(commands)} Commands to update state")
-      return commands
-
-def aggregation_final_evidence_node(state: CaseProcessingState) -> CaseProcessingState:
+def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
     """
-    Aggregates final evidence from all codes.
+    Worker Node: Identifies evidence relevant to a specific final insight.
+    Manually processes tool calls from the LLM to populate the insight's evidence list.
+    Returns a single updated FinalInsight object.
     """
-    return state
+    node_name = "find_relevant_evidence_node"
+    current_final_insight = state.get("current_final_insight", {})
+    full_evidence_list = state.get("full_evidence_list", [])
+
+    if not isinstance(current_final_insight, dict) or not current_final_insight.get("insight_label"):
+        logging.error(f"[{node_name}] Invalid or incomplete current_final_insight: {current_final_insight}")
+        # Return a structure that won't break the reducer, or raise error
+        return FinalInsight(code_description="Error", insight_label="Error", insight_explanation="Invalid input insight", supporting_evidence_summary="", final_evidence_list=[])
+
+
+    insight_label = current_final_insight.get("insight_label", "unknown_insight_label") # Should always exist due to check above
+    insight_explanation = current_final_insight.get("insight_explanation", "")
+
+    logging.info(f"[{node_name}] Finding evidence for insight '{insight_label[:50]}...'")
+
+    if not insight_explanation:
+        logging.warning(f"[{node_name}] Missing insight explanation for insight '{insight_label}'. Returning original.")
+        # Ensure it has final_evidence_list initialized
+        if "final_evidence_list" not in current_final_insight:
+             current_final_insight["final_evidence_list"] = []
+        return current_final_insight
+
+    if not full_evidence_list:
+        logging.warning(f"[{node_name}] No evidence corpus for insight '{insight_label}'. Returning original.")
+        if "final_evidence_list" not in current_final_insight:
+             current_final_insight["final_evidence_list"] = []
+        return current_final_insight
+
+    config_from_graph = get_config() # Renamed to avoid conflict
+    llm_with_tools = config_from_graph.get("configurable", {}).get("llm_evidence_relationship")
+    if not llm_with_tools:
+        logging.error(f"[{node_name}] LLM for evidence relationship not found in config for insight '{insight_label}'")
+        if "final_evidence_list" not in current_final_insight:
+             current_final_insight["final_evidence_list"] = []
+        return current_final_insight
+
+    evidence_corpus_for_prompt = {}
+    for idx, evidence_item in enumerate(full_evidence_list):
+        evidence_corpus_for_prompt[str(idx)] = {
+            "chronology": evidence_item.get("chronology", "unclear"),
+            "Doc Name": os.path.basename(evidence_item.get("doc_name", "Unknown Document")),
+            "Quote": evidence_item.get("quote", ""),
+            "Reasoning": evidence_item.get("reasoning", "")
+        }
+    formatted_evidence_corpus_str = json.dumps(evidence_corpus_for_prompt, indent=2)
+    
+    # The find_evidence_prompt is the system message.
+    # The human message provides the specific data for this run.
+    system_content = find_evidence_prompt 
+    human_content = f"""
+Single Final Insight to process:
+{{
+  "insight_label": "{insight_label}",
+  "insight_explanation": "{insight_explanation.replace('"', '\\"')}",
+  "supporting_evidence_summary": "{current_final_insight.get('supporting_evidence_summary','').replace('"', '\\"')}"
+}}
+
+Corpus of Evidence to search:
+<corpus_of_evidence>
+{formatted_evidence_corpus_str}
+</corpus_of_evidence>
+
+Remember to call the `log_evidence_relationship` tool for EVERY piece of evidence that has a discernible relationship to the insight explanation.
+"""
+    system_msg = SystemMessage(content=system_content)
+    human_msg = HumanMessage(content=human_content)
+
+    logging.info(f"[{node_name}] Preparing to execute LLM for insight_label='{insight_label}'")
+    
+    # The 'state' for InjectedState in the tool is the FindEvidenceInputState of this worker
+    ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": state}})
+    logging.info(f"[{node_name}] Completed LLM execution for insight '{insight_label}'")
+
+    processed_evidence_list_for_this_insight = [] # This will hold FinalEvidence items
+
+    # Check if the tool directly updated state.processed_evidence_for_insight via Command
+    # This is the more LangGraph-idiomatic way if the tool's Command is correctly processed
+    # by the time this node's code continues after llm.invoke().
+    # However, direct processing of ai_message.tool_calls is more robust if Command processing is tricky.
+    
+    # For robustness, let's prioritize manually parsing tool_calls from ai_message,
+    # as this is explicitly what the LLM returned.
+    if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+        logging.info(f"[{node_name}] Found {len(ai_message.tool_calls)} tool calls in LLM response for insight '{insight_label}'")
+        for tool_call in ai_message.tool_calls:
+            if tool_call.get("name") == "log_evidence_relationship":
+                args = tool_call.get("args", {})
+                try:
+                    final_evidence_item = FinalEvidence(
+                        insight_label=insight_label,
+                        evidence_doc_name=args.get("evidence_doc_name", "N/A from tool call"),
+                        evidence_quote=args.get("evidence_quote", "N/A from tool call"),
+                        evidence_chronology=args.get("evidence_chronology", "unclear from tool call"),
+                        agreement_level=args.get("agreement_level", "unknown from tool call"),
+                        original_reasoning_for_quote=args.get("original_reasoning_for_quote", "N/A from tool call")
+                    )
+                    processed_evidence_list_for_this_insight.append(final_evidence_item)
+                    logging.debug(f"[{node_name}] Manually processed tool call for insight '{insight_label}': {args.get('evidence_quote', 'N/A')[:30]}...")
+                except KeyError as e:
+                    logging.error(f"[{node_name}] Missing argument in tool call for log_evidence_relationship: {e}. Args: {args}")
+                except Exception as e: # Catch any other error during FinalEvidence creation
+                    logging.error(f"[{node_name}] Error creating FinalEvidence from tool call args: {e}. Args: {args}")
+            else:
+                logging.warning(f"[{node_name}] Encountered unexpected tool call: {tool_call.get('name')}")
+    else:
+        logging.warning(f"[{node_name}] No tool calls found in LLM response for insight '{insight_label}'")
+        # If state.get("processed_evidence_for_insight") was populated by Command, use it as fallback
+        if state.get("processed_evidence_for_insight"):
+             logging.info(f"[{node_name}] Using processed_evidence_for_insight from state as fallback for insight '{insight_label}'.")
+             processed_evidence_list_for_this_insight = list(state.get("processed_evidence_for_insight", []))
+
+
+    updated_insight = dict(current_final_insight) # Make a copy to modify
+    updated_insight["final_evidence_list"] = processed_evidence_list_for_this_insight
+
+    logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(updated_insight['final_evidence_list'])} pieces of evidence.")
+    return updated_insight
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
@@ -1341,7 +1368,7 @@ case_processing_graph.add_node("aggregation_cross_case_analysis_node", aggregati
 case_processing_graph.add_node("generate_final_insight_node", generate_final_insight_node)
 case_processing_graph.add_node("aggregation_final_insights_node", aggregation_final_insights_node)
 case_processing_graph.add_node("find_relevant_evidence_node", find_relevant_evidence_node)
-case_processing_graph.add_node("aggregation_final_evidence_node", aggregation_final_evidence_node)
+case_processing_graph.add_node("aggregation_relevant_evidence", aggregation_relevant_evidence)
 
 # Add edges to implement the ReAct pattern
 case_processing_graph.add_edge(START, "case_start")
@@ -1367,9 +1394,9 @@ case_processing_graph.add_conditional_edges(
 case_processing_graph.add_edge("cross_case_analysis_node", "aggregation_cross_case_analysis_node")
 case_processing_graph.add_conditional_edges("aggregation_cross_case_analysis_node", continue_to_final_insight, ["generate_final_insight_node"])
 case_processing_graph.add_edge("generate_final_insight_node", "aggregation_final_insights_node")
-case_processing_graph.add_conditional_edges("aggregation_final_insights_node", continue_to_find_relevant_evidence, ["find_relevant_evidence_node"])
-case_processing_graph.add_edge("find_relevant_evidence_node", "aggregation_final_evidence_node")
-case_processing_graph.add_edge("aggregation_final_evidence_node", END)
+case_processing_graph.add_conditional_edges("aggregation_final_insights_node",continue_to_find_evidence_for_insights,["find_relevant_evidence_node"] )
+case_processing_graph.add_edge("find_relevant_evidence_node", "aggregation_relevant_evidence")
+case_processing_graph.add_edge("aggregation_relevant_evidence", END)
 
 # Compile the subgraph
 case_processing_subgraph = case_processing_graph.compile()

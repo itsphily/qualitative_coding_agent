@@ -101,7 +101,8 @@ def log_insight(
         "code_description": code_description,
         "insight_label": insight_label,
         "insight_explanation": insight_explanation,
-        "supporting_evidence_summary": supporting_evidence_summary
+        "supporting_evidence_summary": supporting_evidence_summary,
+        "final_evidence_list": [] 
     })
 
     # Create tool message
@@ -117,70 +118,67 @@ def log_insight(
         }
     )
 
+
 @tool
 def log_evidence_relationship(
-    insight_label: str,
-    evidence_doc_name: str,
-    evidence_quote: str,
-    evidence_chronology: str,
+    quote: str,
+    reasoning: str,
+    chronology: str,
     agreement_level: str,
-    original_reasoning_for_quote: str,
     state: Annotated[dict, InjectedState],
-    tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
+    tool_call_id: Annotated[str, InjectedToolCallId]
+) -> Command:
     """
-    Tool for logging the relationship between evidence and a final insight.
+    Tool for logging evidence that relates to a final insight.
     
     Args:
-        insight_label: The insight label from the final insight
-        evidence_doc_name: The document name of the evidence
-        evidence_quote: The exact quote from the evidence
-        evidence_chronology: Timing relative to intervention (before/during/after/unclear)
-        agreement_level: One of: 'strongly_agrees', 'agrees', 'disagrees', 'strongly_disagrees'
-        original_reasoning_for_quote: The original reasoning provided for the quote
-        state: Injected state containing code_description
+        quote: The text passage extracted as evidence
+        reasoning: Original reasoning for this evidence
+        chronology: Timing relative to intervention (before/during/after/unclear)
+        agreement_level: How strongly this evidence supports the insight 
+                        ('strongly_agrees', 'agrees', 'disagrees', 'strongly_disagrees')
+        state: Injected state containing the current_final_insight
         tool_call_id: Injected tool call ID
     """
     # Input validation
-    if not insight_label or not isinstance(insight_label, str):
-        raise ToolException("Insight label must be a non-empty string")
-    if not evidence_doc_name or not isinstance(evidence_doc_name, str):
-        raise ToolException("Evidence document name must be a non-empty string")
-    if not evidence_quote or not isinstance(evidence_quote, str):
-        raise ToolException("Evidence quote must be a non-empty string")
-    if not evidence_chronology or evidence_chronology not in ["before", "during", "after", "unclear"]:
-        raise ToolException("Evidence chronology must be one of: before, during, after, unclear")
-    if not agreement_level or agreement_level not in ["strongly_agrees", "agrees", "disagrees", "strongly_disagrees"]:
-        raise ToolException("Agreement level must be one of: strongly_agrees, agrees, disagrees, strongly_disagrees")
-    if not original_reasoning_for_quote or not isinstance(original_reasoning_for_quote, str):
-        raise ToolException("Original reasoning for quote must be a non-empty string")
+    if not quote or not isinstance(quote, str):
+        raise ToolException("Quote must be a non-empty string")
+    if not reasoning or not isinstance(reasoning, str):
+        raise ToolException("Reasoning must be a non-empty string")
+    if not chronology or chronology not in ["before", "during", "after", "unclear"]:
+        raise ToolException("Chronology must be one of: before, during, after, unclear")
+    if not agreement_level or agreement_level not in ["strongly_agrees", "agrees",
+"disagrees", "strongly_disagrees"]:
+        raise ToolException("Agreement level must be one of: strongly_agrees, agrees,disagrees, strongly_disagrees")
 
-    # Get the insight info from the state
-    code_description = state["code_description"]
+    # Get the current state dictionary
+    insight_label = state["current_final_insight"]["insight_label"]
+    doc_name = state.get("current_final_insight", {}).get("doc_name", "Unknown document")
 
-    # Create evidence relationship item
+    # Create final evidence item
     new_evidence = cast(FinalEvidence, {
         "insight_label": insight_label,
-        "evidence_doc_name": evidence_doc_name,
-        "evidence_quote": evidence_quote,
-        "evidence_chronology": evidence_chronology,
-        "agreement_level": agreement_level,
-        "original_reasoning_for_quote": original_reasoning_for_quote
+        "quote": quote,
+        "reasoning": reasoning,
+        "doc_name": doc_name,
+        "chronology": chronology,
+        "agreement_level": agreement_level
     })
 
     # Create tool message
     tool_message = ToolMessage(
-        content=f"Successfully logged evidence relationship for insight '{insight_label}': '{evidence_quote[:50]}...' - {agreement_level}",
+        content=f"Successfully logged evidence with agreement level '{agreement_level}' for insight '{insight_label[:50]}...'",
         tool_call_id=tool_call_id
     )
 
-    # Return Command object with final_evidence_list update
+    # Return Command object with evidence update
     return Command(
         update={
-            "final_evidence_list": [new_evidence],
+            "processed_evidence_for_insight": [new_evidence],
         }
     )
 
 # Define the evidence extraction tools
 QUOTE_REASONING_TOOL: List[Callable[..., Any]] = [log_quote_reasoning]
 INSIGHT_TOOL: List[Callable[..., Any]] = [log_insight]
-EVIDENCE_RELATIONSHIP_TOOL: List[Callable[..., Any]] = [log_evidence_relationship]
+LOG_EVIDENCE_RELATIONSHIP_TOOL: List[Callable[..., Any]] = [log_evidence_relationship]

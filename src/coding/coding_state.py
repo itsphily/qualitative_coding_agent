@@ -78,50 +78,6 @@ def merge_evidence_list(
     
     return current
 
-def append_evidence(
-    current: Optional[List[Any]],
-    new: Optional[List[Any]]
-) -> List[Any]:
-    """
-    Appends new items to a list.
-    Handles None values gracefully.
-    Prevents duplicates by checking quote text.
-    
-    Args:
-        current: Current list
-        new: New list of items to append
-        
-    Returns:
-        Combined list with duplicates removed
-    """
-    if current is None:
-        current = []
-    if new is None:
-        return current
-
-    logging.info(f"[append_evidence] REDUCER CALLED: Adding {len(new)} evidence items to list of {len(current)} items")
-
-    existing_quotes = set()
-    for item in current:
-        if isinstance(item, dict) and "quote" in item:
-            quote_id = item["quote"][:100] if item["quote"] else ""
-            existing_quotes.add(quote_id)
-
-    items_to_add = []
-    for item in new:
-        if isinstance(item, dict):
-            quote_snippet = item.get('quote', '')[:30] + '...' if item.get('quote') else 'No quote'
-            quote_id = item.get('quote', '')[:100] if item.get('quote', '') else ''
-
-            if quote_id not in existing_quotes:
-                logging.info(f"[append_evidence] Adding NEW evidence: {quote_snippet}")
-                items_to_add.append(item)
-                existing_quotes.add(quote_id)
-            else:
-                logging.info(f"[append_evidence] SKIPPING duplicate evidence: {quote_snippet}")
-
-    return current + items_to_add
-
 def merge_evidence_from_subgraph(
     current: Optional[Dict[str, List[Any]]], 
     new: Optional[List[Any]]
@@ -206,88 +162,128 @@ def merge_final_insights_from_subgraph(
 
     return current
 
-def append_final_evidence(
+def append_evidence(
     current: Optional[List[Any]],
     new: Optional[List[Any]]
 ) -> List[Any]:
     """
-    Appends new final evidence items to a list.
-    Handles None values gracefully.
-    Prevents duplicates by checking quote text.
+    Reducer for lists, especially CaseProcessingState.evidence_list and CaseProcessingState.final_insights_list.
+    - For FinalInsight objects: Updates existing insight if label matches, otherwise appends.
+    - For Evidence objects: Appends if quote is unique for that document.
+    - For FinalEvidence objects (tool output for FindEvidenceInputState.processed_evidence_for_insight): Appends.
+    - For other types: Appends if not an exact duplicate.
     """
     if current is None:
         current = []
-    if new is None:
+    if new is None: # If new is None, just return the current list
         return current
 
-    existing_quotes = set()
-    for item in current:
-        if isinstance(item, dict) and "quote" in item:
-            quote_id = item["quote"][:100] if item["quote"] else ""
-            existing_quotes.add(quote_id)
+    logging.info(f"[append_evidence_reducer] Called with {len(current)} current items and {len(new)} new items.")
 
-    items_to_add = []
-    for item in new:
+    # --- Part 1: Handle FinalInsight objects (typically when reducing CaseProcessingState.final_insights_list) ---
+    # These are complete FinalInsight objects, potentially updated by worker nodes.
+    
+    # Create a map of current FinalInsights for efficient update/lookup.
+    # These are the FinalInsight objects already in the `current` list being reduced.
+    current_final_insights_map = {
+        fi['insight_label']: fi
+        for fi in current
+        if isinstance(fi, dict) and "insight_label" in fi and "insight_explanation" in fi # Identifies FinalInsight
+    }
+
+    # Identify FinalInsight objects coming from `new`
+    new_final_insight_updates = [
+        item for item in new
+        if isinstance(item, dict) and "insight_label" in item and "insight_explanation" in item # Identifies FinalInsight
+    ]
+
+    for insight_update in new_final_insight_updates:
+        label = insight_update['insight_label']
+        # This replaces the existing entry in the map or adds a new one.
+        # The insight_update is assumed to be the more complete/recent version from a worker.
+        current_final_insights_map[label] = insight_update
+        logging.info(f"[append_evidence_reducer] Processed (updated/added) FinalInsight '{label}' with {len(insight_update.get('final_evidence_list', []))} evidence items.")
+
+    # --- Part 2: Reconstruct the list and handle other item types ---
+
+    # Start with items from the original `current` list that are NOT FinalInsights
+    result_list = [
+        item for item in current
+        if not (isinstance(item, dict) and "insight_label" in item and "insight_explanation" in item)
+    ]
+
+    # Add all unique FinalInsights (original, updated, or newly added) from the map
+    # This ensures that if 'current' had FinalInsights not present in 'new', they are preserved,
+    # and if 'new' had updates, those updates are used.
+    result_list.extend(list(current_final_insights_map.values()))
+    
+    # Identify items in `new` that were not FinalInsight updates (already handled by map)
+    other_new_items_to_process = [
+        item for item in new
+        if not (isinstance(item, dict) and "insight_label" in item and "insight_explanation" in item)
+    ]
+
+    # Create sets for de-duplication of Evidence and FinalEvidence items
+    # These sets are built from the current state of `result_list` *after* FinalInsights are merged.
+    existing_regular_evidence_ids = set()
+    for item in result_list:
+        if isinstance(item, dict) and "quote" in item and "doc_name" in item and \
+           not ("insight_label" in item and "insight_explanation" in item): # Is Evidence
+            existing_regular_evidence_ids.add((item["doc_name"], item["quote"][:100]))
+
+    existing_final_evidence_ids = set()
+    for item in result_list:
+         if isinstance(item, dict) and "insight_label" in item and "agreement_level" in item: # Is FinalEvidence
+            key = (item["insight_label"], item.get("evidence_doc_name"), item.get("evidence_quote", "")[:100])
+            existing_final_evidence_ids.add(key)
+
+
+    for item in other_new_items_to_process:
         if isinstance(item, dict):
-            quote_id = item.get('quote', '')[:100] if item.get('quote', '') else ''
-            if quote_id not in existing_quotes:
-                items_to_add.append(item)
-                existing_quotes.add(quote_id)
-
-    return current + items_to_add
-
-def associate_evidence_with_insight(
-      current_insights: Optional[List[Any]],
-      new_evidence: Optional[List[Any]]
-  ) -> List[Any]:
-      """
-      Associates evidence with its corresponding insight.
-      Finds the insight in the insights list that matches the evidence's insight_label,
-      and adds the evidence to that insight's final_evidence_list.
-      
-      Args:
-          current_insights: Current list of insights
-          new_evidence: New list of evidence to associate with insights
-          
-      Returns:
-          Updated list of insights with evidence added to the appropriate insights
-      """
-      if current_insights is None:
-          current_insights = []
-      if new_evidence is None or not new_evidence:
-          return current_insights
-
-      # Create a copy of the insights list to modify
-      updated_insights = []
-      for insight in current_insights:
-          # Create a copy of the insight with an initialized final_evidence_list if not present
-          insight_copy = dict(insight)
-          if "final_evidence_list" not in insight_copy:
-              insight_copy["final_evidence_list"] = []
-          updated_insights.append(insight_copy)
-
-      # For each evidence item, find the matching insight and add the evidence to its list
-      for evidence in new_evidence:
-          if not isinstance(evidence, dict) or "insight_label" not in evidence:
-              continue
-
-          evidence_label = evidence.get("insight_label", "")
-          found = False
-
-          for insight in updated_insights:
-              if insight.get("insight_label", "") == evidence_label:
-                  # Add the evidence to this insight's final_evidence_list
-                  if "final_evidence_list" not in insight:
-                      insight["final_evidence_list"] = []
-                  insight["final_evidence_list"].append(evidence)
-                  found = True
-                  logging.info(f"[associate_evidence_with_insight] Associated evidence with insight '{evidence_label}'")
-                  break
-
-          if not found:
-              logging.warning(f"[associate_evidence_with_insight] Could not find matching insight for evidence with label '{evidence_label}'")
-
-      return updated_insights
+            # Handling for regular Evidence objects (e.g. from log_quote_reasoning)
+            if "quote" in item and "doc_name" in item and \
+               not ("insight_label" in item and "insight_explanation" in item): # Is Evidence
+                evidence_id = (item["doc_name"], item["quote"][:100])
+                if evidence_id not in existing_regular_evidence_ids:
+                    result_list.append(item)
+                    existing_regular_evidence_ids.add(evidence_id)
+                    logging.info(f"[append_evidence_reducer] Added new regular Evidence from doc '{item['doc_name']}': {item['quote'][:30]}...")
+                else:
+                    logging.info(f"[append_evidence_reducer] Skipping duplicate regular Evidence from doc '{item['doc_name']}': {item['quote'][:30]}...")
+            
+            # Handling for FinalEvidence objects (e.g. from log_evidence_relationship)
+            # This is primarily for the `processed_evidence_for_insight` list within FindEvidenceInputState
+            elif "insight_label" in item and "agreement_level" in item: # Is FinalEvidence
+                final_evidence_id = (item["insight_label"], item.get("evidence_doc_name"), item.get("evidence_quote","")[:100])
+                if final_evidence_id not in existing_final_evidence_ids:
+                    result_list.append(item)
+                    existing_final_evidence_ids.add(final_evidence_id)
+                    logging.info(f"[append_evidence_reducer] Added new FinalEvidence for insight '{item['insight_label']}': {item.get('evidence_quote', '')[:30]}...")
+                else:
+                    logging.info(f"[append_evidence_reducer] Skipping duplicate FinalEvidence for insight '{item['insight_label']}': {item.get('evidence_quote', '')[:30]}...")
+            
+            # Fallback for other dictionary types not explicitly handled above
+            else:
+                is_present = False
+                for existing_item in result_list:
+                    if existing_item == item: # Simple equality check for other dicts
+                        is_present = True
+                        break
+                if not is_present:
+                    result_list.append(item)
+                    logging.info(f"[append_evidence_reducer] Added other new dict item: {str(item)[:50]}...")
+                else:
+                    logging.info(f"[append_evidence_reducer] Skipping duplicate other dict item: {str(item)[:50]}...")
+        else:
+            # For non-dict items, append if not an exact duplicate in the list
+            if item not in result_list:
+                result_list.append(item)
+                logging.info(f"[append_evidence_reducer] Added other non-dict item: {str(item)[:50]}...")
+            else:
+                logging.info(f"[append_evidence_reducer] Skipping duplicate other non-dict item: {str(item)[:50]}...")
+                
+    logging.info(f"[append_evidence_reducer] Returning merged list of {len(result_list)} items.")
+    return result_list
 
 class Evidence(TypedDict):
     quote: str
@@ -307,15 +303,15 @@ class FinalEvidence(TypedDict):
     evidence_doc_name: str
     evidence_quote: str
     evidence_chronology: str
-    agreement_level: str
-    original_reasoning_for_quote: str
+    agreement_level: str 
+    original_reasoning_for_quote: str 
 
 class FinalInsight(TypedDict):
     code_description: str
     insight_label: str
     insight_explanation: str
     supporting_evidence_summary: str
-    final_evidence_list: Annotated[List[FinalEvidence], append_final_evidence]
+    final_evidence_list: List[FinalEvidence]
 
 class CaseProcessingState(TypedDict):
     case_id: str
@@ -379,10 +375,7 @@ class FinalInsightState(TypedDict):
       cross_case_analysis_result: str
       final_insights_list: Annotated[List[FinalInsight], append_evidence]
 
-class FindEvidenceState(TypedDict):
-    code_description: str
-    insight_label: str
-    insight_explanation: str
-    supporting_evidence_summary: str
-    evidence_list: List[Evidence]
-    final_evidence_list: Annotated[List[FinalEvidence], append_final_evidence]
+class FindEvidenceInputState(TypedDict):
+      current_final_insight: FinalInsight
+      full_evidence_list: List[Evidence]
+      processed_evidence_for_insight: Annotated[List[FinalEvidence], append_evidence]
