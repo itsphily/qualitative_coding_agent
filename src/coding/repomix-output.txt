@@ -169,7 +169,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
-llm_log_evidence_relationship_with_tools = llm_long_context_high_processing.bind_tools(LOG_EVIDENCE_RELATIONSHIP_TOOL)
+llm_log_evidence_relationship_with_tools = llm_long_context.bind_tools(LOG_EVIDENCE_RELATIONSHIP_TOOL)
 
 runtime_config = {  "configurable": {
                     "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
@@ -1322,7 +1322,7 @@ def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
              current_final_insight["final_evidence_list"] = []
         return current_final_insight
 
-    config_from_graph = get_config() # Renamed to avoid conflict
+    config_from_graph = get_config() 
     llm_with_tools = config_from_graph.get("configurable", {}).get("llm_evidence_relationship")
     if not llm_with_tools:
         logging.error(f"[{node_name}] LLM for evidence relationship not found in config for insight '{insight_label}'")
@@ -1340,8 +1340,6 @@ def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
         }
     formatted_evidence_corpus_str = json.dumps(evidence_corpus_for_prompt, indent=2)
     
-    # The find_evidence_prompt is the system message.
-    # The human message provides the specific data for this run.
     system_content = find_evidence_prompt 
     human_content = f"""
 Single Final Insight to process:
@@ -1363,19 +1361,12 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
 
     logging.info(f"[{node_name}] Preparing to execute LLM for insight_label='{insight_label}'")
     
-    # The 'state' for InjectedState in the tool is the FindEvidenceInputState of this worker
     ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": state}})
     logging.info(f"[{node_name}] Completed LLM execution for insight '{insight_label}'")
 
-    processed_evidence_list_for_this_insight = [] # This will hold FinalEvidence items
+    processed_evidence_list_for_this_insight = []
 
-    # Check if the tool directly updated state.processed_evidence_for_insight via Command
-    # This is the more LangGraph-idiomatic way if the tool's Command is correctly processed
-    # by the time this node's code continues after llm.invoke().
-    # However, direct processing of ai_message.tool_calls is more robust if Command processing is tricky.
-    
-    # For robustness, let's prioritize manually parsing tool_calls from ai_message,
-    # as this is explicitly what the LLM returned.
+    # Manually parsing tool_calls from ai_message,
     if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
         logging.info(f"[{node_name}] Found {len(ai_message.tool_calls)} tool calls in LLM response for insight '{insight_label}'")
         for tool_call in ai_message.tool_calls:
@@ -1394,7 +1385,7 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
                     logging.debug(f"[{node_name}] Manually processed tool call for insight '{insight_label}': {args.get('evidence_quote', 'N/A')[:30]}...")
                 except KeyError as e:
                     logging.error(f"[{node_name}] Missing argument in tool call for log_evidence_relationship: {e}. Args: {args}")
-                except Exception as e: # Catch any other error during FinalEvidence creation
+                except Exception as e:
                     logging.error(f"[{node_name}] Error creating FinalEvidence from tool call args: {e}. Args: {args}")
             else:
                 logging.warning(f"[{node_name}] Encountered unexpected tool call: {tool_call.get('name')}")
@@ -1406,7 +1397,7 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
              processed_evidence_list_for_this_insight = list(state.get("processed_evidence_for_insight", []))
 
 
-    updated_insight = dict(current_final_insight) # Make a copy to modify
+    updated_insight = dict(current_final_insight)
     updated_insight["final_evidence_list"] = processed_evidence_list_for_this_insight
 
     logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(updated_insight['final_evidence_list'])} pieces of evidence.")

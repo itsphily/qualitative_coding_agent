@@ -175,14 +175,12 @@ def append_evidence(
     """
     if current is None:
         current = []
-    if new is None: # If new is None, just return the current list
+    if new is None:
         return current
 
     logging.info(f"[append_evidence_reducer] Called with {len(current)} current items and {len(new)} new items.")
 
     # --- Part 1: Handle FinalInsight objects (typically when reducing CaseProcessingState.final_insights_list) ---
-    # These are complete FinalInsight objects, potentially updated by worker nodes.
-    
     # Create a map of current FinalInsights for efficient update/lookup.
     # These are the FinalInsight objects already in the `current` list being reduced.
     current_final_insights_map = {
@@ -200,13 +198,10 @@ def append_evidence(
     for insight_update in new_final_insight_updates:
         label = insight_update['insight_label']
         # This replaces the existing entry in the map or adds a new one.
-        # The insight_update is assumed to be the more complete/recent version from a worker.
         current_final_insights_map[label] = insight_update
         logging.info(f"[append_evidence_reducer] Processed (updated/added) FinalInsight '{label}' with {len(insight_update.get('final_evidence_list', []))} evidence items.")
 
     # --- Part 2: Reconstruct the list and handle other item types ---
-
-    # Start with items from the original `current` list that are NOT FinalInsights
     result_list = [
         item for item in current
         if not (isinstance(item, dict) and "insight_label" in item and "insight_explanation" in item)
@@ -285,19 +280,6 @@ def append_evidence(
     logging.info(f"[append_evidence_reducer] Returning merged list of {len(result_list)} items.")
     return result_list
 
-class Evidence(TypedDict):
-    quote: str
-    reasoning: str
-    aspect: List[str]
-    chronology: str
-    code_description: str 
-    doc_name: str  
-
-class CaseInfo(TypedDict):
-    directory: str
-    description: Optional[str]
-    intervention: Optional[str]
-
 class FinalEvidence(TypedDict):
     insight_label: str
     evidence_doc_name: str
@@ -312,6 +294,25 @@ class FinalInsight(TypedDict):
     insight_explanation: str
     supporting_evidence_summary: str
     final_evidence_list: List[FinalEvidence]
+
+class Evidence(TypedDict):
+    quote: str
+    reasoning: str
+    aspect: List[str]
+    chronology: str
+    code_description: str 
+    doc_name: str  
+
+class CaseInfo(TypedDict):
+    directory: str
+    description: Optional[str]
+    intervention: Optional[str]
+    synthesis_results: Optional[Dict[str, str]]
+    revised_synthesis_results: Optional[Dict[str, str]]
+    cross_case_analysis_results: Optional[Dict[str, str]]
+    evidence_list: Optional[List[Evidence]]
+    final_insights_list: Optional[List[FinalInsight]]
+
 
 class CaseProcessingState(TypedDict):
     case_id: str

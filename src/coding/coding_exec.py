@@ -1341,7 +1341,7 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
     updated_insight["final_evidence_list"] = processed_evidence_list_for_this_insight
 
     logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(updated_insight['final_evidence_list'])} pieces of evidence.")
-    return updated_insight
+    return {"final_insights_list": [updated_insight]}
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
