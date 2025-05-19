@@ -1167,27 +1167,6 @@ def aggregation_final_insights_node(state: CaseProcessingState) -> CaseProcessin
     logging.info(f"[aggregation_final_insights_node] Aggregated {len(final_insights_list)} final insights")
     return state
 
-def aggregation_relevant_evidence(state: CaseProcessingState) -> CaseProcessingState:
-    """
-    Aggregates evidence relationship results from all insights.
-    Ensures each insight has its evidence properly associated.
-    
-    Args:
-        state: Current state with all insights and their evidence
-        
-    Returns:
-        Updated state with insights and their associated evidence
-    """
-    final_insights_list = state.get("final_insights_list", [])
-
-    # Log the aggregated insights and their evidence
-    for insight in final_insights_list:
-        insight_label = insight.get("insight_label", "unknown")
-        evidence_count = len(insight.get("final_evidence_list", []))
-        logging.info(f"[aggregation_relevant_evidence] Insight '{insight_label[:30]}...' has {evidence_count} pieces of evidence")
-
-    return state
-
 def continue_to_find_evidence_for_insights(state: CaseProcessingState) -> List[Send]:
     """
     Routing function that sends each final insight to the find_relevant_evidence_node
@@ -1343,6 +1322,36 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
     logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(updated_insight['final_evidence_list'])} pieces of evidence.")
     return {"final_insights_list": [updated_insight]}
 
+def aggregation_relevant_evidence(state: CaseProcessingState)-> Dict[str, Any]:
+    """
+    Aggregates evidence relationship results from all insights.
+    Ensures each insight has its evidence properly associated.
+    
+    Args:
+        state: Current state with all insights and their evidence
+        
+    Returns:
+        Updated state with insights and their associated evidence
+    """
+    case_id = state.get("case_id")
+
+    # Construct the dictionary of results for this specific case
+    case_results_payload = {
+        "synthesis_results": state.get("synthesis_results"),
+        "revised_synthesis_results": state.get("revised_synthesis_results"),
+        "cross_case_analysis_results": state.get("cross_case_analysis_results"),
+        "evidence_list": state.get("evidence_list"),
+        "final_insights_list": state.get("final_insights_list") # This is the list of FinalInsight objects for this case
+    }
+
+    # The output must be structured to target the 'cases_info' field in CodingState,
+    # with the current case_id as the key.
+    return {
+        "cases_info": {
+            case_id: case_results_payload
+        }
+    }
+
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
 
@@ -1416,7 +1425,6 @@ coding_graph = coding_graph.compile()
 
 
 if __name__ == "__main__":
-
 
     parsed_args = parse_arguments()
 
