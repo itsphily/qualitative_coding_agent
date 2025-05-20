@@ -280,6 +280,7 @@ def append_evidence(
     logging.info(f"[append_evidence_reducer] Returning merged list of {len(result_list)} items.")
     return result_list
 
+
 class FinalEvidence(TypedDict):
     insight_label: str
     evidence_doc_name: str
@@ -307,11 +308,11 @@ class CaseInfo(TypedDict):
     directory: str
     description: Optional[str]
     intervention: Optional[str]
-    synthesis_results: Optional[Dict[str, str]]
-    revised_synthesis_results: Optional[Dict[str, str]]
-    cross_case_analysis_results: Optional[Dict[str, str]]
+    synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
+    revised_synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
+    cross_case_analysis_results: Annotated[Dict[str, str], merge_synthesis_results]
     evidence_list: Optional[List[Evidence]]
-    final_insights_list: Optional[List[FinalInsight]]
+    final_insights_list: Annotated[List[FinalInsight], append_evidence]
 
 
 class CaseProcessingState(TypedDict):
@@ -339,7 +340,7 @@ class CodingState(TypedDict):
     research_question: str
     codes: Annotated[Dict[str, Optional[List[str]]], merge_aspects]
     cases_info: Annotated[Dict[str, CaseInfo], merge_case_info]
-    evidence_list: Annotated[Dict[str, List[Evidence]], merge_evidence_from_subgraph]
+    evidence_list: Annotated[List[Evidence], append_evidence]
     final_insights: Annotated[Dict[str, List[FinalInsight]], merge_final_insights_from_subgraph]
 
 class SynthesisState(TypedDict):

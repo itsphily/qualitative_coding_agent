@@ -1354,6 +1354,12 @@ def aggregation_relevant_evidence(state: CaseProcessingState)-> Dict[str, Any]:
         }
     }
 
+def aggregation_case_processing(state: CaseProcessingState) -> CaseProcessingState:
+    """
+    Aggregates results from the case processing subgraph.
+    """
+    return state
+
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState)
 
@@ -1413,6 +1419,7 @@ coding_graph.add_node("aspect_aggregation_node", aspect_aggregation_node)
 coding_graph.add_node("intervention_definition_node", intervention_definition_node)
 coding_graph.add_node("case_aggregation_node", case_aggregation_node)
 coding_graph.add_node("case_processing", case_processing_subgraph)
+coding_graph.add_node("aggregation_case_processing", aggregation_case_processing)
 
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
@@ -1421,7 +1428,8 @@ coding_graph.add_edge("aspect_definition_node", "aspect_aggregation_node")
 coding_graph.add_conditional_edges("aspect_aggregation_node", continue_to_intervention_definition, ['intervention_definition_node'])
 coding_graph.add_edge("intervention_definition_node", "case_aggregation_node")
 coding_graph.add_conditional_edges("case_aggregation_node", continue_to_case_processing, ['case_processing'])
-coding_graph.add_edge("case_processing", END)
+coding_graph.add_edge("case_processing", "aggregation_case_processing")
+coding_graph.add_edge("aggregation_case_processing", END)
 
 coding_graph = coding_graph.compile()
 
