@@ -280,7 +280,6 @@ def append_evidence(
     logging.info(f"[append_evidence_reducer] Returning merged list of {len(result_list)} items.")
     return result_list
 
-
 class FinalEvidence(TypedDict):
     insight_label: str
     evidence_doc_name: str
@@ -311,7 +310,7 @@ class CaseInfo(TypedDict):
     synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
     revised_synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
     cross_case_analysis_results: Annotated[Dict[str, str], merge_synthesis_results]
-    evidence_list: Optional[List[Evidence]]
+    evidence_list: Annotated[List[Evidence], append_evidence]
     final_insights_list: Annotated[List[FinalInsight], append_evidence]
 
 

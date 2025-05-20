@@ -90,7 +90,7 @@ llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro
                                                            temperature=0,
                                                            max_tokens=None,
                                                            timeout=None,
-                                                           max_retries=20,
+                                                           max_retries=35,
                                                            google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
@@ -99,7 +99,7 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
                                            temperature=0,
                                            max_tokens=None,
                                            timeout=None,
-                                           max_retries=20,
+                                           max_retries=35,
                                            google_api_key=os.getenv("GOOGLE_API_KEY")
 
 )
@@ -160,7 +160,7 @@ def aspect_definition_node(code_description: str)-> Dict[str, Any]:
                                    in the state, with code_description as key
                                    and aspects list as value.
     """
-    node_name = "aspect_definition_node" # For logging clarity
+    node_name = "aspect_definition_node" 
     logging.info(f"[{node_name}] Running for code: {code_description[:60]}...")
 
     # --- Retrieve LLM from Config using get_config() ---
@@ -229,14 +229,10 @@ def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any
     """
     node_name = "intervention_definition_node"
     directory = case_info["directory"]
-    description = case_info.get("description", "")
     
-    # Get case_id by matching directory from the initial state (passed to this node)
-    # We'll get this from the continue_to_intervention_definition function
-    # which passed the entire case_info to us
     case_id = case_info.get("case_id", None)
     
-    # If case_id isn't available (which shouldn't happen), fall back to using a derived ID
+    # If case_id isn't available fall back to using a derived ID
     if case_id is None:
         # Derive a case_id from the directory name as fallback
         case_id = os.path.basename(directory.rstrip("/"))
@@ -260,7 +256,7 @@ def intervention_definition_node(case_info: CaseInfo) -> Dict[str, Dict[str, Any
                         continue
     except Exception as e:
         logging.error(f"[{node_name}] Error walking directory {directory}: {e}")
-        # Return a meaningful error instead of an empty dict
+        # Return error instead of an empty dict
         return {"cases_info": {case_id: {"intervention": f"Error: Directory processing failed - {e}"}}}
     
     if not aggregated_texts:
@@ -415,7 +411,20 @@ def case_subgraph_start(state: CaseProcessingState):
     Starting node for the case processing subgraph.
     Converts input dictionary to CaseProcessingState.
     """
-    return state
+    case_id = state.get("case_id", "unknown")
+    return CaseProcessingState(
+          case_id=case_id,  # Store for internal use, won't be returned to parent
+          directory=state.get("directory", ""),
+          description=None,  
+          intervention=state.get("intervention", ""),
+          research_question=state.get("research_question", ""),
+          codes=state.get("codes", {}),
+          synthesis_results={},
+          revised_synthesis_results={},  
+          cross_case_analysis_results={},  
+          evidence_list=[],  
+          final_insights_list=[]  
+      )
 
 def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
     """
@@ -1337,11 +1346,15 @@ def aggregation_relevant_evidence(state: CaseProcessingState)-> Dict[str, Any]:
 
     # Construct the dictionary of results for this specific case
     case_results_payload = {
+        "directory": state.get("directory", ""),
+        "description": state.get("description"),
+        "intervention": state.get("intervention", ""),
+        "research_question": state.get("research_question", ""),
         "synthesis_results": state.get("synthesis_results"),
         "revised_synthesis_results": state.get("revised_synthesis_results"),
         "cross_case_analysis_results": state.get("cross_case_analysis_results"),
         "evidence_list": state.get("evidence_list"),
-        "final_insights_list": state.get("final_insights_list") # This is the list of FinalInsight objects for this case
+        "final_insights_list": state.get("final_insights_list")
     }
 
     # The output must be structured to target the 'cases_info' field in CodingState,

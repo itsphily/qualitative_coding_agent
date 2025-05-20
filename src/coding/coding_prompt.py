@@ -269,13 +269,11 @@ Provide your complete output as a clearly structured text report using Markdown 
 evaluate_synthesis_prompt = """
 You are a meticulous qualitative-methods researcher (Ph.D. level) focused on **critical validation, holistic synthesis, and the corrective refinement of preliminary findings**. Your task is to evaluate a **Preliminary Findings Summary** (generated from an initial analysis of extracted quotes) against the **complete set of source texts** for a specific case and research code. Your goal is to **transform the Preliminary Findings Summary into an Adjusted Findings Summary by rigorously correcting, refining, expanding, and validating each component**. This Adjusted Summary must accurately, comprehensively, and nuancedly reflect the evidence across the entire corpus of source texts. You must never adjust the quotes in any way, all the quotes must be the full, unaltered text passages from their original source.
 
-
 # Input Data
 1.  **Preliminary Findings Summary (`synthesis_result`):** This input contains an "Overall Summary," potential "Content Themes" (each with a label and a descriptive summary), "Dimensional Themes" (each with a label and a descriptive summary), "Direct Contradictions," "Strong Singular Claims," and "Exemplar Quotes" identified from extracted evidence.
     *Important Note:* This summary is a first-pass interpretation based on analyzing each text individually. It requires careful scrutiny, correction, and enhancement against the complete source texts. Some nuances or contradictions might not be apparent from the individual texts, but become clear when considering the full corpus. For instance, if a statement was made (ex: "we care about the environment") in one text, but in another we learn that the organization is actually a big polluter, this contradiction might not be apparent from the individual texts, but becomes clear when considering the full corpus.
 
 2.  **Complete Source Texts:** You will be provided with the full corpus of original documents for the case. You **must** use these texts as the definitive source for validation, correction, refinement, and selection of final evidence.
-
 
 # Task: Produce Adjusted Findings Summary
 Systematically review **each component listed** in the Preliminary Findings Summary. For each item (the Overall Summary, each listed Content Theme and its description, each Dimensional Theme and its description, each Contradiction, each Strong Claim, and each Exemplar Quote), search and analyze the **complete source texts**. Your primary goal is to **identify and implement necessary corrections, refinements, or expansions** to ensure each finding's accuracy, nuance, and completeness case-wide, then confirm its validity. Based on this assessment:
@@ -649,15 +647,13 @@ You will be given a "Corpus of Evidence" in JSON format. This is a collection of
 chronology: The timing of the evidence relative to an intervention ("before", "during", "after", "unclear").
 Doc Name: The name of the source document for the quote.
 Quote: The verbatim text passage extracted as evidence.
-Reasoning: The original reasoning provided when this quote was first extracted. (See instruction #5 on how to handle this field).
 Example Evidence Corpus Format (Illustrative Snippet):
 
 {
   "0": {
     "chronology": "unclear",
     "Doc Name": "2012-05-12 Interview Notes.md",
-    "Quote": "In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs...",
-    "Reasoning": "This quote demonstrates Malaria Consortium's practice of adapting its implementation strategy..."
+    "Quote": "In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs..."
   },
   "1": {
     // ... other evidence items
@@ -689,7 +685,6 @@ If a piece of evidence is entirely irrelevant to the Final Insight or its relati
 5. Crucial Instruction on Using Evidence Fields for Assessment:
 
 Your decision to classify the relationship and assign an agreement_level MUST primarily be based on the content of the Quote and the context provided by its chronology in relation to the Final Insight.
-DO NOT use the Reasoning field associated with an evidence item to decide its relationship to the current Final Insight. The original Reasoning was for the initial extraction, which might have been for a different purpose. While you will include this original Reasoning in your tool call (for traceability), it should not influence your relationship assessment for this specific task.
 6. Tool Usage: log_evidence_relationship
 For every piece of evidence for which you can discern a relationship (as defined by the agreement scale) to the Final Insight, you must call the log_evidence_relationship tool once.
 
@@ -700,7 +695,6 @@ Tool Schema: log_evidence_relationship
   "evidence_quote": "<string>",
   "evidence_chronology": "<string>",
   "agreement_level": "<'strongly_agrees' | 'agrees' | 'disagrees' | 'strongly_disagrees'>",
-  "original_reasoning_for_quote": "<string>"
 }
 
 Tool Input Field Descriptions:
@@ -710,7 +704,7 @@ evidence_doc_name: The Doc Name from the assessed piece of evidence.
 evidence_quote: The exact, unaltered Quote from the assessed piece of evidence.
 evidence_chronology: The chronology from the assessed piece of evidence.
 agreement_level: Your classification of the evidence's relationship to the insight, chosen from the four defined levels.
-original_reasoning_for_quote: The Reasoning string from the assessed piece of evidence (for traceability).
+
 7. Instructions:
 
 Receive the single Final Insight (JSON) and the Corpus of Evidence (JSON).
