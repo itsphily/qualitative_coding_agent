@@ -1218,57 +1218,70 @@ def continue_to_find_evidence_for_insights(state: CaseProcessingState) -> List[S
 def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
     """
     Worker Node: Identifies evidence relevant to a specific final insight.
-    Manually processes tool calls from the LLM to populate the insight's evidence list.
+    Processes evidence in batches of 30 items to manage context size.
     Returns a single updated FinalInsight object.
     """
     node_name = "find_relevant_evidence_node"
     current_final_insight = state.get("current_final_insight", {})
     full_evidence_list = state.get("full_evidence_list", [])
-
+    
+    # Basic validation
     if not isinstance(current_final_insight, dict) or not current_final_insight.get("insight_label"):
         logging.error(f"[{node_name}] Invalid or incomplete current_final_insight: {current_final_insight}")
         # Return a structure that won't break the reducer, or raise error
         return FinalInsight(code_description="Error", insight_label="Error", insight_explanation="Invalid input insight", supporting_evidence_summary="", final_evidence_list=[])
-
-
+    
     insight_label = current_final_insight.get("insight_label", "unknown_insight_label") # Should always exist due to check above
     insight_explanation = current_final_insight.get("insight_explanation", "")
-
+    
     logging.info(f"[{node_name}] Finding evidence for insight '{insight_label[:50]}...'")
-
+    
+    # Early returns for invalid states
     if not insight_explanation:
         logging.warning(f"[{node_name}] Missing insight explanation for insight '{insight_label}'. Returning original.")
         # Ensure it has final_evidence_list initialized
         if "final_evidence_list" not in current_final_insight:
-             current_final_insight["final_evidence_list"] = []
+            current_final_insight["final_evidence_list"] = []
         return current_final_insight
-
+    
     if not full_evidence_list:
         logging.warning(f"[{node_name}] No evidence corpus for insight '{insight_label}'. Returning original.")
         if "final_evidence_list" not in current_final_insight:
-             current_final_insight["final_evidence_list"] = []
+            current_final_insight["final_evidence_list"] = []
         return current_final_insight
-
+    
+    # Get LLM from config
     config_from_graph = get_config() 
     llm_with_tools = config_from_graph.get("configurable", {}).get("llm_evidence_relationship")
     if not llm_with_tools:
         logging.error(f"[{node_name}] LLM for evidence relationship not found in config for insight '{insight_label}'")
         if "final_evidence_list" not in current_final_insight:
-             current_final_insight["final_evidence_list"] = []
+            current_final_insight["final_evidence_list"] = []
         return current_final_insight
-
-    evidence_corpus_for_prompt = {}
-    for idx, evidence_item in enumerate(full_evidence_list):
-        evidence_corpus_for_prompt[str(idx)] = {
-            "chronology": evidence_item.get("chronology", "unclear"),
-            "Doc Name": os.path.basename(evidence_item.get("doc_name", "Unknown Document")),
-            "Quote": evidence_item.get("quote", ""),
-            "Reasoning": evidence_item.get("reasoning", "")
-        }
-    formatted_evidence_corpus_str = json.dumps(evidence_corpus_for_prompt, indent=2)
     
-    system_content = find_evidence_prompt 
-    human_content = f"""
+    # Process evidence in batches of 30
+    all_processed_evidence = []
+    batch_size = 30
+    
+    # Split the full evidence list into batches
+    for i in range(0, len(full_evidence_list), batch_size):
+        batch_evidence = full_evidence_list[i:i+batch_size]
+        logging.info(f"[{node_name}] Processing batch {i//batch_size + 1} with {len(batch_evidence)} evidence items")
+        
+        # Create evidence corpus for this batch only
+        evidence_corpus_for_prompt = {}
+        for idx, evidence_item in enumerate(batch_evidence):
+            evidence_corpus_for_prompt[str(idx)] = {
+                "chronology": evidence_item.get("chronology", "unclear"),
+                "Doc Name": os.path.basename(evidence_item.get("doc_name", "Unknown Document")),
+                "Quote": evidence_item.get("quote", ""),
+                "Reasoning": evidence_item.get("reasoning", "")
+            }
+        formatted_evidence_corpus_str = json.dumps(evidence_corpus_for_prompt, indent=2)
+        
+        # Prepare prompt for this batch
+        system_content = find_evidence_prompt
+        human_content = f"""
 Single Final Insight to process:
 {{
   "insight_label": "{insight_label}",
@@ -1283,51 +1296,54 @@ Corpus of Evidence to search:
 
 Remember to call the `log_evidence_relationship` tool for EVERY piece of evidence that has a discernible relationship to the insight explanation.
 """
-    system_msg = SystemMessage(content=system_content)
-    human_msg = HumanMessage(content=human_content)
-
-    logging.info(f"[{node_name}] Preparing to execute LLM for insight_label='{insight_label}'")
+        system_msg = SystemMessage(content=system_content)
+        human_msg = HumanMessage(content=human_content)
+        
+        # Process this batch
+        batch_state = dict(state)
+        ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": batch_state}})
+        
+        # Extract evidence from tool calls for this batch
+        batch_processed_evidence = []
+        if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
+            logging.info(f"[{node_name}] Batch {i//batch_size + 1}: Found {len(ai_message.tool_calls)} tool calls in LLM response")
+            for tool_call in ai_message.tool_calls:
+                if tool_call.get("name") == "log_evidence_relationship":
+                    args = tool_call.get("args", {})
+                    try:
+                        final_evidence_item = FinalEvidence(
+                            insight_label=insight_label,
+                            evidence_doc_name=args.get("evidence_doc_name", "N/A from tool call"),
+                            evidence_quote=args.get("evidence_quote", "N/A from tool call"),
+                            evidence_chronology=args.get("evidence_chronology", "unclear from tool call"),
+                            agreement_level=args.get("agreement_level", "unknown from tool call"),
+                            original_reasoning_for_quote=args.get("original_reasoning_for_quote", "N/A from tool call")
+                        )
+                        batch_processed_evidence.append(final_evidence_item)
+                        logging.debug(f"[{node_name}] Batch {i//batch_size + 1}: Processed tool call for evidence: {args.get('evidence_quote', 'N/A')[:30]}...")
+                    except KeyError as e:
+                        logging.error(f"[{node_name}] Batch {i//batch_size + 1}: Missing argument in tool call: {e}. Args: {args}")
+                    except Exception as e:
+                        logging.error(f"[{node_name}] Batch {i//batch_size + 1}: Error creating FinalEvidence: {e}. Args: {args}")
+                else:
+                    logging.warning(f"[{node_name}] Batch {i//batch_size + 1}: Encountered unexpected tool call: {tool_call.get('name')}")
+        else:
+            logging.warning(f"[{node_name}] Batch {i//batch_size + 1}: No tool calls found in LLM response")
+        
+        # Add batch results to overall results
+        all_processed_evidence.extend(batch_processed_evidence)
+        logging.info(f"[{node_name}] Batch {i//batch_size + 1} found {len(batch_processed_evidence)} related evidence items")
     
-    ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": state}})
-    logging.info(f"[{node_name}] Completed LLM execution for insight '{insight_label}'")
-
-    processed_evidence_list_for_this_insight = []
-
-    # Manually parsing tool_calls from ai_message,
-    if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
-        logging.info(f"[{node_name}] Found {len(ai_message.tool_calls)} tool calls in LLM response for insight '{insight_label}'")
-        for tool_call in ai_message.tool_calls:
-            if tool_call.get("name") == "log_evidence_relationship":
-                args = tool_call.get("args", {})
-                try:
-                    final_evidence_item = FinalEvidence(
-                        insight_label=insight_label,
-                        evidence_doc_name=args.get("evidence_doc_name", "N/A from tool call"),
-                        evidence_quote=args.get("evidence_quote", "N/A from tool call"),
-                        evidence_chronology=args.get("evidence_chronology", "unclear from tool call"),
-                        agreement_level=args.get("agreement_level", "unknown from tool call"),
-                        original_reasoning_for_quote=args.get("original_reasoning_for_quote", "N/A from tool call")
-                    )
-                    processed_evidence_list_for_this_insight.append(final_evidence_item)
-                    logging.debug(f"[{node_name}] Manually processed tool call for insight '{insight_label}': {args.get('evidence_quote', 'N/A')[:30]}...")
-                except KeyError as e:
-                    logging.error(f"[{node_name}] Missing argument in tool call for log_evidence_relationship: {e}. Args: {args}")
-                except Exception as e:
-                    logging.error(f"[{node_name}] Error creating FinalEvidence from tool call args: {e}. Args: {args}")
-            else:
-                logging.warning(f"[{node_name}] Encountered unexpected tool call: {tool_call.get('name')}")
-    else:
-        logging.warning(f"[{node_name}] No tool calls found in LLM response for insight '{insight_label}'")
-        # If state.get("processed_evidence_for_insight") was populated by Command, use it as fallback
-        if state.get("processed_evidence_for_insight"):
-             logging.info(f"[{node_name}] Using processed_evidence_for_insight from state as fallback for insight '{insight_label}'.")
-             processed_evidence_list_for_this_insight = list(state.get("processed_evidence_for_insight", []))
-
-
+    # Fallback to processed_evidence_for_insight if no evidence was found across all batches
+    if not all_processed_evidence and state.get("processed_evidence_for_insight"):
+        logging.info(f"[{node_name}] No evidence found across all batches, using processed_evidence_for_insight from state as fallback")
+        all_processed_evidence = list(state.get("processed_evidence_for_insight", []))
+    
+    # Create final output
     updated_insight = dict(current_final_insight)
-    updated_insight["final_evidence_list"] = processed_evidence_list_for_this_insight
-
-    logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(updated_insight['final_evidence_list'])} pieces of evidence.")
+    updated_insight["final_evidence_list"] = all_processed_evidence
+    
+    logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(all_processed_evidence)} total pieces of evidence across {(len(full_evidence_list) + batch_size - 1) // batch_size} batches")
     return {"final_insights_list": [updated_insight]}
 
 def aggregation_relevant_evidence(state: CaseProcessingState)-> Dict[str, Any]:
