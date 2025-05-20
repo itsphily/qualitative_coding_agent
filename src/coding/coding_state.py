@@ -305,14 +305,14 @@ class Evidence(TypedDict):
 
 class CaseInfo(TypedDict):
     directory: str
-    description: Optional[str]
     intervention: Optional[str]
+    """
     synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
     revised_synthesis_results: Annotated[Dict[str, str], merge_synthesis_results]
     cross_case_analysis_results: Annotated[Dict[str, str], merge_synthesis_results]
     evidence_list: Annotated[List[Evidence], append_evidence]
     final_insights_list: Annotated[List[FinalInsight], append_evidence]
-
+    """
 
 class CaseProcessingState(TypedDict):
     case_id: str
@@ -339,8 +339,10 @@ class CodingState(TypedDict):
     research_question: str
     codes: Annotated[Dict[str, Optional[List[str]]], merge_aspects]
     cases_info: Annotated[Dict[str, CaseInfo], merge_case_info]
+    """
     evidence_list: Annotated[List[Evidence], append_evidence]
     final_insights: Annotated[Dict[str, List[FinalInsight]], merge_final_insights_from_subgraph]
+    """
 
 class SynthesisState(TypedDict):
     case_id: str

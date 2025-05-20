@@ -415,7 +415,6 @@ def case_subgraph_start(state: CaseProcessingState):
     return CaseProcessingState(
           case_id=case_id,  # Store for internal use, won't be returned to parent
           directory=state.get("directory", ""),
-          description=None,  
           intervention=state.get("intervention", ""),
           research_question=state.get("research_question", ""),
           codes=state.get("codes", {}),
@@ -1347,7 +1346,6 @@ def aggregation_relevant_evidence(state: CaseProcessingState)-> Dict[str, Any]:
     # Construct the dictionary of results for this specific case
     case_results_payload = {
         "directory": state.get("directory", ""),
-        "description": state.get("description"),
         "intervention": state.get("intervention", ""),
         "research_question": state.get("research_question", ""),
         "synthesis_results": state.get("synthesis_results"),
