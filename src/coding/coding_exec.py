@@ -90,7 +90,7 @@ llm_long_context_high_processing =  ChatGoogleGenerativeAI(model="gemini-2.5-pro
                                                            temperature=0,
                                                            max_tokens=None,
                                                            timeout=None,
-                                                           max_retries=10,
+                                                           max_retries=20,
                                                            google_api_key=os.getenv("GOOGLE_API_KEY")
 )
 
@@ -99,7 +99,7 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
                                            temperature=0,
                                            max_tokens=None,
                                            timeout=None,
-                                           max_retries=10,
+                                           max_retries=20,
                                            google_api_key=os.getenv("GOOGLE_API_KEY")
 
 )
@@ -1346,6 +1346,8 @@ def aggregation_relevant_evidence(state: CaseProcessingState)-> Dict[str, Any]:
 
     # The output must be structured to target the 'cases_info' field in CodingState,
     # with the current case_id as the key.
+    
+    logging.info(f"[aggregation_relevant_evidence] Returning case_results_payload for case {case_id}")
     return {
         "cases_info": {
             case_id: case_results_payload
