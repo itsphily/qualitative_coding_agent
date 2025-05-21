@@ -6,7 +6,10 @@ from coding_state import (CodingState,
                           EvaluateSynthesisState,
                           CrossCaseAnalysisState, 
                           FinalInsightState,
-                          FindEvidenceInputState, FinalInsight, FinalEvidence)
+                          FindEvidenceInputState, 
+                          FinalInsight, 
+                          FinalEvidence, 
+                          CaseProcessingOutputState)
 from coding_utils import parse_arguments, initialize_state
 from langgraph.types import Send
 from typing import Dict, Any, List
@@ -413,16 +416,11 @@ def case_subgraph_start(state: CaseProcessingState):
     """
     case_id = state.get("case_id", "unknown")
     return CaseProcessingState(
-          case_id=case_id,  # Store for internal use, won't be returned to parent
+          case_id=case_id,
           directory=state.get("directory", ""),
           intervention=state.get("intervention", ""),
           research_question=state.get("research_question", ""),
-          codes=state.get("codes", {}),
-          synthesis_results={},
-          revised_synthesis_results={},  
-          cross_case_analysis_results={},  
-          evidence_list=[],  
-          final_insights_list=[]  
+          codes=state.get("codes", {})
       )
 
 def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
@@ -1261,7 +1259,7 @@ def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
     
     # Process evidence in batches of 30
     all_processed_evidence = []
-    batch_size = 30
+    batch_size = 10
     
     # Split the full evidence list into batches
     for i in range(0, len(full_evidence_list), batch_size):
@@ -1346,40 +1344,46 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
     logging.info(f"[{node_name}] Returning updated insight '{insight_label}' with {len(all_processed_evidence)} total pieces of evidence across {(len(full_evidence_list) + batch_size - 1) // batch_size} batches")
     return {"final_insights_list": [updated_insight]}
 
-def aggregation_relevant_evidence(state: CaseProcessingState)-> Dict[str, Any]:
+def aggregation_relevant_evidence(state: CaseProcessingState) -> CaseProcessingOutputState:
     """
     Aggregates evidence relationship results from all insights.
-    Ensures each insight has its evidence properly associated.
+    Ensures each insight has its evidence properly associated and populates 
+    the cases_info dictionary in the CaseProcessingState.
     
     Args:
         state: Current state with all insights and their evidence
         
     Returns:
-        Updated state with insights and their associated evidence
+        Complete CaseProcessingState with updated cases_info dictionary
     """
     case_id = state.get("case_id")
+    codes = state.get("codes", {})
 
-    # Construct the dictionary of results for this specific case
-    case_results_payload = {
+    # Construct the CaseInfo object for this specific case
+    case_info = {
         "directory": state.get("directory", ""),
         "intervention": state.get("intervention", ""),
-        "research_question": state.get("research_question", ""),
-        "synthesis_results": state.get("synthesis_results"),
-        "revised_synthesis_results": state.get("revised_synthesis_results"),
-        "cross_case_analysis_results": state.get("cross_case_analysis_results"),
-        "evidence_list": state.get("evidence_list"),
-        "final_insights_list": state.get("final_insights_list")
+        "codes": codes,  # Include codes to ensure they're available in cases_info
+        "synthesis_results": state.get("synthesis_results", {}),
+        "revised_synthesis_results": state.get("revised_synthesis_results", {}),
+        "cross_case_analysis_results": state.get("cross_case_analysis_results", {}),
+        "evidence_list": state.get("evidence_list", []),
+        "final_insights_list": state.get("final_insights_list", [])
     }
 
-    # The output must be structured to target the 'cases_info' field in CodingState,
-    # with the current case_id as the key.
+    # Create a new cases_info dictionary or update the existing one
+    cases_info = state.get("cases_info", {})
+    cases_info[case_id] = case_info
     
-    logging.info(f"[aggregation_relevant_evidence] Returning case_results_payload for case {case_id}")
-    return {
-        "cases_info": {
-            case_id: case_results_payload
-        }
-    }
+    # Create a complete updated state object to return
+    updated_state = dict(state)
+    updated_state["cases_info"] = cases_info
+    
+    logging.info(f"[aggregation_relevant_evidence] Built cases_info dictionary with case {case_id} containing {len(codes)} codes")
+    
+    return {"cases_info": cases_info}
+
+
 
 def aggregation_case_processing(state: CaseProcessingState) -> CaseProcessingState:
     """
@@ -1388,7 +1392,7 @@ def aggregation_case_processing(state: CaseProcessingState) -> CaseProcessingSta
     return state
 
 # --- Create and Compile the Case Processing Subgraph ---
-case_processing_graph = StateGraph(CaseProcessingState)
+case_processing_graph = StateGraph(CaseProcessingState, output= CaseProcessingOutputState)
 
 # Add nodes directly to the subgraph
 case_processing_graph.add_node("case_start", case_subgraph_start)
