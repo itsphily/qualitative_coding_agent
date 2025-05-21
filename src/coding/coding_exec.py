@@ -38,7 +38,8 @@ from coding_utils import visualize_graph
 from coding_tools import QUOTE_REASONING_TOOL, INSIGHT_TOOL, LOG_EVIDENCE_RELATIONSHIP_TOOL
 from langgraph.types import Command
 import json
-
+import time
+from google.api_core.exceptions import InternalServerError, ResourceExhausted, ServiceUnavailable
 
 # --- Logging Setup ---
 debug_dir = os.getenv("DEBUG_DIR", "debug")
@@ -112,7 +113,7 @@ llm_long_context_with_structured_output = llm_long_context.with_structured_outpu
 # Bind the tool to the LLM upfront
 llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
-llm_log_evidence_relationship_with_tools = llm_long_context.bind_tools(LOG_EVIDENCE_RELATIONSHIP_TOOL)
+llm_log_evidence_relationship_with_tools = llm_long_context_tool_use.bind_tools(LOG_EVIDENCE_RELATIONSHIP_TOOL)
 
 runtime_config = {  "configurable": {
                     "llm_aspect_identifier_structured": llm_long_context_with_structured_output,
@@ -1221,7 +1222,7 @@ def continue_to_find_evidence_for_insights(state: CaseProcessingState) -> List[S
 def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
     """
     Worker Node: Identifies evidence relevant to a specific final insight.
-    Processes evidence in batches of 30 items to manage context size.
+    Processes evidence in batches of 10 items to manage context size.
     Returns a single updated FinalInsight object.
     """
     node_name = "find_relevant_evidence_node"
@@ -1234,7 +1235,7 @@ def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
         # Return a structure that won't break the reducer, or raise error
         return FinalInsight(code_description="Error", insight_label="Error", insight_explanation="Invalid input insight", supporting_evidence_summary="", final_evidence_list=[])
     
-    insight_label = current_final_insight.get("insight_label", "unknown_insight_label") # Should always exist due to check above
+    insight_label = current_final_insight.get("insight_label", "unknown_insight_label") 
     insight_explanation = current_final_insight.get("insight_explanation", "")
     
     logging.info(f"[{node_name}] Finding evidence for insight '{insight_label[:50]}...'")
@@ -1262,7 +1263,12 @@ def find_relevant_evidence_node(state: FindEvidenceInputState) -> FinalInsight:
             current_final_insight["final_evidence_list"] = []
         return current_final_insight
     
-    # Process evidence in batches of 30
+    # Define retry parameters
+    max_retries = 5
+    base_wait_time = 2
+    max_wait_time = 60
+    
+    # Process evidence in batches
     all_processed_evidence = []
     batch_size = 10
     
@@ -1302,9 +1308,38 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
         system_msg = SystemMessage(content=system_content)
         human_msg = HumanMessage(content=human_content)
         
-        # Process this batch
+        # Process this batch with retry
         batch_state = dict(state)
-        ai_message = llm_with_tools.invoke([system_msg, human_msg], {"configurable": {"state": batch_state}})
+        ai_message = None
+        current_retry = 0
+        
+        while current_retry < max_retries:
+            try:
+                ai_message = llm_with_tools.invoke(
+                    [system_msg, human_msg], 
+                    {"configurable": {"state": batch_state}}
+                )
+                # If successful, break out of retry loop
+                break
+            except (InternalServerError, ResourceExhausted, ServiceUnavailable) as e:
+                current_retry += 1
+                if current_retry >= max_retries:
+                    logging.error(f"[{node_name}] Batch {i//batch_size + 1} failed after {max_retries} retries with error: {e}")
+                    break
+                
+                # Calculate wait time with exponential backoff
+                wait_time = min(base_wait_time * (2 ** (current_retry - 1)), max_wait_time)
+                logging.warning(f"[{node_name}] Google API error: {e}. Retry {current_retry}/{max_retries} after {wait_time}s")
+                time.sleep(wait_time)
+            except Exception as e:
+                # For non-retryable exceptions, log and break
+                logging.error(f"[{node_name}] Unhandled exception processing batch {i//batch_size + 1}: {e}")
+                break
+        
+        # If we didn't get a successful response after all retries, continue to next batch
+        if ai_message is None:
+            logging.warning(f"[{node_name}] Skipping batch {i//batch_size + 1} due to persistent errors")
+            continue
         
         # Extract evidence from tool calls for this batch
         batch_processed_evidence = []
