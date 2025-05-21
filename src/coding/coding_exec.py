@@ -10,7 +10,7 @@ from coding_state import (CodingState,
                           FinalInsight, 
                           FinalEvidence, 
                           CaseProcessingOutputState)
-from coding_utils import parse_arguments, initialize_state
+from coding_utils import parse_arguments, initialize_state, generate_report_for_case
 from langgraph.types import Send
 from typing import Dict, Any, List
 from langgraph.config import get_config
@@ -420,7 +420,12 @@ def case_subgraph_start(state: CaseProcessingState):
           directory=state.get("directory", ""),
           intervention=state.get("intervention", ""),
           research_question=state.get("research_question", ""),
-          codes=state.get("codes", {})
+          codes=state.get("codes", {}),
+          synthesis_results={},
+          revised_synthesis_results={},  
+          cross_case_analysis_results={},  
+          evidence_list=[],  
+          final_insights_list=[]  
       )
 
 def continue_to_identify_evidence(state: CaseProcessingState) -> List[Send]:
@@ -1384,12 +1389,45 @@ def aggregation_relevant_evidence(state: CaseProcessingState) -> CaseProcessingO
     return {"cases_info": cases_info}
 
 
-
 def aggregation_case_processing(state: CaseProcessingState) -> CaseProcessingState:
     """
     Aggregates results from the case processing subgraph.
     """
     return state
+
+def generate_reports_node(state: CodingState) -> CodingState:
+    """
+    Node to generate detailed markdown reports for each case.
+    This node is added at the end of the main graph.
+    
+    Args:
+        state: The final CodingState with all analysis results
+        
+    Returns:
+        The same state, unmodified
+    """
+    node_name = "generate_reports_node"
+    logging.info(f"[{node_name}] Starting report generation for all cases")
+
+    # Ensure output directory exists
+    output_dir = "coding_output"
+    os.makedirs(output_dir, exist_ok=True)
+
+    cases_info = state.get("cases_info", {})
+    codes = state.get("codes", {})
+
+    if not cases_info:
+        logging.warning(f"[{node_name}] No cases found in the state, no reports to generate")
+        return state
+
+    logging.info(f"[{node_name}] Generating reports for {len(cases_info)} cases")
+
+    for case_id, case_info in cases_info.items():
+        generate_report_for_case(case_id, case_info, codes, output_dir)
+
+    logging.info(f"[{node_name}] All reports generated successfully in {output_dir}")
+    return state
+
 
 # --- Create and Compile the Case Processing Subgraph ---
 case_processing_graph = StateGraph(CaseProcessingState, output= CaseProcessingOutputState)
@@ -1451,7 +1489,7 @@ coding_graph.add_node("intervention_definition_node", intervention_definition_no
 coding_graph.add_node("case_aggregation_node", case_aggregation_node)
 coding_graph.add_node("case_processing", case_processing_subgraph)
 coding_graph.add_node("aggregation_case_processing", aggregation_case_processing)
-
+coding_graph.add_node("generate_reports_node", generate_reports_node)
 # --- Add Edges ---
 coding_graph.add_edge(START, "start")
 coding_graph.add_conditional_edges("start", continue_to_aspect_definition, ['aspect_definition_node'])
@@ -1460,7 +1498,8 @@ coding_graph.add_conditional_edges("aspect_aggregation_node", continue_to_interv
 coding_graph.add_edge("intervention_definition_node", "case_aggregation_node")
 coding_graph.add_conditional_edges("case_aggregation_node", continue_to_case_processing, ['case_processing'])
 coding_graph.add_edge("case_processing", "aggregation_case_processing")
-coding_graph.add_edge("aggregation_case_processing", END)
+coding_graph.add_edge("aggregation_case_processing", "generate_reports_node")
+coding_graph.add_edge("generate_reports_node", END)
 
 coding_graph = coding_graph.compile()
 

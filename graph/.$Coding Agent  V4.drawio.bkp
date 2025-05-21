@@ -1,6 +1,6 @@
 <mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/26.0.9 Chrome/128.0.6613.186 Electron/32.2.5 Safari/537.36" version="26.0.9">
   <diagram name="Page-1" id="xkog-0CbHqIXtxAfaAvf">
-    <mxGraphModel dx="2840" dy="1729" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="3260" dy="2024" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -176,7 +176,7 @@
           <mxGeometry x="1332" y="42" width="354" height="615" as="geometry" />
         </mxCell>
         <mxCell id="AScNVb7dmJ9JvbfS0WlG-70" value="Documentation needed: &#xa;Reducers: https://langchain-ai.github.io/langgraph/concepts/low_level/?h=reducer#reducers&#xa;map-reduce: https://langchain-ai.github.io/langgraph/how-tos/map-reduce/&#xa;Branches for parallel execution: https://langchain-ai.github.io/langgraph/how-tos/branching/&#xa;Using tool calling: https://langchain-ai.github.io/langgraph/how-tos/tool-calling/&#xa;Forcing an agent to use tool calling: https://langchain-ai.github.io/langgraph/how-tos/force-calling-a-tool-first/&#xa;how to add and use subgraphs: https://langchain-ai.github.io/langgraph/how-tos/subgraph/&#xa;how to transform inputs and outputs of a subgraph: https://langchain-ai.github.io/langgraph/how-tos/subgraph-transform-state/&#xa;How do define graph state: https://langchain-ai.github.io/langgraph/how-tos/define-state/&#xa;How to separate input and output schema: https://langchain-ai.github.io/langgraph/how-tos/input_output_schema/&#xa;how to have an agent answer in structured format: https://langchain-ai.github.io/langgraph/how-tos/respond-in-format/&#xa;send: https://langchain-ai.github.io/langgraph/concepts/low_level/?h=send#send&#xa;&#xa;" style="rounded=1;whiteSpace=wrap;align=left;strokeColor=none;strokeWidth=0;" vertex="1" parent="1">
-          <mxGeometry x="2438" y="53" width="794" height="283" as="geometry" />
+          <mxGeometry x="2484" y="113" width="794" height="283" as="geometry" />
         </mxCell>
         <mxCell id="AScNVb7dmJ9JvbfS0WlG-71" value="&lt;b&gt;Documentation&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#D4E1F5,var(--ge-dark-color, #121212));shadow=1;" vertex="1" parent="1">
           <mxGeometry x="2507" y="-16" width="753" height="34" as="geometry" />
