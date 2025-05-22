@@ -166,8 +166,6 @@ def append_evidence(
     current: Optional[List[Any]],
     new: Optional[List[Any]]
 ) -> List[Any]:
-    logging.info(f"REDUCER RECEIVED: current={current}, new={new}")
-    logging.info(f"REDUCER TYPES: current={type(current)}, new={type(new)}")
     """
     Reducer for lists, especially CaseProcessingState.evidence_list and CaseProcessingState.final_insights_list.
     - For FinalInsight objects: Updates existing insight if label matches, otherwise appends.
@@ -301,12 +299,11 @@ class FinalInsight(TypedDict):
 
 class Evidence(TypedDict):
     quote: str
-    reasoning: str
     aspect: List[str]
+    reasoning: str
     chronology: str
-    code_description: str 
-    doc_name: str  
-    agreement_level: str
+    code_description: str
+    doc_name: str
 
 class CaseInfo(TypedDict):
     directory: str

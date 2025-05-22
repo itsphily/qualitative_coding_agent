@@ -201,66 +201,56 @@ Description: Independent analysis of the complete set of source texts for a spec
 
 Description: Thematic analysis and critical assessment of evidence collected by the LLM. The goal is to identify dominant content themes, note relevant dimensional characteristics, flag any direct contradictions or strong singular claims present in the data, and select representative quotes.
 
-## Overall Summary  
-The evidence portrays Malaria Consortium as repeatedly tailoring both its Seasonal Malaria Chemoprevention (SMC) programme and other malaria-related activities to the particular epidemiological, cultural, logistical and behavioural realities of each setting. Before entering a country or district it conducts detailed assessments of rainfall, malaria burden, drug efficacy, security and existing health-system tools, and it uses operational research and piloting (often donor-funded) to decide “the best way to deliver SMC at scale.” Once implementation begins, the organisation continues to refine: switching drug formulations when children vomit, moving from fixed-point to predominantly door-to-door drug delivery, and creating special procedures for mobile or migrant populations. Parallel adaptations occur in monitoring: pre-testing SMC cards, adopting rapid mini-surveys, triangulating administrative and survey data, and translating instruments into local languages. This iterative, self-critical approach—valued by donors—aims to keep coverage high and measurement accurate despite diverse on-the-ground challenges such as flooding, insecurity, language barriers and overlapping public-health campaigns.
+## Overall Summary
+Across the records, Malaria Consortium consistently calibrates its Seasonal Malaria Chemoprevention (SMC) and related malaria-control activities to the particulars of each setting. Before launching programs it conducts detailed context assessments—examining malaria burden, rainfall and transmission patterns, existing infrastructure, staff presence, and even potential COVID-19 disruptions—to decide where and when SMC is appropriate. During implementation the organisation actively uncovers local operational barriers such as population migration, insecurity, flooding, and communication gaps, and then iteratively adjusts tools (e.g., SMC cards, job aids, household registers), delivery modalities (e.g., mobile fixed points, synchronised cross-border cycles, number of cycles), and partner configurations (from local CBOs and Ministries of Health to leveraging pre-existing registers). Monitoring and evaluation are likewise tailored; multiple survey methods, cross-checks, and qualitative follow-ups are maintained because different approaches work better in different behavioural and geographic settings. An organisational culture of self-critical operational research and piloting underpins these adaptations, allowing successful local solutions to be scaled with government support and guiding future geographic expansions or eligibility revisions.
 
-## Content Themes  
+## Content Themes
+* **Context-Based Site Selection**  
+  Multiple quotes describe pre-program assessments of malaria burden, rainfall seasonality, transmission intensity, and existing staff or partnerships to decide which countries, states, or districts should receive SMC or LLIN support. Suitability criteria ensure resources are channelled only to areas where the intervention is likely to be effective.
 
-* **1. Adapting drug formulations for child acceptability**  
-  Evidence describes children vomiting after ingesting bitter AQ tablets; Malaria Consortium first experimented with adding sugar, then in 2016 facilitated country-level switches to a newly approved dispersible formulation that is “significantly better tolerated,” thereby reducing vomiting episodes.
+* **Detecting On-the-Ground Challenges**  
+  During rollout, field observations and surveys reveal location-specific barriers—including large crowds at fixed-point delivery sites, temporary in-migration for treatment, agricultural migration patterns, insecurity, flooding, poor road access, and overlapping health campaigns—that can jeopardise coverage accuracy or service delivery.
 
-* **2. Modifying delivery strategies to local logistics and behaviour**  
-  Fixed-point distribution in parts of Nigeria led to crowding and missed first doses, so most programme countries now reach about 80 % of children through door-to-door delivery. For highly mobile or pastoralist groups, implementation guides were revised to include mobile fixed sites, synchronised cross-district delivery and mapping of migration routes.
+* **Iterative Tool & Strategy Modification**  
+  In response to identified challenges, Malaria Consortium adapts operational elements: redesigning SMC cards after country pilot tests, revising communication so caregivers keep blister packs, translating job aids into local languages, varying CD payment rates by country, and even adding a fifth SMC cycle or synchronising implementation across borders.
 
-* **3. Addressing mobile populations and unstable denominators**  
-  High demand drew families across district borders, distorting coverage surveys. Qualitative follow-up linked the movement to agricultural cycles, prompting pre-engagement with migrant associations and other changes to both delivery and measurement so that transient children would be reached and correctly counted.
+* **Operational Research & Pilots**  
+  Dedicated studies (e.g., BMGF-funded work in Katsina, inSCALE’s health-worker attrition pilots) test alternative solutions in specific locales. Evidence of effectiveness guides broader rollout, with continued collaboration from governments.
 
-* **4. Continually refining monitoring and evaluation tools**  
-  Malaria Consortium recognises 15-20 % discrepancies between administrative records and LSHTM surveys and therefore now adds rapid mini-surveys after cycles 1 and 3 as a quality-assurance check. It pre-tested SMC cards in multiple countries, adapts household registers already in use locally, and notes translation challenges that can affect data accuracy.
+* **Local Partnerships & Existing Systems**  
+  The organisation flexibly partners with local community-based organisations, Ministries of Health, and district facilities, and repurposes existing household registration tools from other programs to streamline SMC operations, demonstrating reliance on—and reinforcement of—local structures.
 
-* **5. Context-specific site selection and pre-implementation assessments**  
-  Decisions about where to launch or expand SMC depend on rainfall patterns, the share of annual malaria cases occurring within four months, incidence thresholds, SP/AQ efficacy, and practical issues such as insecurity, flooding and existing staff presence. Similar contextual criteria guided selection of LLIN campaign countries during COVID-19.
+* **Context-Sensitive Monitoring and Measurement**  
+  Surveys are adapted for mobile populations, multiple data-collection methods are kept because each performs differently across settings, and unstable denominators caused by migration are recognised, all emphasising measurement approaches tailored to local behavioural patterns.
 
-* **6. Operational research, piloting, and an organisational culture of self-critique**  
-  Donor-funded operational research in Nigeria and the inSCALE project illustrate a pattern of testing solutions (e.g., to CHW attrition) before scale-up with government support. Malaria Consortium itself highlights its “self-critical approach to finding out what works,” which underpins continuous adaptation and attracts donor confidence.
+* **Organisational Learning Culture**  
+  Malaria Consortium portrays itself as “self-critical,” continually asking what works or does not, and applying these lessons to improve effectiveness—an overarching attitude enabling all other adaptive practices.
 
-## Dimensional Themes  
+## Dimensional Themes
+* **Iterative Learn–Adapt–Scale Cycle**  
+  Evidence repeatedly follows a sequence: contextual learning (surveys, qualitative exploration), adaptation or piloting, and subsequent scaling or policy change, illustrating an organisational process dimension rather than a one-off adjustment.
 
-* **Iterative Learning Cycle**  
-  Quotes repeatedly follow a pattern of problem identification → qualitative/quantitative investigation → piloting or operational research → programme modification → scale-up, demonstrating a systematic feedback loop rather than one-off adjustments.
+* **Geographic Variation as a Design Parameter**  
+  Many quotes explicitly compare or differentiate countries, districts, or even specific communities, highlighting that geographic diversity is treated as a fundamental axis along which program components (payments, language, cycle number) are varied.
 
-* **Multi-source Data Triangulation**  
-  The organisation juxtaposes administrative tallies, LSHTM household surveys, rapid mini-surveys and card checks, acknowledging each method’s biases and using overlapping measures to validate coverage figures.
+* **Mixed-Methods Evidence Gathering**  
+  The data show a pattern of combining quantitative surveys with qualitative follow-ups to elucidate behavioural or migratory phenomena, demonstrating a methodological dimension of triangulating evidence before altering the intervention.
 
-* **Contextualisation Across Ecological & Sociocultural Settings**  
-  Adaptations span drug palatability, language translation, delivery modality, and timing synchronisation, underscoring attention to local ecological (rainfall, migration routes) and sociocultural (poverty limiting sugar use, pastoralist associations) realities.
+## Direct Contradictions
+No direct contradictions were identified within this batch of records; the quotes present a coherent narrative of location-based assessment followed by contextual adaptation.
 
-## Direct Contradictions  
-No direct contradictions were identified within this batch of records; all quotes consistently depict the need to adapt intervention and measurement strategies to differing local circumstances.
+## Strong Singular Claims
+* Evidence #15: “The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria.”  
+* Evidence #3: “My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives.”
 
-## Strong Singular Claims  
-
-* Record #16: “The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria. SMC is recommended for deployment in areas: where more than 60% of the annual incidence of malaria occurs within 4 months; where there are measures of disease burden consistent with a high burden of malaria in children (incidence >= 10 cases of malaria among every 100 children during the transmission season); where SP and AQ retain their antimalarial efficacy.”
-
-* Record #4: “In 2016, some Malaria Consortium-supported countries switched to using the newly approved dispersible formulation tablets... The dispersible formulation has been shown to be significantly better tolerated, and as a result, there have been fewer cases of children vomiting.”
-
-## Exemplar Quotes (Representing Content Themes)  
-
-* Record #4: “In 2016, some Malaria Consortium-supported countries switched to using the newly approved dispersible formulation tablets... The dispersible formulation has been shown to be significantly better tolerated, and as a result, there have been fewer cases of children vomiting.”
-
-* Record #5: “In most countries where SMC is being implemented through Malaria Consortium's program, approximately 80% of children are now treated at their households via door-to-door delivery, which has significantly reduced the number of instances in which someone does not take the first dose.”
-
-* Record #7: “On the basis of these explorations, Malaria Consortium put together the following list of improvements to its intervention and measurement methods, which it implemented during the 2016 transmission season: Adjustments to implementation guides to accommodate mobile populations... Synchronization of the implementation phase across multiple districts and international borders... Mapping of, and pre-engagement with, established migrant populations (such as pastoralists) through existing umbrella associations...”
-
-* Record #9: “Malaria Consortium began including a rapid mini-survey at the end of the first and third cycles of the intervention. These surveys are intended as a quality assurance process to explain discrepancies in the data by determining, for example, the effects of recall or loss of the SMC card on the reduction in reported coverage.”
-
-* Record #11: “Before beginning to use SMC cards to measure coverage, Malaria Consortium pretested the use of the cards in different countries and modified the design of the cards based on feedback from these tests.”
-
-* Record #16: “The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria...”
-
-* Record #18: “The Bill & Melinda Gates Foundation (BMGF) provided about $1.7 million to Malaria Consortium to do operational research on the best way to deliver SMC at scale in Katsina state in northern Nigeria, and then to implement its chosen delivery system and assess its efficiency and impact.”
-
-* Record #2: “My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives.”
+## Exemplar Quotes (Representing Content Themes)
+* Evidence #15: “The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria.”
+* Evidence #6: “In certain areas, the surveys observed migration patterns that had not previously been described, which were largely due to agricultural practices. Malaria Consortium returned to these areas to do more qualitative exploration to learn about the causes of this migration.”
+* Evidence #7: “On the basis of these explorations, Malaria Consortium put together the following list of improvements to its intervention and measurement methods, which it implemented during the 2016 transmission season:”
+* Evidence #9: “Before beginning to use SMC cards to measure coverage, Malaria Consortium pretested the use of the cards in different countries and modified the design of the cards based on feedback from these tests.”
+* Evidence #17: “Malaria Consortium told us that CDs are trained to follow a checklist on an illustrated job aid, which is translated into local languages,”
+* Evidence #18: “Malaria Consortium told us that there are several challenges with delivering SMC, including insecurity, flooding, and road access during the rainy season, as well as conflicting community health campaigns, such as vaccination campaigns.”
+* Evidence #1: “We ask questions such as: ‘Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?’ We drill down as much as we can.”
 
 #### Revised Synthesis Results
 
@@ -272,95 +262,114 @@ Description: The synthesis results was compiled only using the quote/reasoning p
 **Code Analyzed:** Calibrating the approach: Changing the charity's intervention depending on the specifics of the location.
 
 ## Overall Summary
-*   **Status:** Refined - Enhanced and Corrected Overview
-*   **Summary:** The evidence across all source texts consistently portrays Malaria Consortium as an organization that systematically and repeatedly tailors its Seasonal Malaria Chemoprevention (SMC) programme, as well as other malaria-related activities (such as LLIN campaign scoping), to the specific epidemiological, cultural, logistical, and behavioral realities of each operational setting. Prior to country or district entry, detailed assessments are conducted, considering factors like rainfall patterns, malaria burden, drug efficacy, security, and existing health-system infrastructure and tools. Operational research and piloting, often supported by donor funding (e.g., BMGF for SMC in Nigeria, CIDA for inSCALE), are integral to determining optimal delivery strategies for interventions like SMC at scale. Once implementation is underway, Malaria Consortium demonstrates a continuous process of refinement. This includes switching drug formulations (e.g., to more palatable dispersible AQ tablets to reduce vomiting in children), modifying drug delivery strategies (e.g., shifting from fixed-point to predominantly door-to-door delivery to improve coverage and first-dose observation), and developing specialized procedures for challenging contexts like reaching mobile or migrant populations. Similar adaptive practices are evident in their monitoring and evaluation approaches, such as pre-testing and modifying SMC data collection cards, introducing rapid mini-surveys to triangulate and validate coverage data against administrative records, adapting existing local household registers, and addressing language barriers in survey administration. This iterative, self-critical learning culture, explicitly valued by donors, is fundamental to maintaining high coverage and ensuring accurate measurement despite diverse on-the-ground challenges, including flooding, insecurity, language differences, overlapping public-health campaigns, and major disruptions like the COVID-19 pandemic (which prompted revised safety guidance and operational adjustments).
+*   **Status:** Confirmed - Comprehensive Overview
+*   **Summary:** Across the records, Malaria Consortium consistently calibrates its Seasonal Malaria Chemoprevention (SMC) and related malaria-control activities to the particulars of each setting. Before launching programs it conducts detailed context assessments—examining malaria burden, rainfall and transmission patterns, existing infrastructure, staff presence, and even potential COVID-19 disruptions—to decide where and when SMC is appropriate. During implementation the organisation actively uncovers local operational barriers such as population migration, insecurity, flooding, and communication gaps, and then iteratively adjusts tools (e.g., SMC cards, job aids, household registers), delivery modalities (e.g., mobile fixed points, synchronised cross-border cycles, number of cycles), and partner configurations (from local CBOs and Ministries of Health to leveraging pre-existing registers). Monitoring and evaluation are likewise tailored; multiple survey methods, cross-checks, and qualitative follow-ups are maintained because different approaches work better in different behavioural and geographic settings. An organisational culture of self-critical operational research and piloting underpins these adaptations, allowing successful local solutions to be scaled with government support and guiding future geographic expansions or eligibility revisions.
 
 ## Validated & Refined Content Themes
-*   **Theme:** 'Adapting drug formulations for child acceptability'
+*   **Theme:** 'Context-Based Site Selection'
     *   **Status:** Confirmed - Core Finding
-    *   **Description:** Evidence describes children vomiting after ingesting bitter AQ tablets; Malaria Consortium first experimented with adding sugar, then in 2016 facilitated country-level switches to a newly approved dispersible formulation that is “significantly better tolerated,” thereby reducing vomiting episodes. This adaptation directly addressed a key challenge to treatment adherence and child well-being.
-
-*   **Theme:** 'Modifying delivery strategies to local logistics and behaviour'
+    *   **Description:** Multiple quotes describe pre-program assessments of malaria burden, rainfall seasonality, transmission intensity, and existing staff or partnerships to decide which countries, states, or districts should receive SMC or LLIN support. Suitability criteria ensure resources are channelled only to areas where the intervention is likely to be effective.
+*   **Theme:** 'Detecting On-the-Ground Challenges'
     *   **Status:** Confirmed - Core Finding
-    *   **Description:** Initial fixed-point drug distribution in some areas (e.g., parts of Nigeria) led to challenges such as crowding and missed first doses. Consequently, most programme countries now utilize predominantly door-to-door delivery, reaching approximately 80% of children this way, which improves first-dose observation and overall coverage. For specific contexts like highly mobile or pastoralist groups, implementation guides were revised to incorporate strategies like mobile fixed sites, synchronised cross-district delivery, and proactive mapping of migration routes.
-
-*   **Theme:** 'Addressing mobile populations and unstable denominators'
+    *   **Description:** During rollout, field observations and surveys reveal location-specific barriers—including large crowds at fixed-point delivery sites, temporary in-migration for treatment, agricultural migration patterns, insecurity, flooding, poor road access, and overlapping health campaigns—that can jeopardise coverage accuracy or service delivery.
+*   **Theme:** 'Iterative Tool & Strategy Modification'
     *   **Status:** Confirmed - Core Finding
-    *   **Description:** High demand for SMC in some areas led to families crossing district borders, which distorted coverage survey denominators as these individuals were not always captured accurately. Qualitative follow-up investigations linked such movements to factors like agricultural cycles. This understanding prompted adaptive responses, including pre-engagement with migrant associations and adjustments to both delivery (e.g., synchronized implementation, mobile sites) and measurement methods to better reach and correctly count transient children.
-
-*   **Theme:** 'Continually refining monitoring and evaluation tools'
-    *   **Status:** Refined - Core Finding with Enhanced Description
-    *   **Refined Description:** Malaria Consortium recognizes discrepancies in data from different sources (e.g., a typical 15-20% difference between administrative coverage data and LSHTM survey results) and continually refines its M&E systems. This iterative improvement includes adding rapid mini-surveys after cycles 1 and 3 as a quality-assurance check and a means of triangulation. The organization pre-tested SMC cards in multiple countries, modifying their design based on feedback, and adapts existing local household registration tools. More recently, blister pack surveys have been introduced to further verify treatment completion. The organization also acknowledges and works to mitigate challenges such as potential inconsistencies arising from on-the-spot translation of survey instruments into local languages, which can affect data accuracy.
-    *   **Original Preliminary Description (For reference if refined):** Malaria Consortium recognises 15-20 % discrepancies between administrative records and LSHTM surveys and therefore now adds rapid mini-surveys after cycles 1 and 3 as a quality-assurance check. It pre-tested SMC cards in multiple countries, adapts household registers already in use locally, and notes translation challenges that can affect data accuracy.
-
-*   **Theme:** 'Context-specific site selection and pre-implementation assessments'
+    *   **Description:** In response to identified challenges, Malaria Consortium adapts operational elements: redesigning SMC cards after country pilot tests, revising communication so caregivers keep blister packs, translating job aids into local languages, varying CD payment rates by country, and even adding a fifth SMC cycle or synchronising implementation across borders.
+*   **Theme:** 'Operational Research & Pilots'
     *   **Status:** Confirmed - Core Finding
-    *   **Description:** Decisions regarding where to launch or expand SMC interventions are based on rigorous pre-implementation assessments. Key criteria include WHO guidelines related to rainfall patterns, the proportion of annual malaria cases occurring within a concentrated period (e.g., >60% within 4 months), malaria incidence thresholds in children, and confirmed SP/AQ efficacy. Practical considerations such as security conditions, risk of flooding, and existing Malaria Consortium staff presence also inform these decisions. Similar contextual criteria, including malaria burden and staff presence, guided the selection of countries for LLIN campaign scoping during the COVID-19 pandemic.
-
-*   **Theme:** 'Operational research, piloting, and an organisational culture of self-critique'
+    *   **Description:** Dedicated studies (e.g., BMGF-funded work in Katsina, inSCALE’s health-worker attrition pilots) test alternative solutions in specific locales. Evidence of effectiveness guides broader rollout, with continued collaboration from governments.
+*   **Theme:** 'Local Partnerships & Existing Systems'
     *   **Status:** Confirmed - Core Finding
-    *   **Description:** A pattern of testing solutions through operational research and piloting before broader scale-up is evident in Malaria Consortium's work. Examples include donor-funded operational research in Nigeria (BMGF) to determine the best way to deliver SMC at scale, and the inSCALE project (CIDA-funded) which piloted solutions to CHW attrition before wider rollout with government support. Malaria Consortium explicitly describes its approach as "self-critical" in "finding out what works or doesn't work," a characteristic that underpins its continuous adaptation process and is cited as a reason for donor confidence and trust.
+    *   **Description:** The organisation flexibly partners with local community-based organisations, Ministries of Health, and district facilities, and repurposes existing household registration tools from other programs to streamline SMC operations, demonstrating reliance on—and reinforcement of—local structures.
+*   **Theme:** 'Context-Sensitive Monitoring and Measurement'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** Surveys are adapted for mobile populations, multiple data-collection methods are kept because each performs differently across settings, and unstable denominators caused by migration are recognised, all emphasising measurement approaches tailored to local behavioural patterns.
+*   **Theme:** 'Organisational Learning Culture'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** Malaria Consortium portrays itself as “self-critical,” continually asking what works or does not, and applying these lessons to improve effectiveness—an overarching attitude enabling all other adaptive practices.
 
 ## Validated & Refined Dimensional Themes
-*   **Theme:** 'Iterative Learning Cycle'
+*   **Theme:** 'Iterative Learn–Adapt–Scale Cycle'
     *   **Status:** Confirmed - Prominent Characteristic
-    *   **Description:** The source texts repeatedly illustrate a systematic feedback loop in Malaria Consortium's operations: problem identification (e.g., drug vomiting, low coverage with fixed-point delivery, CHW attrition, M&E discrepancies) leads to qualitative and/or quantitative investigation, followed by piloting or operational research of potential solutions, subsequent programme modification based on findings, and then often scale-up of the refined approach. This demonstrates an embedded iterative learning cycle rather than isolated, one-off adjustments.
-
-*   **Theme:** 'Multi-source Data Triangulation'
+    *   **Description:** Evidence repeatedly follows a sequence: contextual learning (surveys, qualitative exploration), adaptation or piloting, and subsequent scaling or policy change, illustrating an organisational process dimension rather than a one-off adjustment.
+*   **Theme:** 'Geographic Variation as a Design Parameter'
     *   **Status:** Confirmed - Prominent Characteristic
-    *   **Description:** To validate coverage figures and understand program delivery, Malaria Consortium juxtaposes data from multiple sources. These include administrative tallies from CHWs, comprehensive household surveys (often conducted by partners like LSHTM), rapid mini-surveys for quality assurance, SMC card checks, and more recently, blister pack surveys. The organization acknowledges the potential biases and limitations of each method and uses these overlapping measures to build a more robust understanding of its performance.
-
-*   **Theme:** 'Contextualisation Across Ecological & Sociocultural Settings'
+    *   **Description:** Many quotes explicitly compare or differentiate countries, districts, or even specific communities, highlighting that geographic diversity is treated as a fundamental axis along which program components (payments, language, cycle number) are varied.
+*   **Theme:** 'Mixed-Methods Evidence Gathering'
     *   **Status:** Confirmed - Prominent Characteristic
-    *   **Description:** Adaptations are made across a wide range of factors, underscoring a deep attention to local realities. These include addressing drug palatability for children, ensuring survey instruments and health messages are understood through local language translation or interpretation by data collectors, modifying drug delivery modalities (e.g., door-to-door vs. fixed point, mobile sites), and synchronizing intervention timing to align with local ecological factors (e.g., rainfall patterns, migration routes) and sociocultural dynamics (e.g., poverty limiting household sugar availability for masking drug taste, engaging with pastoralist associations).
+    *   **Description:** The data show a pattern of combining quantitative surveys with qualitative follow-ups to elucidate behavioural or migratory phenomena, demonstrating a methodological dimension of triangulating evidence before altering the intervention.
 
 ## Validated & Refined Contradictions
-*   **Contradiction:** No direct contradictions were identified within this batch of records; all quotes consistently depict the need to adapt intervention and measurement strategies to differing local circumstances.
-    *   **Status:** Confirmed - No Significant Contradictions Identified
+*   **Contradiction:** No direct contradictions were identified within this batch of records; the quotes present a coherent narrative of location-based assessment followed by contextual adaptation.
+    *   **Status:** Confirmed - Accurate Assessment Based on Full Texts
 
 ## Validated & Refined Strong Claims
-*   **Claim:** “The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria. SMC is recommended for deployment in areas: where more than 60% of the annual incidence of malaria occurs within 4 months; where there are measures of disease burden consistent with a high burden of malaria in children (incidence >= 10 cases of malaria among every 100 children during the transmission season); where SP and AQ retain their antimalarial efficacy.”
-    *   **Status:** Confirmed - Foundational Criterion with Clarified Attribution
-    *   **Refined Context Note:** This quote, originally from WHO policy recommendations as cited in the GiveWell Summary (2021), outlines the core epidemiological and efficacy criteria Malaria Consortium uses to determine suitable areas for SMC intervention, forming a key part of their pre-implementation assessment and targeting strategy. (Source: `2021 GiveWell Summary.md`)
-
-*   **Claim:** “In 2016, some Malaria Consortium-supported countries switched to using the newly approved dispersible formulation tablets... The dispersible formulation has been shown to be significantly better tolerated, and as a result, there have been fewer cases of children vomiting.”
-    *   **Status:** Confirmed - Key Programmatic Adaptation
-    *   **Refined Context Note:** This statement from Malaria Consortium personnel (2016 Interview Notes) highlights a critical adaptation in their SMC program—the switch to a more tolerable drug formulation. This change directly addressed a programmatic challenge (vomiting due to bitter taste of previous AQ tablets) and demonstrates their commitment to refining interventions for better outcomes and child acceptability. (Source: `2016-11-09 Interview Notes.md`)
+*   **Claim:** “The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria.”
+    *   **Status:** Confirmed - Foundational Principle with Contextualization
+    *   **Refined Context Note:** This statement, reflecting WHO guidance, is a core principle guiding Malaria Consortium's site selection for SMC programs. Evidence from the `2021 GiveWell Summary.md` confirms that Malaria Consortium conducts assessments based on these factors (malaria burden, transmission, rainfall patterns) before initiating SMC activities.
+*   **Claim:** “My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives.”
+    *   **Status:** Confirmed - Key Self-Perception with Broad Corroboration
+    *   **Refined Context Note:** This statement from a Malaria Consortium representative in 2012 articulates a core aspect of the organization's identity and approach. This self-critical, learning-oriented culture is consistently evidenced across the source texts through descriptions of rigorous M&E, operational research, piloting of interventions (e.g., inSCALE, Katsina SMC), and iterative adaptation of strategies and tools in response to field findings.
 
 ## Validated Exemplar Quotes (Selected from Full Source Texts)
-*   **Illustrating Theme: 'Adapting drug formulations for child acceptability'**
-    *   Quote 1: "AQ tablets available prior to 2016 were hard and required crushing to a fine powder and dissolving with water before administering. Children sometimes vomited after taking the hard tablet formulation of AQ because it has a bitter, metallic taste that causes some children to gag and spit up the tablet. Adding sugar to make the taste more palatable helped to some extent, though in some communities people were too poor to have sugar, and in some cases sugar was not sufficient to mask the taste of the tablet." (Source: `2016-11-09 Interview Notes.md`)
-    *   Quote 2: "In 2016, some Malaria Consortium-supported countries switched to using the newly approved dispersible formulation tablets, which are sweetened and have an orange flavor that completely masks the taste of the AQ. These tablets can be dissolved on a spoon with a small amount of water and put in the child's mouth. The dispersible formulation has been shown to be significantly better tolerated, and as a result, there have been fewer cases of children vomiting." (Source: `2016-11-09 Interview Notes.md`)
-
-*   **Illustrating Theme: 'Modifying delivery strategies to local logistics and behaviour'**
-    *   Quote 1: "In most countries where SMC is being implemented through Malaria Consortium's program, approximately 80% of children are now treated at their households via door-to-door delivery, which has significantly reduced the number of instances in which someone does not take the first dose." (Source: `2016-11-09 Interview Notes.md`)
-    *   Quote 2: "Mapping of, and pre-engagement with, established migrant populations (such as pastoralists) through existing umbrella associations to ascertain established routes in order to provide mobile fixed point delivery locations to cater to the needs of these individuals." (Source: `2016-11-09 Interview Notes.md`)
-
-*   **Illustrating Theme: 'Addressing mobile populations and unstable denominators'**
-    *   Quote 1: "In some districts, a strong demand for SMC resulted in an unstable denominator in the surveys. Some individuals moved from neighboring districts in order to be able to participate and moved back to their home districts at the end of the treatment cycle. These individuals were not captured in coverage surveys that were conducted later because they no longer lived in the treated district." (Source: `2016-11-09 Interview Notes.md`)
-    *   Quote 2: "On the basis of these explorations, Malaria Consortium put together the following list of improvements to its intervention and measurement methods, which it implemented during the 2016 transmission season: Adjustments to implementation guides to accommodate mobile populations, including pre-planning for the set-up of mobile fixed distribution sites. Synchronization of the implementation phase across multiple districts and international borders to limit incentives for movement of individuals to access SMC services. Mapping of, and pre-engagement with, established migrant populations (such as pastoralists) through existing umbrella associations to ascertain established routes in order to provide mobile fixed point delivery locations to cater to the needs of these individuals." (Source: `2016-11-09 Interview Notes.md`)
-
-*   **Illustrating Theme: 'Continually refining monitoring and evaluation tools'**
-    *   Quote 1: "There is typically a difference of 15-20% between the administrative coverage data recorded by CHWs and the coverage results reported by surveys conducted by the London School of Hygiene and Tropical Medicine (LSHTM)." (Source: `2016-11-09 Interview Notes.md`)
-    *   Quote 2: "Malaria Consortium began including a rapid mini-survey at the end of the first and third cycles of the intervention. These surveys are intended as a quality assurance process to explain discrepancies in the data by determining, for example, the effects of recall or loss of the SMC card on the reduction in reported coverage." (Source: `2016-11-09 Interview Notes.md`)
-    *   Quote 3: "Before beginning to use SMC cards to measure coverage, Malaria Consortium pretested the use of the cards in different countries and modified the design of the cards based on feedback from these tests." (Source: `2016-11-09 Interview Notes.md`)
-
-*   **Illustrating Theme: 'Context-specific site selection and pre-implementation assessments'**
-    *   Quote 1: "The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria. SMC is recommended for deployment in areas: where more than 60% of the annual incidence of malaria occurs within 4 months; where there are measures of disease burden consistent with a high burden of malaria in children (incidence >= 10 cases of malaria among every 100 children during the transmission season); where SP and AQ retain their antimalarial efficacy." (Source: `2021 GiveWell Summary.md`)
-    *   Quote 2: "These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries." (Source: `2021 GiveWell Funding Gap.md` - referring to LLIN scoping, but illustrates contextual assessment)
-
-*   **Illustrating Theme: 'Operational research, piloting, and an organisational culture of self-critique'**
-    *   Quote 1: "The Bill & Melinda Gates Foundation (BMGF) provided about $1.7 million to Malaria Consortium to do operational research on the best way to deliver SMC at scale in Katsina state in northern Nigeria, and then to implement its chosen delivery system and assess its efficiency and impact." (Source: `2021 GiveWell Summary.md`)
-    *   Quote 2: "My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives." (Source: `2012-05-12 Interview Notes.md`)
-    *   Quote 3: "Where the inSCALE project comes in is by looking at the attrition rate of trained health workers and looking at what could be done to keep them in post. What motivates or demotivates them? What support do they want/need? The project then pilots a range of solutions to see what works and once the evidence is in place that certain solutions are proving successful, we look at how that can be rolled out and scaled up with government support." (Source: `2012-05-12 Interview Notes.md`)
+*   **Illustrating Theme: 'Context-Based Site Selection'**
+    *   Quote 1: “The suitability of an area for SMC is determined by the seasonal pattern of rainfall, malaria transmission and the burden of malaria.” (Source: `2021 GiveWell Summary.md`)
+    *   Quote 2: "These countries [for LLIN scoping] were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries." (Source: `2021 GiveWell Funding Gap.md`)
+*   **Illustrating Theme: 'Detecting On-the-Ground Challenges'**
+    *   Quote 1: “In certain areas, the surveys observed migration patterns that had not previously been described, which were largely due to agricultural practices. Malaria Consortium returned to these areas to do more qualitative exploration to learn about the causes of this migration.” (Source: `2016-11-09 Interview Notes.md`)
+    *   Quote 2: “Malaria Consortium told us that there are several challenges with delivering SMC, including insecurity, flooding, and road access during the rainy season, as well as conflicting community health campaigns, such as vaccination campaigns.” (Source: `2021 GiveWell Summary.md`)
+*   **Illustrating Theme: 'Iterative Tool & Strategy Modification'**
+    *   Quote 1: “Before beginning to use SMC cards to measure coverage, Malaria Consortium pretested the use of the cards in different countries and modified the design of the cards based on feedback from these tests.” (Source: `2016-11-09 Interview Notes.md`)
+    *   Quote 2: “On the basis of these explorations, Malaria Consortium put together the following list of improvements to its intervention and measurement methods, which it implemented during the 2016 transmission season:” (Source: `2016-11-09 Interview Notes.md`)
+    *   Quote 3: "Malaria Consortium also conducts operational research to assess the feasibility and impact of modifying the procedures described above, such as adding a fifth SMC cycle or extending eligibility to children aged 5-10 years." (Source: `2021 GiveWell Summary.md`)
+*   **Illustrating Theme: 'Operational Research & Pilots'**
+    *   Quote 1: "Where the inSCALE project comes in is by looking at the attrition rate of trained health workers and looking at what could be done to keep them in post. What motivates or demotivates them? What support do they want/need? The project then pilots a range of solutions to see what works and once the evidence is in place that certain solutions are proving successful, we look at how that can be rolled out and scaled up with government support." (Source: `2012-05-12 Interview Notes.md`)
+    *   Quote 2: "The Bill & Melinda Gates Foundation (BMGF) provided about $1.7 million to Malaria Consortium to do operational research on the best way to deliver SMC at scale in Katsina state in northern Nigeria, and then to implement its chosen delivery system and assess its efficiency and impact." (Source: `2021 GiveWell Summary.md`)
+*   **Illustrating Theme: 'Local Partnerships & Existing Systems'**
+    *   Quote 1: "In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs and the Ministry of Health through district level government health facilities." (Source: `2012-05-12 Interview Notes.md`)
+    *   Quote 2: "In its discussions with the ministries of health and in the process of rolling out its programs in-country, Malaria Consortium looked for existing household registration tools already in use in the same geographical areas as its programs. In some areas, it took advantage of existing household registers used in other programs (such as nutrition, integrated community case management, and neglected tropical disease programs) in order to adapt and simplify the tool it developed." (Source: `2016-11-09 Interview Notes.md`)
+*   **Illustrating Theme: 'Context-Sensitive Monitoring and Measurement'**
+    *   Quote 1: "In the future, coverage surveys will include all three methods of collecting information that have been used so far: checking the information recorded on the SMC card, checking the used blister pack, and asking the caregivers to recall whether the child took the drug. Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways." (Source: `2016-11-09 Interview Notes.md`)
+    *   Quote 2: "In some districts, a strong demand for SMC resulted in an unstable denominator in the surveys. Some individuals moved from neighboring districts in order to be able to participate and moved back to their home districts at the end of the treatment cycle. These individuals were not captured in coverage surveys that were conducted later because they no longer lived in the treated district." (Source: `2016-11-09 Interview Notes.md`)
+*   **Illustrating Theme: 'Organisational Learning Culture'**
+    *   Quote 1: “My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives.” (Source: `2012-05-12 Interview Notes.md`)
+    *   Quote 2: “We ask questions such as: ‘Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?’ We drill down as much as we can.” (Source: `2012-05-12 Interview Notes.md`)
 
 #### Final Insights
 
-##### MC Excels in Reactive Operational Adaptation, Less Proactive on Socio-Cultural Integration
+##### MC Demonstrates Strong Operational Adaptability in Response to Field Challenges and M&E.
 
-Insight explanation: Malaria Consortium demonstrates significant strength in adapting its interventions, particularly in response to operational challenges such as drug acceptability (e.g., switching to dispersible AQ tablets), delivery logistics (e.g., door-to-door delivery, strategies for mobile populations), and M&E data discrepancies. This is consistently shown in the 'adjusted_summary' through themes like 'Adapting drug formulations' and 'Modifying delivery strategies'. However, the 'deep_synthesis_report' reveals that this adaptation is often reactive ('Investigating Programmatic Challenges Post-Hoc') and primarily focused on these tangible operational aspects. There is a noted 'pervasive absence' of systematic processes for proactively identifying and integrating deep, nuanced socio-cultural factors, community perspectives, or power dynamics into initial intervention design or broader strategic modifications beyond general engagement.
+Insight explanation: Malaria Consortium effectively calibrates its interventions by iteratively modifying operational elements like drug formulations (e.g., AQ tablets), M&E tools (SMC cards, surveys), and delivery strategies (e.g., for mobile populations). This adaptability is consistently driven by field observations, operational research, pilot programs, and a robust M&E system. Both reports confirm this as a core strength, with the adjusted summary highlighting themes of iterative modification and operational research, and the deep synthesis detailing specific adaptations across drug administration, M&E processes, and population targeting.
 
-Supporting evidence summary: Supported by 'adjusted_summary' themes on drug, delivery, and M&E adaptations, and 'deep_synthesis_report' findings on reactive adaptation patterns, and absences in proactive socio-cultural understanding and systematic frameworks for broad adaptation decisions (Aspects: Identifying and understanding location-specific factors, Modifying or adapting the intervention strategy/activities).
+Supporting evidence summary: Supported by 'Iterative Tool & Strategy Modification', 'Operational Research & Pilots' themes (Adjusted Summary), and findings on adapting drug formulation, M&E tools, and strategies for mobile populations (Deep Synthesis Report, Aspect: Modifying or adapting).
+
+Evidence Collected for this insight:
+
+###### Evidence#1
+
+Evidence doc name: Unknown Document
+
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
+
+Agreement level: strongly_agrees
+
+Reasoning for extracting quote: This quote describes a finding from a specific location (Katsina State, mentioned in the preceding paragraph) where a lack of communication about keeping blister packs hindered monitoring. Based on this location-specific finding, Malaria Consortium decided to modify its communication strategy for future interventions. This demonstrates identifying a location-specific issue and adapting the intervention's communication approach in response. This finding and decision occurred during or after the Katsina project, which was before the main intervention period discussed.
+
+###### Evidence#2
+
+Evidence doc name: Unknown Document
+
+Evidence quote: In the most recent program year, 2019, post-round surveys measured average coverage across cycles at 89% in Burkina Faso, 69% in Chad, and 68% in Nigeria.
+
+Agreement level: agrees
+
+Reasoning for extracting quote: This quote presents coverage results broken down by country. The variation in coverage rates across Burkina Faso, Chad, and Nigeria demonstrates that location-specific factors influence the outcome (reach) of the intervention. Assessing these differential impacts by location is crucial for understanding where the program is more or less effective and can inform future calibration efforts.
+
+##### Adaptation Primarily Reactive to Operational Issues; Proactive Deep Socio-Cultural Integration Less Evident.
+
+Insight explanation: While MC excels at adapting to operational challenges once identified (e.g., drug side effects, logistical hurdles), the evidence suggests a less developed proactive approach to integrating deep, nuanced socio-cultural understanding (e.g., local power dynamics, diverse community beliefs beyond direct service interaction) into initial program design or major strategic recalibrations. The deep synthesis report highlights gaps in systematic proactive identification of these factors and integrating broader community perspectives beyond caregiver/CHW feedback, suggesting adaptations are often post-hoc responses to encountered problems rather than pre-emptive design choices based on holistic local context analysis. The adjusted summary notes 'Detecting On-the-Ground Challenges' which aligns with this reactive stance.
+
+Supporting evidence summary: Supported by 'Detecting On-the-Ground Challenges' (Adjusted Summary) and pervasive absences/gaps noted in the Deep Synthesis Report regarding proactive socio-cultural understanding and broad community feedback integration before design (Aspects: Identifying and understanding location-specific factors, Ensuring the intervention is responsive).
 
 Evidence Collected for this insight:
 
@@ -370,45 +379,45 @@ Evidence doc name: Unknown Document
 
 Evidence quote: We ask questions such as: "Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?" We drill down as much as we can.
 
-Agreement level: strongly_disagrees
+Agreement level: agrees
 
-Reasoning for extracting quote: This quote provides direct evidence of proactive, systematic socio-cultural inquiry, contradicting the insight's claim of a pervasive absence of such processes.
+Reasoning for extracting quote: This quote provides evidence of identifying and understanding location-specific factors and assessing their impact on an intervention (net distribution). By asking detailed questions about why nets aren't used (e.g., lack of tools), they are investigating specific local barriers that affect the intervention's effectiveness. This process of "drilling down" is key to understanding the local context. The timing relative to the specific SMC intervention is unclear as this describes a general M&E approach.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways.
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
 
-Agreement level: agrees
+Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote shows MC’s use of continuous data collection on behavioral factors to inform operational methods, supporting the insight’s claim about reactive operational adaptation using M&E.
+Reasoning for extracting quote: This quote describes a reactive adaptation to an operational issue (lack of blister pack crosschecks) demonstrating the insight's point that MC adapts reactively once problems are identified.
 
 ###### Evidence#3
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices.
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote demonstrates MC's rigorous use of M&E and research to analyze and improve interventions, supporting the insight that MC excels in operational adaptation.
+Reasoning for extracting quote: This quote explicitly states that location-specific assessments (malaria burden, transmission/rainfall patterns, incidence, seasonality) were conducted *before* starting the ACCESS-SMC program in specific countries. This is a clear example of identifying and understanding location factors to inform the decision of where and how to implement the intervention.
 
 ###### Evidence#4
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
+Evidence quote: In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote demonstrates that Malaria Consortium prioritizes epidemiological and logistical factors upfront, supporting the insight that they assess basic health system and epidemiological factors proactively before socio-cultural ones.
+Reasoning for extracting quote: This demonstrates proactive assessment of epidemiological factors before program implementation, supporting the insight’s claim that MC conducts upfront assessments of basic health system and epidemiological factors.
 
-##### M&E-Driven Iterative Learning Leads to Operational Refinements, Broader Strategic Application Gaps Noted
+##### Practical Constraints (Cost, Scalability) Influence the Extent of Localized Adaptation.
 
-Insight explanation: Malaria Consortium employs an 'Iterative Learning Cycle,' as highlighted in the 'adjusted_summary,' which is strongly driven by its M&E systems (e.g., various surveys, data triangulation) and operational research. This leads to concrete operational refinements such as improved M&E tools, changes in drug formulations, and modified delivery methods. The 'deep_synthesis_report' concurs with the reliance on M&E for discovery. However, it also points to 'Evidentiary Completeness & Remaining Gaps,' suggesting that while learning occurs, there's less clarity on how this learning is systematically synthesized and proactively applied to inform entry into *new* diverse locations or to anticipate a broader range of non-operational local challenges based on typologies of local contexts.
+Insight explanation: A tension exists between MC's efforts to tailor interventions and the practical constraints of cost-effectiveness, scalability, and the need for standardized protocols, partly influenced by donor expectations. While the adjusted summary emphasizes successful adaptations, the deep synthesis report reveals that these constraints can limit the adoption of potentially more effective but costlier or complex localized solutions (e.g., advanced M&E tools, deeply tailored SBCC). This means that while responsive, the 'ideal' or most comprehensive adaptation might be tempered by these operational realities.
 
-Supporting evidence summary: Supported by 'adjusted_summary' themes like 'Iterative Learning Cycle,' 'Continually refining M&E tools,' 'Operational research,' and 'Multi-source Data Triangulation.' Also supported by 'deep_synthesis_report' findings on 'Reliance on M&E and Surveys for Discovery' and 'Evidentiary Completeness & Remaining Gaps' concerning the synthesis and proactive application of learning for new contexts (Aspects: Identifying and understanding location-specific factors, Assessing the impact of location factors on the intervention).
+Supporting evidence summary: Supported by contradictions/gaps in the Deep Synthesis Report concerning cost/scalability limiting ideal M&E or adaptations (Aspects: Modifying or adapting, Ensuring the intervention is responsive), while the Adjusted Summary focuses on adaptations achieved.
 
 Evidence Collected for this insight:
 
@@ -416,47 +425,27 @@ Evidence Collected for this insight:
 
 Evidence doc name: Unknown Document
 
-Evidence quote: We ask questions such as: "Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?" We drill down as much as we can.
+Evidence quote: The Bill & Melinda Gates Foundation (BMGF) provided about $1.7 million to Malaria Consortium to do operational research on the best way to deliver SMC at scale in Katsina state in northern Nigeria, and then to implement its chosen delivery system and assess its efficiency and impact.
 
-Agreement level: strongly_agrees
+Agreement level: agrees
 
-Reasoning for extracting quote: This quote demonstrates the use of detailed M&E questioning and data triangulation to continuously refine understanding and improve intervention tools.
+Reasoning for extracting quote: This quote illustrates that donor funding and the focus on scalable delivery drive operational research priorities, reflecting the tension between achieving scale and the depth of localized adaptation due to practical constraints.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways.
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
 
-Agreement level: agrees
+Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This supports the insight’s claim of an iterative learning cycle driven by M&E, recognizing variation across contexts and the need for continuous data collection to inform operational adjustments.
+Reasoning for extracting quote: This quote explicitly states that location-specific assessments (malaria burden, transmission/rainfall patterns, incidence, seasonality) were conducted before starting the ACCESS-SMC program to inform how to implement the intervention, illustrating MC's efforts to tailor interventions.
 
-###### Evidence#3
+##### MC Shows an Evolving Capacity for Systematic Learning and Increasingly Sophisticated Adaptation.
 
-Evidence doc name: Unknown Document
+Insight explanation: Malaria Consortium's approach to calibrating interventions has matured over time. Early indications of a commitment to learning have evolved into more systematic processes for identifying local factors, assessing their impact, and implementing adaptive strategies. This is evidenced by the increasing sophistication of M&E methods, the undertaking of operational research to explore significant programmatic changes (e.g., 5th SMC cycle), and specific examples of iterative improvements like the AQ drug reformulation and strategies for mobile populations. Both reports support this progression, with the deep synthesis explicitly noting evolution across aspects and the adjusted summary reflecting a current state of refined adaptive practices.
 
-Evidence quote: In the most recent program year, 2019, post-round surveys measured average coverage across cycles at 89% in Burkina Faso, 69% in Chad, and 68% in Nigeria.88
-
-Agreement level: agrees
-
-Reasoning for extracting quote: This quote demonstrates the routine use of post-round surveys to measure coverage, aligning with the insight's point that M&E systems, including surveys, drive the iterative learning cycle, even though it doesn't explicitly mention subsequent refinements.
-
-###### Evidence#4
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
-
-Agreement level: agrees
-
-Reasoning for extracting quote: This indicates that Malaria Consortium employs data-driven criteria (epidemiological burdens, seasonality, operational capacity) to inform entry into new program contexts, aligning with the insight's note on strategic application of learning and data for new locations.
-
-##### Responsiveness Strong on Practical Intervention Aspects, Deeper Community Co-Design Lacking
-
-Insight explanation: The intervention demonstrates responsiveness to local contexts by making practical adaptations, such as changing drug formulations for better child acceptability, modifying M&E tools for improved usability by local health workers, and adjusting delivery strategies for mobile populations, as detailed in the 'adjusted_summary.' The use of local CHWs is a key part of this. However, the 'deep_synthesis_report' (under 'Ensuring the intervention is responsive to local context') highlights a 'pervasive absence' of formal, systematic mechanisms for incorporating deep, nuanced understanding of local socio-cultural norms, power dynamics, or community-defined priorities into the initial design or ongoing strategic refinement beyond general CHW interactions or survey feedback. This suggests responsiveness is stronger on operational and product aspects than on deep community partnership or co-design of the intervention strategy.
-
-Supporting evidence summary: Supported by 'adjusted_summary' themes on adapting drug formulations, M&E tools, and delivery strategies. Complemented by 'deep_synthesis_report' findings on the 'Pervasive Absence' of deep socio-cultural integration and formal community feedback mechanisms for strategic decisions (Aspect: Ensuring the intervention is responsive to local context).
+Supporting evidence summary: Supported by the 'Organisational Learning Culture' and 'Iterative Learn–Adapt–Scale Cycle' (Adjusted Summary) and the 'Evolution / Change Over Time' sections across all aspects in the Deep Synthesis Report.
 
 Evidence Collected for this insight:
 
@@ -464,47 +453,47 @@ Evidence Collected for this insight:
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Children sometimes vomited after taking the hard tablet formulation of AQ because it has a bitter, metallic taste that causes some children to gag and spit up the tablet. Adding sugar to make the taste more palatable helped to some extent, though in some communities people were too poor to have sugar, and in some cases sugar was not sufficient to mask the taste of the tablet.
+Evidence quote: In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs and the Ministry of Health through district level government health facilities.
 
-Agreement level: strongly_agrees
+Agreement level: agrees
 
-Reasoning for extracting quote: This quote directly identifies a formulation issue and a practical adaptation (adding sugar) to improve acceptability for children, exemplifying operational responsiveness to local context.
+Reasoning for extracting quote: This quote serves as evidence for calibrating the approach by showing how Malaria Consortium adapts its partnership strategy based on the specific location (Uganda) and the existing local infrastructure and actors (local CBOs, Ministry of Health, district facilities). This demonstrates modifying the intervention strategy and ensuring responsiveness to the local context. The timing relative to the specific SMC intervention is unclear from the text.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways.
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
 
 Agreement level: agrees
 
-Reasoning for extracting quote: This quote reflects awareness of local behavioral factors and commitment to collect data for adaptation, aligning with the insight's emphasis on responsiveness in practical intervention aspects (M&E adaptation).
+Reasoning for extracting quote: This quote describes a finding from a specific location (Katsina State) where a lack of communication about keeping blister packs hindered monitoring, and shows Malaria Consortium adapting its communication strategy for future interventions.
 
 ###### Evidence#3
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Data collectors translate questions from English or French into local languages during household interviews,76 which may lead to inconsistencies in translation and reduce the accuracy of results.
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
 
-Agreement level: agrees
+Agreement level: strongly_agrees
 
-Reasoning for extracting quote: Indicates ad-hoc translation practices lacking formal systematic mechanisms for deeper socio-cultural adaptation, supporting the insight’s claim of reactive rather than proactive design.
+Reasoning for extracting quote: This quote demonstrates systematic, location-specific context assessment before program implementation, evidencing mature learning and adaptation processes.
 
 ###### Evidence#4
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Malaria Consortium supports activities to promote community engagement and social and behavior change before and during SMC campaigns.
+Evidence quote: In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.
 
 Agreement level: agrees
 
-Reasoning for extracting quote: Demonstrates practical operational responsiveness through community engagement, aligning with the insight’s assertion that the intervention is strong on practical aspects using CHWs and engagement activities.
+Reasoning for extracting quote: This quote shows early evidence of Malaria Consortium's systematic learning through baseline data collection, supporting the insight's assertion of early commitment to learning that evolved over time.
 
-##### Adaptation Efforts Tempered by Cost, Scalability, and Local System Capacity Constraints
+##### Local Partnerships are Key, but Systematic Integration of Broad Community Input into Design is Unclear.
 
-Insight explanation: While Malaria Consortium exhibits a clear commitment to adapting and refining its interventions based on evidence and local needs, as shown by examples in the 'adjusted_summary' (e.g., operational research, piloting solutions), the 'deep_synthesis_report' identifies a tension between ideal adaptations and practical constraints. Specifically, decisions about modifications (e.g., adopting advanced M&E like 'intelligent blister packs' or choosing data sources like HMIS) are influenced by considerations of cost, scalability, and the capacity of local health systems to sustain these changes. This can lead to pragmatic choices that may not represent the optimal solution for data quality or local fit but are deemed necessary for broader implementation and handover.
+Insight explanation: Malaria Consortium's strategy heavily relies on partnerships with Ministries of Health and local health workers (CHWs), which is crucial for operational grounding and responsiveness. Both reports confirm this. However, while feedback is gathered (e.g., from CHWs, caregivers during M&E), the deep synthesis report indicates a gap in understanding how broader, diverse community perspectives and deep socio-cultural nuances are systematically and proactively integrated into the *initial design phase* or significant ongoing recalibrations of the intervention, beyond operational adjustments. The adjusted summary highlights 'Local Partnerships & Existing Systems' but the deep synthesis questions the depth of proactive, holistic community engagement for design.
 
-Supporting evidence summary: Supported by 'deep_synthesis_report' sections on 'Contradictions / Divergence' for 'Modifying or adapting the intervention strategy/activities' and 'Ensuring the intervention is responsive to local context,' which discuss the balance between ideal adaptations and constraints like cost and local capacity. The 'adjusted_summary' provides examples of adaptations made within these operational realities.
+Supporting evidence summary: Supported by 'Local Partnerships & Existing Systems' (Adjusted Summary) and absences/gaps noted in the Deep Synthesis Report regarding proactive integration of broad community perspectives and deep socio-cultural factors in initial design (Aspects: Identifying and understanding location-specific factors, Ensuring the intervention is responsive).
 
 Evidence Collected for this insight:
 
@@ -512,89 +501,21 @@ Evidence Collected for this insight:
 
 Evidence doc name: Unknown Document
 
-Evidence quote: We ask questions such as: "Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?" We drill down as much as we can.
+Evidence quote: In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs and the Ministry of Health through district level government health facilities.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote provides a direct example of Malaria Consortium’s commitment to adapting and refining interventions based on deep, evidence-driven inquiries into local barriers, supporting the insight’s assertion of a strong adaptation culture.
+Reasoning for extracting quote: This quote serves as evidence for calibrating the approach by showing how Malaria Consortium adapts its partnership strategy based on the specific location (Uganda) and the existing local infrastructure and actors (local CBOs, Ministry of Health, district facilities). This demonstrates modifying the intervention strategy and ensuring responsiveness to the local context. The timing relative to the specific SMC intervention is unclear from the text.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Before beginning to use SMC cards to measure coverage, Malaria Consortium pretested the use of the cards in different countries and modified the design of the cards based on feedback from these tests.
-
-Agreement level: strongly_agrees
-
-Reasoning for extracting quote: Demonstrates clear commitment to adapting interventions based on evidence and local feedback, supporting the insight's emphasis on evidence-driven modification.
-
-###### Evidence#3
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Data collectors translate questions from English or French into local languages during household interviews,76 which may lead to inconsistencies in translation and reduce the accuracy of results.
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
 
 Agreement level: agrees
 
-Reasoning for extracting quote: This quote illustrates a pragmatic translation approach that compromises data quality, reflecting how practical constraints can lead to suboptimal adaptations.
-
-###### Evidence#4
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
-
-Agreement level: agrees
-
-Reasoning for extracting quote: This quote shows that program implementation decisions were influenced by local staff presence and operational considerations, reflecting capacity constraints that temper adaptation efforts.
-
-##### Evolving Capacity for Addressing Location-Specific Factors, but Proactive Comprehensive Understanding Remains a Gap
-
-Insight explanation: Malaria Consortium's approach to identifying, understanding, and addressing location-specific factors has evolved from early M&E awareness to more concrete investigations (e.g., qualitative exploration of migration, pre-testing of tools) and a more mature M&E framework, as evidenced by comparing earlier interview notes with later reports in the 'deep_synthesis_report' and the detailed examples in the 'adjusted_summary.' Despite this evolution and demonstrated ability to adapt to *identified* factors (e.g., drug taste, mobile populations, data discrepancies), the 'deep_synthesis_report' consistently points to a remaining gap in the *proactive, systematic identification and integration of a broad range of socio-cultural, political, or nuanced economic factors* at the micro-level *before* initial program design and rollout in new specific locations.
-
-Supporting evidence summary: Supported by 'deep_synthesis_report' findings on 'Evolution / Change Over Time' and 'Evidentiary Completeness & Remaining Gaps' for the aspect 'Identifying and understanding location-specific factors,' and the numerous examples of specific adaptations in the 'adjusted_summary' which demonstrate response to *identified* factors.
-
-Evidence Collected for this insight:
-
-###### Evidence#1
-
-Evidence doc name: Unknown Document
-
-Evidence quote: We ask questions such as: "Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?" We drill down as much as we can.
-
-Agreement level: strongly_agrees
-
-Reasoning for extracting quote: This quote demonstrates early M&E awareness and initial efforts to identify location-specific factors, supporting the insight's assertion about the evolution from basic M&E practices.
-
-###### Evidence#2
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways.
-
-Agreement level: agrees
-
-Reasoning for extracting quote: This quote indicates awareness of behavioral differences across settings and a commitment to ongoing data collection to understand and address location-specific factors, supporting the insight's claim about evolved adaptive capacity.
-
-###### Evidence#3
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices.
-
-Agreement level: strongly_agrees
-
-Reasoning for extracting quote: This statement demonstrates early M&E awareness, directly supporting the insight's claim of evolving from early M&E foundations.
-
-###### Evidence#4
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
-
-Agreement level: agrees
-
-Reasoning for extracting quote: This quote shows that early scoping decisions were based on epidemiological and logistical factors, not a broad socio-cultural or micro-level analysis, supporting the insight's assertion that proactive comprehensive identification of location-specific socio-cultural factors was lacking.
+Reasoning for extracting quote: This quote describes a finding from a specific location (Katsina State, mentioned in the preceding paragraph) where a lack of communication about keeping blister packs hindered monitoring. Based on this location-specific finding, Malaria Consortium decided to modify its communication strategy for future interventions. This demonstrates identifying a location-specific issue and adapting the intervention's communication approach in response. This finding and decision occurred during or after the Katsina project, which was before the main intervention period discussed.
 
 ---
 
@@ -817,58 +738,47 @@ Significant gaps include:
 Description: Thematic analysis and critical assessment of evidence collected by the LLM. The goal is to identify dominant content themes, note relevant dimensional characteristics, flag any direct contradictions or strong singular claims present in the data, and select representative quotes.
 
 ## Overall Summary
-The evidence portrays Malaria Consortium as an organisation that places substantial emphasis on collecting and analysing information before launching—or expanding—its malaria prevention interventions. Prior to implementation, it pilot-tests data-collection tools (e.g., household registration forms, coverage-tracking cards), conducts baseline or scoping studies (such as drug-resistance surveys and LLIN funding assessments), and draws on existing household registers to streamline new tools. These activities are guided by clear criteria (disease burden, campaign timelines, staff presence, COVID-19 overlap) and are frequently supported by small, purpose-specific grants that help ensure the work is prioritised. The organisation frames itself as technically expert, self-critical, and committed to rigorous monitoring and evaluation, believing these practices identify cost-effective opportunities and inform best-practice programme design.
+The evidence portrays Malaria Consortium’s systematic efforts to gather and analyse information ​before​ scaling up its Seasonal Malaria Chemoprevention (SMC) activities. Prior to large-scale rollout, the organisation piloted key monitoring tools—such as SMC cards and a household-registration instrument—in a smaller, controlled Katsina State project. Field teams used structured household observations, supervisor check-lists, and blister-pack inspections to verify coverage and adherence, then consolidated findings and discussed them in focus-group sessions to refine the tools. Complementing this, the consortium tapped into existing household registers from other health programmes, conducted a baseline study on malaria-drug-resistance markers, and scoped funding landscapes for related malaria interventions. Collectively, these actions illustrate an iterative, multi-method approach to pre-intervention data collection aimed at maximising operational effectiveness and cost efficiency.
 
 ## Content Themes
-* **Rigorous Monitoring, Evaluation, and Learning Culture**  
-  Malaria Consortium describes itself as “rigorous” and “self-critical,” emphasising continual analysis to determine whether interventions work and how they can be improved. This mindset undergirds its pre-intervention activities, signalling a deliberate, evidence-driven organisational culture.
+* **Pilot Testing of Monitoring Tools**  
+  Malaria Consortium first deployed the SMC card and household-registration tool in a small, controlled intervention in Katsina State, explicitly to test their usefulness for measuring coverage and to simplify their design before wider use.
 
-* **Pilot Testing and Tool Development Before Scale-Up**  
-  Before rolling out large programmes, the organisation develops and pre-tests instruments—including household registration tools and coverage-measurement cards—in controlled or small-scale settings to simplify design and verify efficacy.
+* **Field Verification through Structured Observation**  
+  Supervisors conducted household visits after each chemoprevention cycle, employing check-lists, respondent confirmation of tablet intake, and blister-pack checks to assess whether SMC cards accurately reflected real-world drug adherence.
 
-* **Leveraging Existing Data Systems**  
-  To enhance efficiency, Malaria Consortium adapts tools using existing household registers from other health programmes (nutrition, iCCM, NTDs), reducing duplication and complexity in new data-collection efforts.
+* **Data Consolidation and Reflective Feedback Loops**  
+  After each pilot cycle, supervisors’ check-lists were collated and analysed, and findings were debriefed in focus-group discussions with field staff, creating an immediate feedback mechanism for tool improvement.
 
-* **Scoping Studies to Inform Funding Opportunities**  
-  Dedicated staff time is funded to gather information on LLIN campaign financing across several countries, with the explicit goal of identifying highly cost-effective, time-sensitive funding gaps that donors might fill.
+* **Leveraging Existing Data Sources**  
+  Where possible, the programme adapted household registers already maintained by nutrition or neglected tropical-disease initiatives, reducing duplicate data collection and simplifying new tools.
 
-* **Criteria-Based Geographic Targeting and Timeline Planning**  
-  Country selection for scoping or future campaigns is guided by malaria burden, alignment of peak transmission seasons with other risks (e.g., COVID-19), LLIN campaign schedules, and existing staff capacity, with clear expectations about start and end dates.
+* **Baseline Studies on Drug Resistance**  
+  Before scale-up, ACCESS-SMC funded a baseline survey of gene mutations linked to resistance against SMC drugs, establishing a reference point for future efficacy monitoring.
 
-* **Donor Engagement and Concept Note Development**  
-  Pre-intervention activities include multiple discussions with donors, submission of concept notes, and agreement on scope and timelines, with small grants used as incentives to prioritise preparatory work.
-
-* **Baseline Research on Drug Resistance and Behaviour Change**  
-  The organisation commissions baseline surveys—for example, examining genetic markers of drug resistance—while also planning community engagement and social-behaviour change activities before campaigns commence.
+* **Contextual Assessments for Related Malaria Funding Needs**  
+  Separate pre-intervention work gathered information on national funding gaps for long-lasting insecticidal-net campaigns, signalling the consortium’s broader practice of scoping contextual and financial landscapes ahead of potential support.
 
 ## Dimensional Themes
-* **Iterative, Self-Critical Framing**  
-  Quotes frequently adopt a reflexive tone—highlighting learning, reviewing, and willingness to “find out what works”—indicating that pre-intervention data collection is positioned as an iterative process aimed at continual refinement.
+* **Iterative Tool Refinement**  
+  The quotes show a cycle of design, pilot use, observation, consolidation of findings, and redesign, emphasising continuous improvement before full implementation.
 
-* **Pilot-Then-Scale Modality**  
-  Evidence consistently references small-scale or controlled pilots preceding broader rollout, illustrating a methodological dimension where proof-of-concept is required before large-scale operationalisation.
-
-* **Time-Bound Project Management**  
-  Pre-intervention studies are described with explicit start–end windows (e.g., May–June 2020) and rapid reporting expectations, reflecting an emphasis on tight timelines and responsiveness to time-sensitive opportunities.
+* **Multi-Method Data Collection**  
+  Evidence spans quantitative check-lists, qualitative focus groups, laboratory baseline studies, and desk research on funding—illustrating a deliberate mix of methods to build a comprehensive pre-intervention evidence base.
 
 ## Direct Contradictions
-No direct contradictions were identified within this batch of records; all quotes consistently describe a systematic, evidence-based approach to pre-intervention data collection and planning.
+No direct contradictions were identified within this batch of records.
 
 ## Strong Singular Claims
-* Record #0: “Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices.”
-* Record #11: “Malaria Consortium has a track record of delivering a high-quality, large-scale malaria prevention program, and we have thoroughly vetted that track record.”
+* “In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.”
+* “Malaria Consortium also pre-tested the household registration tool to help simplify its design.”
 
 ## Exemplar Quotes (Representing Content Themes)
-* Record #0: “Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices.”
-* Record #1: “Our technical expertise is our strength. We like to understand how things work rather than just going for the delivery of the intervention. My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives.”
-* Record #2: “Once a final version was created, Malaria Consortium used monitoring tools to test the card's efficacy as a means of measuring coverage during its project in Katsina State, Nigeria, which was a smaller-scale intervention in a more controlled environment than its current programs.”
-* Record #3: “In some areas, it took advantage of existing household registers used in other programs (such as nutrition, integrated community case management, and neglected tropical disease programs) in order to adapt and simplify the tool it developed.”
-* Record #4: “Malaria Consortium also pre-tested the household registration tool to help simplify its design.”
-* Record #5: “The grant was intended to pay for staff time spent collecting information on the funding situation for LLIN campaigns in several countries and suggesting priorities for additional funding for LLIN campaigns.”
-* Record #6: “Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.”
-* Record #12: “While Malaria Consortium may have been able and willing to conduct this scoping work without a grant, we believed providing this relatively small amount of funding and agreeing upon the scope and timeline for the project in advance would increase the likelihood that Malaria Consortium would prioritize it more highly than it would have otherwise.”
-* Record #14: “Malaria Consortium supports activities to promote community engagement and social and behavior change before and during SMC campaigns.”
-* Record #15: “In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC. A follow-up survey was conducted in 2017, following two rounds of SMC.”
+* “Once a final version was created, Malaria Consortium used monitoring tools to test the card's efficacy as a means of measuring coverage during its project in Katsina State, Nigeria, which was a smaller-scale intervention in a more controlled environment than its current programs.”
+* “In order to determine whether SMC cards were representative of coverage in its program in Katsina State, Malaria Consortium conducted structured observations in the field immediately after each cycle. Supervisors visited households with a checklist, looking at specific responses on the SMC cards, asking individuals to confirm whether they had taken the two subsequent tablets of AQ or not, and, where possible, checking the blister packs.”
+* “Malaria Consortium gathered the supervisors' checklists at the end of each cycle and consolidated the findings, which included information on the SMC card, the blister packs, and individuals' responses to survey questions. Malaria Consortium conducted a focus group with the supervisors to discuss and explain the findings.”
+* “In some areas, it took advantage of existing household registers used in other programs (such as nutrition, integrated community case management, and neglected tropical disease programs) in order to adapt and simplify the tool it developed.”
+* “In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.”
 
 #### Revised Synthesis Results
 
@@ -881,100 +791,70 @@ Description: The synthesis results was compiled only using the quote/reasoning p
 
 ## Overall Summary
 *   **Status:** Refined - Enhanced and Corrected Overview
-*   **Summary:** Across the source texts, Malaria Consortium consistently emerges as an organization that prioritizes systematic information collection and analysis *before* initiating or significantly expanding its malaria prevention interventions. This pre-intervention work includes pilot-testing data collection tools like household registration forms and coverage-tracking cards in controlled settings (e.g., Katsina SMC pilot), conducting crucial baseline research such as drug resistance surveys (e.g., ACCESS-SMC 2015), and undertaking scoping studies to identify strategic opportunities, like the LLIN funding gap assessment. To enhance efficiency, the organization also leverages existing data systems, such as adapting tools based on pre-existing household registers from other health programs. Planning for such activities, like the LLIN scoping, involves defined criteria which can include disease burden, alignment with campaign timelines, existing staff capacity, and contextual factors (such as the COVID-19 pandemic's potential impact in one instance). This preparatory work is sometimes facilitated by specific grants designed to ensure its prioritization. This approach is rooted in Malaria Consortium's self-described identity as a technically expert, self-critical organization committed to rigorous monitoring, evaluation, and learning, viewing these pre-intervention efforts as essential for identifying cost-effective strategies and designing impactful programs.
+*   **Summary:** The evidence portrays Malaria Consortium’s systematic efforts to gather and analyse information ​before​ initiating or scaling up its intervention activities, particularly for Seasonal Malaria Chemoprevention (SMC). Prior to large-scale SMC rollout, the organisation piloted key monitoring tools—such as SMC cards and a household-registration instrument—in a smaller, controlled Katsina State project. During this pilot, field teams used structured household observations, supervisor check-lists, and blister-pack inspections to verify coverage and adherence, then consolidated findings and discussed them in focus-group sessions to refine these tools. For SMC, the consortium also tapped into existing household registers from other health programmes to simplify its own tools and conducted a baseline study on malaria-drug-resistance markers. Beyond SMC, Malaria Consortium demonstrated a broader practice of pre-intervention assessment by, for example, scoping funding landscapes for related malaria interventions like LLIN campaigns. Collectively, these actions illustrate an iterative, multi-method approach to pre-intervention data collection aimed at maximising operational effectiveness and cost efficiency.
 
 ## Validated & Refined Content Themes
-*   **Theme:** 'Rigorous Monitoring, Evaluation, and Learning Culture'
-    *   **Status:** Refined - Core Finding with Corrected and Enhanced Description
-    *   **Refined Description:** Malaria Consortium explicitly frames its organizational identity around being “rigorous” and “self-critical” (2012 Interview). This involves a commitment to continual analysis to assess intervention efficacy and identify areas for improvement. This foundational culture directly informs its approach to pre-intervention data collection, driving activities such as pilot studies, baseline assessments, and scoping exercises as essential precursors to effective program design and implementation, reflecting a deliberate, evidence-driven methodology.
-    *   **Original Preliminary Description (For reference if refined):** Malaria Consortium describes itself as “rigorous” and “self-critical,” emphasising continual analysis to determine whether interventions work and how they can be improved. This mindset undergirds its pre-intervention activities, signalling a deliberate, evidence-driven organisational culture.
-
-*   **Theme:** 'Pilot Testing and Tool Development Before Scale-Up'
-    *   **Status:** Confirmed - Core Finding (Kept As Is)
-    *   **Description:** Before rolling out large programmes, the organisation develops and pre-tests instruments—including household registration tools and coverage-measurement cards—in controlled or small-scale settings to simplify design and verify efficacy.
-
-*   **Theme:** 'Leveraging Existing Data Systems'
-    *   **Status:** Confirmed - Core Finding (Kept As Is)
-    *   **Description:** To enhance efficiency, Malaria Consortium adapts tools using existing household registers from other health programmes (nutrition, iCCM, NTDs), reducing duplication and complexity in new data-collection efforts.
-
-*   **Theme:** 'Scoping Studies to Inform Funding Opportunities'
-    *   **Status:** Confirmed - Core Finding (Kept As Is)
-    *   **Description:** Dedicated staff time is funded to gather information on LLIN campaign financing across several countries, with the explicit goal of identifying highly cost-effective, time-sensitive funding gaps that donors might fill.
-
-*   **Theme:** 'Criteria-Based Geographic Targeting and Timeline Planning'
-    *   **Status:** Refined - Core Finding with Corrected and Enhanced Description
-    *   **Refined Description:** Pre-intervention planning for new or expanded initiatives, such as scoping studies or country selection for campaigns, is characterized by the application of defined criteria and clear timelines. For instance, an LLIN scoping study explicitly considered factors like high malaria burden, potential overlap of malaria transmission with COVID-19 transmission, LLIN campaign schedules, and existing staff presence in target countries (`2021 GiveWell Funding Gap.md`). Similarly, assessments for SMC programs involved evaluating malaria burden, transmission patterns, and seasonality (`2021 GiveWell Summary.md`). This indicates a systematic approach to targeting and scheduling pre-intervention work.
-    *   **Original Preliminary Description (For reference if refined):** Country selection for scoping or future campaigns is guided by malaria burden, alignment of peak transmission seasons with other risks (e.g., COVID-19), LLIN campaign schedules, and existing staff capacity, with clear expectations about start and end dates.
-
-*   **Theme:** 'Donor Engagement and Concept Note Development'
-    *   **Status:** Confirmed - Core Finding (Kept As Is)
-    *   **Description:** Pre-intervention activities include multiple discussions with donors, submission of concept notes, and agreement on scope and timelines, with small grants used as incentives to prioritise preparatory work.
-
-*   **Theme:** 'Baseline Research on Drug Resistance and Behaviour Change'
-    *   **Status:** Confirmed - Core Finding (Kept As Is)
-    *   **Description:** The organisation commissions baseline surveys—for example, examining genetic markers of drug resistance—while also planning community engagement and social-behaviour change activities before campaigns commence.
+*   **Theme:** 'Pilot Testing of Monitoring Tools'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** Malaria Consortium first deployed the SMC card and household-registration tool in a small, controlled intervention in Katsina State, explicitly to test their usefulness for measuring coverage and to simplify their design before wider use.
+*   **Theme:** 'Field Verification through Structured Observation'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** Supervisors conducted household visits after each chemoprevention cycle, employing check-lists, respondent confirmation of tablet intake, and blister-pack checks to assess whether SMC cards accurately reflected real-world drug adherence.
+*   **Theme:** 'Data Consolidation and Reflective Feedback Loops'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** After each pilot cycle, supervisors’ check-lists were collated and analysed, and findings were debriefed in focus-group discussions with field staff, creating an immediate feedback mechanism for tool improvement.
+*   **Theme:** 'Leveraging Existing Data Sources'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** Where possible, the programme adapted household registers already maintained by nutrition or neglected tropical-disease initiatives, reducing duplicate data collection and simplifying new tools.
+*   **Theme:** 'Baseline Studies on Drug Resistance'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** Before scale-up, ACCESS-SMC funded a baseline survey of gene mutations linked to resistance against SMC drugs, establishing a reference point for future efficacy monitoring.
+*   **Theme:** 'Contextual Assessments for Related Malaria Funding Needs'
+    *   **Status:** Confirmed - Core Finding
+    *   **Description:** Separate pre-intervention work gathered information on national funding gaps for long-lasting insecticidal-net campaigns, signalling the consortium’s broader practice of scoping contextual and financial landscapes ahead of potential support.
 
 ## Validated & Refined Dimensional Themes
-*   **Theme:** 'Iterative, Self-Critical Framing'
-    *   **Status:** Confirmed - Prominent Characteristic (Kept As Is)
-    *   **Description:** Quotes frequently adopt a reflexive tone—highlighting learning, reviewing, and willingness to “find out what works”—indicating that pre-intervention data collection is positioned as an iterative process aimed at continual refinement.
-
-*   **Theme:** 'Pilot-Then-Scale Modality'
-    *   **Status:** Confirmed - Prominent Characteristic (Kept As Is)
-    *   **Description:** Evidence consistently references small-scale or controlled pilots preceding broader rollout, illustrating a methodological dimension where proof-of-concept is required before large-scale operationalisation.
-
-*   **Theme:** 'Time-Bound Project Management'
-    *   **Status:** Confirmed - Prominent Characteristic (Kept As Is)
-    *   **Description:** Pre-intervention studies are described with explicit start–end windows (e.g., May–June 2020) and rapid reporting expectations, reflecting an emphasis on tight timelines and responsiveness to time-sensitive opportunities.
+*   **Theme:** 'Iterative Tool Refinement'
+    *   **Status:** Confirmed - Prominent Characteristic
+    *   **Description:** The quotes show a cycle of design, pilot use, observation, consolidation of findings, and redesign, emphasising continuous improvement before full implementation.
+*   **Theme:** 'Multi-Method Data Collection'
+    *   **Status:** Confirmed - Prominent Characteristic
+    *   **Description:** Evidence spans quantitative check-lists, qualitative focus groups, laboratory baseline studies, and desk research on funding—illustrating a deliberate mix of methods to build a comprehensive pre-intervention evidence base.
 
 ## Validated & Refined Contradictions
-*   **Status:** Confirmed - No Significant Contradictions Identified
-*   **Description:** No direct contradictions were identified within the source texts specifically concerning the processes of pre-intervention data collection and planning; all texts consistently describe a systematic, evidence-based approach to these preparatory activities.
+*   **Status:** Confirmed - No Contradictions Identified
+*   No contradictions from the preliminary summary were validated as significant or accurately represented case-wide tensions based on the full source texts regarding pre-intervention data collection activities.
 
 ## Validated & Refined Strong Claims
-*   **Claim:** “Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices.”
+*   **Claim:** “In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.”
     *   **Status:** Confirmed - Notable Claim with Refined Contextualization
-    *   **Refined Context Note:** This statement from a 2012 interview (`2012-05-12 Interview Notes.md`) establishes Malaria Consortium's early articulation of its core M&E and learning philosophy. Subsequent documents, such as the detailed descriptions of SMC tool piloting (`2016-11-09 Interview Notes.md`) and scoping studies (`2021 GiveWell Funding Gap.md`), demonstrate this philosophy being put into practice, particularly in pre-intervention phases of work.
-
-*   **Claim:** “Malaria Consortium has a track record of delivering a high-quality, large-scale malaria prevention program, and we have thoroughly vetted that track record.”
+    *   **Refined Context Note:** This quote from the GiveWell Summary (`2021 GiveWell Summary.md`) highlights a critical pre-intervention scientific assessment undertaken as part of the large-scale ACCESS-SMC project. Establishing this baseline for drug resistance markers was essential for long-term monitoring of SMC drug efficacy, directly contributing to the program's viability and responsible scale-up.
+*   **Claim:** “Malaria Consortium also pre-tested the household registration tool to help simplify its design.”
     *   **Status:** Confirmed - Notable Claim with Refined Contextualization
-    *   **Refined Context Note:** This statement is GiveWell's assessment of Malaria Consortium, cited within the `2021 GiveWell Funding Gap.md` document as a reason for awarding a grant for pre-intervention LLIN scoping work. It underscores the external validation of MC's capabilities, which supports their engagement in detailed preparatory data collection and planning activities.
+    *   **Refined Context Note:** This statement from an interview with Malaria Consortium staff (`2016-11-09 Interview Notes.md`) illustrates a practical aspect of their pre-intervention work: the iterative refinement of operational tools. Pre-testing and simplifying the household registration tool aimed to enhance its usability for field staff, contributing to smoother implementation and data quality during SMC campaigns.
 
 ## Validated Exemplar Quotes (Selected from Full Source Texts)
-*   **Illustrating Theme: 'Rigorous Monitoring, Evaluation, and Learning Culture'**
-    *   Quote 1: "Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices." (Source: `2012-05-12 Interview Notes.md`)
-    *   Quote 2: "Our technical expertise is our strength. We like to understand how things work rather than just going for the delivery of the intervention. My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives." (Source: `2012-05-12 Interview Notes.md`)
-
-*   **Illustrating Theme: 'Pilot Testing and Tool Development Before Scale-Up'**
-    *   Quote 1: "Once a final version was created, Malaria Consortium used monitoring tools to test the card's efficacy as a means of measuring coverage during its project in Katsina State, Nigeria, which was a smaller-scale intervention in a more controlled environment than its current programs." (Source: `2016-11-09 Interview Notes.md`)
-    *   Quote 2: "Malaria Consortium also pre-tested the household registration tool to help simplify its design." (Source: `2016-11-09 Interview Notes.md`)
-
-*   **Illustrating Theme: 'Leveraging Existing Data Systems'**
-    *   Quote 1: "In some areas, it took advantage of existing household registers used in other programs (such as nutrition, integrated community case management, and neglected tropical disease programs) in order to adapt and simplify the tool it developed." (Source: `2016-11-09 Interview Notes.md`)
-
-*   **Illustrating Theme: 'Scoping Studies to Inform Funding Opportunities'**
-    *   Quote 1: "The grant was intended to pay for staff time spent collecting information on the funding situation for LLIN campaigns in several countries and suggesting priorities for additional funding for LLIN campaigns." (Source: `2021 GiveWell Funding Gap.md`)
-    *   Quote 2: "Scoping efforts paid for by the grant had the potential to identify highly cost-effective funding opportunities." (Source: `2021 GiveWell Funding Gap.md`)
-
-*   **Illustrating Theme: 'Criteria-Based Geographic Targeting and Timeline Planning'**
-    *   Quote 1: "Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries." (Source: `2021 GiveWell Funding Gap.md`)
-    *   Quote 2: "Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria." (Source: `2021 GiveWell Summary.md`)
-
-*   **Illustrating Theme: 'Donor Engagement and Concept Note Development'**
-    *   Quote 1: "We had several conversations with Malaria Consortium about potentially funding its mass LLIN distributions. Malaria Consortium then sent us a concept note describing its proposed activities for this grant." (Source: `2021 GiveWell Funding Gap.md`)
-    *   Quote 2: "While Malaria Consortium may have been able and willing to conduct this scoping work without a grant, we believed providing this relatively small amount of funding and agreeing upon the scope and timeline for the project in advance would increase the likelihood that Malaria Consortium would prioritize it more highly than it would have otherwise." (Source: `2021 GiveWell Funding Gap.md`)
-
-*   **Illustrating Theme: 'Baseline Research on Drug Resistance and Behaviour Change'**
-    *   Quote 1: "In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC. A follow-up survey was conducted in 2017, following two rounds of SMC." (Source: `2021 GiveWell Summary.md`)
-    *   Quote 2: "Malaria Consortium supports activities to promote community engagement and social and behavior change before and during SMC campaigns." (Source: `2021 GiveWell Summary.md`)
+*   **Illustrating Theme: 'Pilot Testing of Monitoring Tools'**
+    *   Quote 1: “Once a final version was created, Malaria Consortium used monitoring tools to test the card's efficacy as a means of measuring coverage during its project in Katsina State, Nigeria, which was a smaller-scale intervention in a more controlled environment than its current programs.” (Source: `2016-11-09 Interview Notes.md`)
+    *   Quote 2: “Malaria Consortium also pre-tested the household registration tool to help simplify its design.” (Source: `2016-11-09 Interview Notes.md`)
+*   **Illustrating Theme: 'Field Verification through Structured Observation'**
+    *   Quote 1: “In order to determine whether SMC cards were representative of coverage in its program in Katsina State, Malaria Consortium conducted structured observations in the field immediately after each cycle. Supervisors visited households with a checklist, looking at specific responses on the SMC cards, asking individuals to confirm whether they had taken the two subsequent tablets of AQ or not, and, where possible, checking the blister packs.” (Source: `2016-11-09 Interview Notes.md`)
+*   **Illustrating Theme: 'Data Consolidation and Reflective Feedback Loops'**
+    *   Quote 1: “Malaria Consortium gathered the supervisors' checklists at the end of each cycle and consolidated the findings, which included information on the SMC card, the blister packs, and individuals' responses to survey questions. Malaria Consortium conducted a focus group with the supervisors to discuss and explain the findings.” (Source: `2016-11-09 Interview Notes.md`)
+*   **Illustrating Theme: 'Leveraging Existing Data Sources'**
+    *   Quote 1: “In some areas, it took advantage of existing household registers used in other programs (such as nutrition, integrated community case management, and neglected tropical disease programs) in order to adapt and simplify the tool it developed.” (Source: `2016-11-09 Interview Notes.md`)
+*   **Illustrating Theme: 'Baseline Studies on Drug Resistance'**
+    *   Quote 1: “In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.” (Source: `2021 GiveWell Summary.md`)
+*   **Illustrating Theme: 'Contextual Assessments for Related Malaria Funding Needs'**
+    *   Quote 1: "In June 2020, Malaria Consortium received a GiveWell Incubation Grant of $44,688 to explore whether there are funding gaps for long-lasting insecticide-treated net (LLIN) campaigns in areas where Malaria Consortium has existing operations and would be well-positioned to implement LLIN campaigns." (Source: `2021 GiveWell Funding Gap.md`)
 
 #### Final Insights
 
-##### Iterative and Operationally-Focused Data Gathering with Evolving Formality
+##### Iterative Data Gathering Strong on Operations, Less on Initial Broad Assessments and Community Pre-Design Input.
 
-Insight explanation: Malaria Consortium systematically collects pre-intervention data, primarily to refine operational tools (e.g., SMC cards, household registration), assess feasibility, and scope new opportunities (e.g., LLIN funding gaps). This process demonstrates an evolution from a general organizational ethos of inquiry and learning towards more formalized and explicitly documented pre-intervention activities. However, the deep synthesis report highlights that detailed methodologies for initial large-scale needs assessments and protocols for systematic, pre-design community consultation are less evident in the provided texts compared to the strong evidence for operational research and tool piloting.
+Insight explanation: Malaria Consortium demonstrates robust pre-intervention data gathering, particularly for iteratively refining operational tools (like SMC cards and household registers through pilot testing, field verification, and feedback loops) and for strategic scoping of new opportunities or funding. This is confirmed by both reports. However, the deep synthesis report highlights that detailed methodologies for initial large-scale needs assessments are not always clear, and systematic community consultation *before* initial intervention design appears less formalized. The process for exploring entirely new charitable causes beyond malaria also lacks detailed description.
 
-Supporting evidence summary: Supported by themes like 'Pilot Testing and Tool Development,' 'Scoping Studies,' and 'Rigorous Monitoring, Evaluation, and Learning Culture' in the Adjusted Summary, and findings on 'Data gathering process' (consistency in operational research, pretesting; absences in detailed initial methodologies, community consultation; evolution over time) in the Deep Synthesis Report.
+Supporting evidence summary: Supported by themes of 'Pilot Testing', 'Iterative Tool Refinement', 'Contextual Assessments' (Adjusted Summary) and findings on 'Consistency/Convergence' for tool pretesting/scoping, 'Pervasive Absence/Silence' for detailed initial assessment methodologies and community pre-design consultation, and 'Evidentiary Completeness & Gaps' (Deep Synthesis Report).
 
 Evidence Collected for this insight:
 
@@ -986,81 +866,43 @@ Evidence quote: We ask questions such as: "Have people received the nets? Have t
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: Direct evidence of systematic pre-intervention data gathering to refine operational tools.
+Reasoning for extracting quote: This quote provides evidence of identifying and understanding location-specific factors and assessing their impact on an intervention (net distribution). By asking detailed questions about why nets aren't used (e.g., lack of tools), they are investigating specific local barriers that affect the intervention's effectiveness. This process of "drilling down" is key to understanding the local context. The timing relative to the specific SMC intervention is unclear as this describes a general M&E approach.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways.
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
 
-Agreement level: agrees
+Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote highlights the value placed on continuous, iterative data collection to adapt methods based on contextual differences, aligning with the insight's iterative and operationally-focused data gathering.
+Reasoning for extracting quote: This quote describes a finding from a specific location (Katsina State, mentioned in the preceding paragraph) where a lack of communication about keeping blister packs hindered monitoring. Based on this location-specific finding, Malaria Consortium decided to modify its communication strategy for future interventions. This demonstrates identifying a location-specific issue and adapting the intervention's communication approach in response. This finding and decision occurred during or after the Katsina project, which was before the main intervention period discussed.
 
 ###### Evidence#3
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices.
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
 
-Agreement level: strongly_agrees
+Agreement level: agrees
 
-Reasoning for extracting quote: Demonstrates organizational ethos of rigorous M&E and inquiry, supporting the insight's assertion of a general culture of research and learning prior to formalized pre-intervention activities.
+Reasoning for extracting quote: This quote explicitly states that location-specific assessments (malaria burden, transmission/rainfall patterns, incidence, seasonality) were conducted *before* starting the ACCESS-SMC program in specific countries. This is a clear example of identifying and understanding location factors to inform the decision of where and how to implement the intervention.
 
 ###### Evidence#4
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
+Evidence quote: In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote directly illustrates Malaria Consortium's systematic pre-intervention data gathering to scope new funding opportunities and assess feasibility, aligning with the insight's assertion of operationally-focused data collection and scoping.
+Reasoning for extracting quote: This quote describes a baseline study conducted before the intervention to establish initial context, directly supporting the insight that Malaria Consortium engages in robust pre-intervention data gathering.
 
-##### Deep Malaria-Specific Contextual Analysis Contrasts with Limited Broader Socio-Cultural Exploration
+##### Evolution Towards More Formalized Pre-Intervention Data Gathering Processes.
 
-Insight explanation: Pre-intervention data collection demonstrates a strong and consistent focus on understanding the epidemiological (e.g., disease burden, transmission patterns, seasonality, drug resistance) and operational context (e.g., existing health system resources, logistical challenges, population dynamics like migration) specifically related to malaria interventions. While this ensures programs are technically sound and operationally adapted, the deep synthesis report notes a relative absence of evidence for systematic, in-depth collection of socio-cultural data, detailed local political economy analysis, or proactive community-defined needs assessments *before* a general intervention area (like SMC) is decided upon.
+Insight explanation: The evidence suggests an evolution in Malaria Consortium's pre-intervention data gathering, moving from a general ethos of inquiry towards more defined, articulated, and potentially more frequently applied activities, especially noted in later documentation. The deep synthesis report points to a potential early tension where data, though gathered, might not have been systematically processed or shared for broader internal/external learning, contrasting with more structured examples of data use for refinement in later periods.
 
-Supporting evidence summary: Supported by themes such as 'Baseline Research on Drug Resistance and Behaviour Change' and 'Criteria-Based Geographic Targeting' in the Adjusted Summary, and findings within the 'Focus on the charitable cause/context' aspect in the Deep Synthesis Report (highlighting consistency in epidemiological/operational data for malaria, but absences in deep socio-cultural assessments and proactive community-defined needs).
-
-Evidence Collected for this insight:
-
-###### Evidence#1
-
-Evidence doc name: Unknown Document
-
-Evidence quote: We ask questions such as: "Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?" We drill down as much as we can.
-
-Agreement level: strongly_agrees
-
-Reasoning for extracting quote: Demonstrates detailed pre-intervention operational and behavioral data collection on net usage, supporting the insight's assertion of a strong focus on operational context.
-
-###### Evidence#2
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Before beginning to use SMC cards to measure coverage, Malaria Consortium pretested the use of the cards in different countries and modified the design of the cards based on feedback from these tests.
-
-Agreement level: agrees
-
-Reasoning for extracting quote: The quote describes pre-intervention tool pretesting and operational adaptation based on feedback, evidencing the insight's claim of a focus on operational context in pre-intervention data collection.
-
-###### Evidence#3
-
-Evidence doc name: Unknown Document
-
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
-
-Agreement level: strongly_agrees
-
-Reasoning for extracting quote: Demonstrates selection of countries based on malaria-specific epidemiological factors (burden, seasonality) and operational context (campaign timelines, staff presence), aligning with the insight's claim of strong focus on malaria-specific data pre-intervention.
-
-##### Pre-Intervention Timing is Consistent, but Specific Durations and Triggers Lack Detail
-
-Insight explanation: Both reports confirm that Malaria Consortium consistently undertakes data collection activities *before* the main implementation phase of an intervention or a significant programmatic modification (e.g., assessments before ACCESS-SMC, pretesting of tools before rollout, scoping studies prior to exploring new funding). The deep synthesis report clarifies that while this 'before' timing is clear, the specific durations of these pre-intervention data collection phases, the dedicated resources allocated, or the formal triggers and criteria for initiating such phases are not explicitly detailed across the provided texts.
-
-Supporting evidence summary: Supported by the general framing of preparatory activities in the Adjusted Summary (e.g., 'pre-intervention work,' 'precursors') and the specific analysis of the 'Timing before intervention implementation' aspect in the Deep Synthesis Report (confirming 'before' timing but noting absences in specific timelines, durations, and standardized triggers).
+Supporting evidence summary: Supported by the 'Evolution / Change Over Time' section and the 'Contradictions / Divergence' point regarding early data sharing (Deep Synthesis Report), and the overall depiction of systematic processes in the Adjusted Summary which largely draws from later examples of tool refinement and baseline studies.
 
 Evidence Collected for this insight:
 
@@ -1072,33 +914,43 @@ Evidence quote: Before beginning to use SMC cards to measure coverage, Malaria C
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: Direct confirmation that Malaria Consortium conducts pre-intervention data collection (pretesting) without specifying durations or triggers.
+Reasoning for extracting quote: This quote describes adapting a tool based on pre-intervention testing and feedback, exemplifying the shift towards more defined, structured pre-intervention data gathering processes noted in later documentation.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Our technical expertise is our strength. We like to understand how things work rather than just going for the delivery of the intervention. My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives.
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
 
-Agreement level: agrees
+Agreement level: strongly_agrees
 
-Reasoning for extracting quote: From 2012-05-12 Interview Notes.md: Indicates self-critical analysis and understanding of interventions before delivery, aligning with the insight's point on pre-intervention data collection activities.
+Reasoning for extracting quote: This quote illustrates an early deficiency in pre-intervention data processes where necessary data checks could not be performed due to lack of systematic communication, supporting the insight’s point about early tension in systematic processing.
 
 ###### Evidence#3
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
 
-Agreement level: disagrees
+Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote provides explicit criteria for selecting countries based on malaria burdens, overlapping seasons, campaign timelines, and staff presence; contradicts the insight's claim that triggers and criteria for pre-intervention phases are not explicitly detailed.
+Reasoning for extracting quote: This quote explicitly states that location-specific assessments (malaria burden, transmission/rainfall patterns, incidence, seasonality) were conducted *before* starting the ACCESS-SMC program in specific countries. This is a clear example of identifying and understanding location factors to inform the decision of where and how to implement the intervention.
 
-##### Strong Operational Contextual Understanding and Technical Baselines; Gaps in Systematic Programmatic Outcome Baselines
+###### Evidence#4
 
-Insight explanation: Malaria Consortium excels at gathering pre-intervention data to understand the specific operational context (e.g., leveraging existing household registers, investigating migration patterns, assessing CHW motivations) and to establish critical technical baselines (e.g., for drug resistance). This informs program design and adaptation. However, the deep synthesis report indicates less evidence of the organization systematically establishing its *own* comprehensive quantitative baselines for key *programmatic outcomes* (e.g., malaria incidence or all-cause child mortality in a defined target cohort just before an MC-led intervention begins) for every new area, or a clear articulation of how all gathered contextual data is systematically translated into specific, measurable, achievable, relevant, and time-bound (SMART) program objectives.
+Evidence doc name: Unknown Document
 
-Supporting evidence summary: Supported by themes like 'Leveraging Existing Data Systems' and 'Baseline Research on Drug Resistance' in the Adjusted Summary. The Deep Synthesis Report's analysis of 'Establishing baseline/understanding context' confirms strong operational/epidemiological contextual understanding and technical baselines, but notes absences regarding systematic programmatic outcome baselines set by MC and the explicit linking of all contextual data to SMART targets.
+Evidence quote: In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.
+
+Agreement level: agrees
+
+Reasoning for extracting quote: This quote describes a "baseline study" conducted in 2015, which is before or at the very beginning of the ACCESS-SMC implementation period (2015-2017). A baseline study is a form of data collection ("Data gathering process") conducted *before* an intervention to establish initial conditions ("Establishing baseline/understanding context"). While focused on a potential negative impact (drug resistance), it is still data collected about the context relevant to the intervention's potential long-term effects. The timing is "before" the main scale-up of drug distribution under ACCESS-SMC. It relates to "Data gathering process", "Timing before intervention implementation", and "Establishing baseline/understanding context".
+
+##### Pre-Intervention Focus Strong on Malaria Epidemiology and Operations, Less on Socio-Cultural and Community-Defined Needs.
+
+Insight explanation: Malaria Consortium consistently gathers pre-intervention data on epidemiological aspects (disease burden, transmission, drug resistance for malaria) and the operational context (health systems, logistics, existing tools, population dynamics). This is evident in both reports. However, the deep synthesis report highlights a relative absence of systematic, in-depth collection of socio-cultural data, proactive assessment of community-defined health priorities *before* an intervention area is chosen by MC, or detailed political economy analysis.
+
+Supporting evidence summary: Supported by 'Baseline Studies on Drug Resistance' and 'Contextual Assessments' (Adjusted Summary), and the 'Consistency/Convergence' on epidemiological/operational data alongside 'Pervasive Absence/Silence' on socio-cultural/community needs/political economy analysis (Deep Synthesis Report for aspect 'Focus on the charitable cause/context').
 
 Evidence Collected for this insight:
 
@@ -1106,47 +958,47 @@ Evidence Collected for this insight:
 
 Evidence doc name: Unknown Document
 
-Evidence quote: We ask questions such as: "Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?" We drill down as much as we can.
+Evidence quote: In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs and the Ministry of Health through district level government health facilities.
 
-Agreement level: strongly_agrees
+Agreement level: agrees
 
-Reasoning for extracting quote: Direct example of drilling down on operational context, confirming strong pre-intervention understanding.
+Reasoning for extracting quote: This quote indicates Malaria Consortium's focus on operational partnerships and local health system context, supporting the insight that they gather pre-intervention operational context data.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways.
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
 
 Agreement level: agrees
 
-Reasoning for extracting quote: The quote emphasizes the value placed on collecting diverse data methods to account for behavioral factors, supporting the insight's point on strong operational contextual understanding.
+Reasoning for extracting quote: This quote describes a finding from a specific location (Katsina State, mentioned in the preceding paragraph) where a lack of communication about keeping blister packs hindered monitoring. Based on this location-specific finding, Malaria Consortium decided to modify its communication strategy for future interventions. This demonstrates identifying a location-specific issue and adapting the intervention's communication approach in response. This finding and decision occurred during or after the Katsina project, which was before the main intervention period discussed.
 
 ###### Evidence#3
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Our technical expertise is our strength. We like to understand how things work rather than just going for the delivery of the intervention. My understanding of why donors come to us is that we're trusted as an organization that takes a fairly self-critical approach to finding out what works or doesn't work and applying that knowledge to improve the effectiveness of our initiatives.
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote highlights Malaria Consortium's technical expertise and self-critical approach to understanding how interventions work, demonstrating strong operational contextual understanding and technical baselines.
+Reasoning for extracting quote: This quote explicitly states that location-specific assessments (malaria burden, transmission/rainfall patterns, incidence, seasonality) were conducted *before* starting the ACCESS-SMC program in specific countries. This is a clear example of identifying and understanding location factors to inform the decision of where and how to implement the intervention.
 
 ###### Evidence#4
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
+Evidence quote: In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: From 2021 GiveWell Funding Gap.md; demonstrates MC’s use of epidemiological and operational context data to select focus areas, evidencing strong operational contextual understanding as described in the insight.
+Reasoning for extracting quote: The quote shows a pre-intervention baseline study focused on epidemiological data (drug resistance), directly confirming Malaria Consortium’s strong pre-intervention focus on epidemiology as described in the insight.
 
-##### Organizational Culture Drives Rigorous, Iterative Pre-Intervention Practices Focused on Learning and Effectiveness
+##### Data Collection Consistently Precedes Intervention, but Timelines and Triggers Lack Detail.
 
-Insight explanation: Malaria Consortium's self-identified organizational culture as 'rigorous,' 'self-critical,' and committed to learning and M&E is consistently reflected in its approach to pre-intervention data collection. This is demonstrated through practices such as pilot testing tools and methodologies before scale-up, conducting scoping studies to identify cost-effective opportunities, adapting approaches based on existing data systems, and undertaking baseline research. Both reports suggest these practices are integral to designing impactful programs and have evolved towards more formalized and explicitly documented activities over time, aligning with their goal to 'establish best practices.'
+Insight explanation: Both reports confirm that Malaria Consortium conducts data collection activities—such as assessments, tool pretesting, and scoping studies—*before* the main implementation of an intervention, its significant modification, or commitment to new programmatic areas. The deep synthesis report, however, notes a lack of specific details regarding the typical durations of these pre-intervention phases, standardized triggers that initiate them, or clear demarcation from ongoing M&E in evolving programs.
 
-Supporting evidence summary: Supported by the 'Overall Summary' and themes like 'Rigorous Monitoring, Evaluation, and Learning Culture,' 'Iterative, Self-Critical Framing,' and 'Pilot-Then-Scale Modality,' along with strong claims in the Adjusted Summary. This is corroborated by recurrent patterns of 'Iterative Refinement,' 'Responsive Investigation,' 'Focus on Operational Feasibility,' and the noted 'Evolution / Change Over Time' in data gathering processes within the Deep Synthesis Report.
+Supporting evidence summary: Supported by the overall framing of activities as pre-emptive (Adjusted Summary) and the 'Consistency/Convergence' on timing, alongside 'Pervasive Absence/Silence' on specific timelines/durations/triggers (Deep Synthesis Report for aspect 'Timing before intervention implementation').
 
 Evidence Collected for this insight:
 
@@ -1154,41 +1006,89 @@ Evidence Collected for this insight:
 
 Evidence doc name: Unknown Document
 
-Evidence quote: We ask questions such as: "Have people received the nets? Have they used the nets? If not, what stopped them? Do they not have the tools to hang them? Which tools are they lacking?" We drill down as much as we can.
+Evidence quote: Before beginning to use SMC cards to measure coverage, Malaria Consortium pretested the use of the cards in different countries and modified the design of the cards based on feedback from these tests.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This demonstrates a rigorous, iterative approach to pre-intervention data collection and self-critical learning, aligning directly with the insight's emphasis on thorough baseline research and attention to operational feasibility.
+Reasoning for extracting quote: This quote directly confirms that Malaria Consortium conducts data collection activities (tool pretesting) before the main implementation of an intervention, aligning precisely with the insight that data collection consistently precedes intervention.
 
 ###### Evidence#2
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Due to behavioral factors, some of these methods may work better than others in certain settings, so it seems valuable to continue to collect data in all of these ways.
+Evidence quote: In its discussions with the ministries of health and in the process of rolling out its programs in-country, Malaria Consortium looked for existing household registration tools already in use in the same geographical areas as its programs. In some areas, it took advantage of existing household registers used in other programs (such as nutrition, integrated community case management, and neglected tropical disease programs) in order to adapt and simplify the tool it developed.
 
-Agreement level: agrees
+Agreement level: strongly_agrees
 
-Reasoning for extracting quote: This quote supports the organization's self-critical and iterative learning culture by valuing continued data collection across methods, aligning with the insight's emphasis on rigorous M&E practices, though it pertains to 'after' rather than 'before' intervention.
+Reasoning for extracting quote: This quote describes actively seeking out and utilizing location-specific resources (existing household registers in specific geographical areas) to adapt and simplify the tool it developed. This is a clear example of identifying and understanding location-specific factors (existing tools) and using them to modify the intervention's operational tools, making the approach responsive to the local context. This process occurred during the program rollout, which precedes or is part of the intervention setup.
 
 ###### Evidence#3
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Second, we are rigorous in our use of monitoring and evaluation and research. We are not afraid of analyzing, reviewing, or establishing whether our interventions work, or how they could have been done better. We aim to establish best practices.
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
 
 Agreement level: strongly_agrees
 
-Reasoning for extracting quote: Explicit statement of rigorous M&E and self-critical culture aiming to establish best practices, directly supports the insight.
+Reasoning for extracting quote: This quote explicitly states that location-specific assessments (malaria burden, transmission/rainfall patterns, incidence, seasonality) were conducted *before* starting the ACCESS-SMC program in specific countries. This is a clear example of identifying and understanding location factors to inform the decision of where and how to implement the intervention.
 
 ###### Evidence#4
 
 Evidence doc name: Unknown Document
 
-Evidence quote: Malaria Consortium expected to focus on Nigeria, Uganda, and possibly Mozambique. These countries were chosen based on their high malaria burdens, the likelihood of their peak malaria transmission seasons overlapping with COVID-19 transmission, their LLIN campaign timelines, and the significant staff presence Malaria Consortium has in these countries.
+Evidence quote: In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.
+
+Agreement level: strongly_agrees
+
+Reasoning for extracting quote: This quote shows that a baseline study (a form of data collection) was conducted before the main ACCESS-SMC intervention, directly confirming the insight that Malaria Consortium conducts data collection activities before implementation.
+
+##### Strong Contextual Understanding and Technical Baselines; Less Evidence of Comprehensive Programmatic Outcome Baselines.
+
+Insight explanation: Malaria Consortium demonstrably invests in understanding the operational and epidemiological context before and during early intervention phases, tailoring its approach accordingly. Both reports highlight the establishment of specific technical baselines, such as for drug resistance. However, the deep synthesis report indicates a gap in evidence for MC systematically establishing its own comprehensive quantitative baselines for key *programmatic outcomes* (e.g., malaria incidence via its own pre-measurement) in all new intervention areas before program start. The process of translating rich contextual understanding into specific, measurable program targets also lacks clarity.
+
+Supporting evidence summary: Supported by 'Baseline Studies on Drug Resistance' and general contextual understanding (Adjusted Summary), and the 'Consistency/Convergence' on contextual understanding/technical baselines alongside 'Pervasive Absence/Silence' and 'Evidentiary Gaps' regarding systematic programmatic outcome baselines (Deep Synthesis Report for aspect 'Establishing baseline/understanding context').
+
+Evidence Collected for this insight:
+
+###### Evidence#1
+
+Evidence doc name: Unknown Document
+
+Evidence quote: In some cases, for instance in one of our projects in Uganda, we do not work with other international organizations but we are working with local CBOs and the Ministry of Health through district level government health facilities.
 
 Agreement level: agrees
 
-Reasoning for extracting quote: The quote indicates selection of countries based on data-driven criteria, reflecting rigorous, data-informed pre-intervention planning aligned with the organization's self-critical learning culture.
+Reasoning for extracting quote: This quote serves as evidence for calibrating the approach by showing how Malaria Consortium adapts its partnership strategy based on the specific location (Uganda) and the existing local infrastructure and actors (local CBOs, Ministry of Health, district facilities). This demonstrates modifying the intervention strategy and ensuring responsiveness to the local context.
+
+###### Evidence#2
+
+Evidence doc name: Unknown Document
+
+Evidence quote: However, not all individuals had been informed that they needed to keep the SMC blister packs, so Malaria Consortium was not able to do all of the relevant cross checks. Going forward, Malaria Consortium will ensure that this information is communicated in advance of the intervention.
+
+Agreement level: strongly_agrees
+
+Reasoning for extracting quote: This quote describes a finding from a specific location (Katsina State, mentioned in the preceding paragraph) where a lack of communication about keeping blister packs hindered monitoring. Based on this location-specific finding, Malaria Consortium decided to modify its communication strategy for future interventions. This demonstrates identifying a location-specific issue and adapting the intervention's communication approach in response. This finding and decision occurred during or after the Katsina project, which was before the main intervention period discussed.
+
+###### Evidence#3
+
+Evidence doc name: Unknown Document
+
+Evidence quote: Malaria Consortium told us that before starting work in countries under the ACCESS-SMC program, it conducted an assessment of the overall burden of malaria, transmission and rainfall patterns, regional malaria incidence over time, and seasonal variations in malaria.
+
+Agreement level: strongly_agrees
+
+Reasoning for extracting quote: This quote explicitly states that location-specific assessments (malaria burden, transmission/rainfall patterns, incidence, seasonality) were conducted *before* starting the ACCESS-SMC program in specific countries. This is a clear example of identifying and understanding location factors to inform the decision of where and how to implement the intervention.
+
+###### Evidence#4
+
+Evidence doc name: Unknown Document
+
+Evidence quote: In 2015, ACCESS-SMC funded a baseline study of the prevalence of gene mutations in malaria parasites that are markers of drug resistance for the drugs used in SMC.
+
+Agreement level: strongly_agrees
+
+Reasoning for extracting quote: This evidence directly supports the insight's assertion that Malaria Consortium establishes specific technical baselines for drug resistance before interventions, demonstrating contextual understanding and technical baselines.
 
 ---
 

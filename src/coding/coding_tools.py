@@ -30,8 +30,8 @@ def log_quote_reasoning(
     doc_name: str,
     quote: str,
     reasoning: str,
+    aspect: List[str],
     chronology: str,
-    agreement_level: str,
     state: Annotated[dict, InjectedState],
     tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
     """
@@ -66,8 +66,9 @@ def log_quote_reasoning(
     new_evidence = cast(Evidence, {
         "doc_name": doc_name,
         "quote": quote,
+        "aspect": aspect,
+        "reasoning": reasoning,
         "chronology": chronology,
-        "agreement_level": agreement_level,
         "code_description": code_description
     })
 

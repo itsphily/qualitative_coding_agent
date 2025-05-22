@@ -116,9 +116,9 @@ You **must** call the `log_quote_reasoning` tool for **every** piece of evidence
 ## Tool Schema: log_quote_reasoning
 ```json
 {{
-  "quote":       "<string>",            
+  "quote":       "<string>",
+  "aspect":      ["<aspect>", …],              
   "reasoning":   "<string>",            
-  "aspect":      ["<aspect>", …],  
   "chronology":  "before" | "during" | "after" | "unclear"  
 }}
 ```
