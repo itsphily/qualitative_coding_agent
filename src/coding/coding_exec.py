@@ -111,7 +111,7 @@ llm_long_context =  ChatGoogleGenerativeAI(model="gemini-2.5-flash-preview-04-17
 llm_long_context_with_structured_output = llm_long_context.with_structured_output(KeyAspectsOutput)
 
 # Bind the tool to the LLM upfront
-llm_evidence_extractor_with_tools = llm_long_context_high_processing.bind_tools(QUOTE_REASONING_TOOL)
+llm_evidence_extractor_with_tools = llm_long_context.bind_tools(QUOTE_REASONING_TOOL)
 llm_insight_extractor_with_tools = llm_long_context_high_processing.bind_tools(INSIGHT_TOOL)
 llm_log_evidence_relationship_with_tools = llm_long_context_tool_use.bind_tools(LOG_EVIDENCE_RELATIONSHIP_TOOL)
 
@@ -497,7 +497,8 @@ def agent_node(state: CodeProcessingState) -> Dict:
     file_path = state.get("file_path")
     if not file_path or not os.path.exists(file_path):
         logging.error(f"[agent_node] Invalid or missing file: {file_path}")
-        return {"messages": [HumanMessage(content=f"Error: Invalid file path {file_path}")]}
+        # Ensure a dictionary is returned even in error cases, matching expected output structure
+        return {"evidence_list": []} 
     
     # Extract filename for doc_name
     doc_name = os.path.basename(file_path)
@@ -509,19 +510,19 @@ def agent_node(state: CodeProcessingState) -> Dict:
             text_content = f.read()
     except Exception as e:
         logging.error(f"[agent_node] Error reading file {file_path}: {e}")
-        return {"evidence_list": []}
+        return {"evidence_list": []} # Return dict in error case
     
     # Get LLM from config
     config = get_config()
     llm_with_tools = config.get("configurable", {}).get("llm_evidence_extractor")
     if not llm_with_tools:
         logging.error(f"[agent_node] LLM for evidence extraction not found in config")
-        return {"evidence_list": []}
+        return {"evidence_list": []} # Return dict in error case
    
     # format the prompt
     system_content = identify_evidence_prompt.format(
         code= state.get("code_description", "Unknown code"),
-        aspects="\n".join([f"- {aspect}" for aspect in state.get("aspects", [])]),
+        aspects="\\n".join([f"- {aspect}" for aspect in state.get("aspects", [])]),
         research_question=state.get("research_question", ""),
         intervention=state.get("intervention", "Unknown intervention")
     )
@@ -532,48 +533,62 @@ def agent_node(state: CodeProcessingState) -> Dict:
     ai_message = llm_with_tools.invoke([system_msg, human_msg])
     logging.info(f"[agent_node] Completed processing file {doc_name}, tool should have logged evidence")
     
-    # Following the pattern from the update-state-from-tools documentation
     tool_calls = []
     if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
         tool_calls = ai_message.tool_calls
         logging.info(f"[agent_node] Found {len(tool_calls)} tool calls in LLM response")
     else:
-        logging.warning(f"[agent_node] No tool calls found in LLM response")
-        return []
+        logging.warning(f"[agent_node] No tool calls found in LLM response for file {doc_name}")
+        # Even if no tool calls, return the expected dictionary structure
+        return {"evidence_list": []} 
+
     # Execute the tools and collect Commands
-    commands = []
+    commands_from_tool_execution = [] # Renamed to avoid confusion
     tools_by_name = {tool.name: tool for tool in QUOTE_REASONING_TOOL}
 
     for tool_call in tool_calls:
         try:
-            # Get tool by name
             tool_name = tool_call.get("name", "")
             if tool_name not in tools_by_name:
-                logging.error(f"[agent_node] Unknown tool: {tool_name}")
+                logging.error(f"[agent_node] Unknown tool: {tool_name} for file {doc_name}")
                 continue
 
-            # Execute tool with arguments from tool call
-            tool = tools_by_name[tool_name]
+            tool_to_execute = tools_by_name[tool_name] # Renamed 'tool'
             args = tool_call.get("args", {})
             args["tool_call_id"] = tool_call.get("id", "unknown")
-
             args["state"] = {
                 "code_description": state.get("code_description", "Unknown code"),
                 "file_path": state.get("file_path", "Unknown file")
-                }
-
-            logging.info(f"[agent_node] Executing tool {tool_name} with args: {args}")
-
-            # Following exactly the pattern from documentation
-            command = tool.invoke(args)
-            if isinstance(command, Command):
-                commands.append(command)
-                logging.info(f"[agent_node] Added Command from tool {tool_name}")
+            }
+            logging.info(f"[agent_node] Executing tool {tool_name} with args: {args} for file {doc_name}")
+            command_output = tool_to_execute.invoke(args) # Renamed 'command'
+            if isinstance(command_output, Command):
+                commands_from_tool_execution.append(command_output)
+                logging.info(f"[agent_node] Added Command from tool {tool_name} for file {doc_name}")
+            else:
+                logging.warning(f"[agent_node] Tool {tool_name} did not return a Command object for file {doc_name}. Got: {type(command_output)}")
         except Exception as e:
-            logging.error(f"[agent_node] Error executing tool {tool_call.get('name', 'unknown')}: {e}")
+            logging.error(f"[agent_node] Error executing tool {tool_call.get('name', 'unknown')} for file {doc_name}: {e}", exc_info=True)
 
-    logging.info(f"[agent_node] Returning {len(commands)} Commands to update state")
-    return commands
+    # Extract all evidence from the executed commands into a single list
+    combined_evidence_list = []
+    if commands_from_tool_execution: # Check if the list is not empty
+        for cmd_obj in commands_from_tool_execution: # Renamed 'command' to 'cmd_obj'
+            if isinstance(cmd_obj, Command) and hasattr(cmd_obj, 'update') and isinstance(cmd_obj.update, dict):
+                if "evidence_list" in cmd_obj.update and isinstance(cmd_obj.update["evidence_list"], list):
+                    combined_evidence_list.extend(cmd_obj.update["evidence_list"])
+            else:
+                logging.warning(f"[agent_node] Encountered an item in commands_from_tool_execution that is not a valid Command object or is missing expected update structure: {cmd_obj} for file {doc_name}")
+    
+    # Log details before returning
+    for i, cmd_obj_log in enumerate(commands_from_tool_execution):
+        if hasattr(cmd_obj_log, "update"):
+            logging.info(f"[agent_node] Command {i} update field: {cmd_obj_log.update}")
+    logging.info(f"[agent_node] Full commands object generated by tools: {commands_from_tool_execution}")
+    
+    final_return_value = {"evidence_list": combined_evidence_list}
+    
+    return final_return_value
 
 def aggregation_node(state: CaseProcessingState) -> CaseProcessingState:
     """
@@ -1349,16 +1364,26 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
                 if tool_call.get("name") == "log_evidence_relationship":
                     args = tool_call.get("args", {})
                     try:
+                        # Get the quote from the tool call result
+                        quote = args.get("quote", "")
+                        doc_name = "Unknown Document"
+                        
+                        # Find the matching evidence item in the batch by comparing quotes
+                        for item in batch_evidence:
+                            if item.get("quote", "") == quote:
+                                doc_name = item.get("doc_name", "Unknown Document")
+                                break
+                        
                         final_evidence_item = FinalEvidence(
                             insight_label=insight_label,
-                            evidence_doc_name=args.get("evidence_doc_name", "N/A from tool call"),
-                            evidence_quote=args.get("evidence_quote", "N/A from tool call"),
-                            evidence_chronology=args.get("evidence_chronology", "unclear from tool call"),
-                            agreement_level=args.get("agreement_level", "unknown from tool call"),
-                            original_reasoning_for_quote=args.get("original_reasoning_for_quote", "N/A from tool call")
+                            evidence_doc_name=args.get("doc_name", "Unknown Document"),
+                            evidence_quote=args.get("quote", ""),
+                            evidence_chronology=args.get("chronology", "unclear"),
+                            agreement_level=args.get("agreement_level", "unknown"),
+                            original_reasoning_for_quote=args.get("reasoning", "")
                         )
                         batch_processed_evidence.append(final_evidence_item)
-                        logging.debug(f"[{node_name}] Batch {i//batch_size + 1}: Processed tool call for evidence: {args.get('evidence_quote', 'N/A')[:30]}...")
+                        logging.debug(f"[{node_name}] Batch {i//batch_size + 1}: Processed tool call for evidence: {args.get('quote', 'N/A')[:30]}...")
                     except KeyError as e:
                         logging.error(f"[{node_name}] Batch {i//batch_size + 1}: Missing argument in tool call: {e}. Args: {args}")
                     except Exception as e:

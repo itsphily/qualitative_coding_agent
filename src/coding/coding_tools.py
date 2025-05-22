@@ -8,37 +8,54 @@ from langchain_core.tools import tool
 from langgraph.types import Command
 from coding_state import Evidence, FinalInsight, FinalEvidence
 from langgraph.prebuilt import InjectedState
+import logging
+import os
+from datetime import datetime
 
+# --- Logging Setup ---
+debug_dir = os.getenv("DEBUG_DIR", "debug")
+os.makedirs(debug_dir, exist_ok=True)
+debug_file = os.path.join(debug_dir, f'debug_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[logging.FileHandler(debug_file), logging.StreamHandler()]
+)
+logging.info(f"Starting script execution. Debug log file: {debug_file}")
 
 # --- logging tool ---
 @tool
 def log_quote_reasoning(
+    doc_name: str,
     quote: str,
     reasoning: str,
-    aspect: List[str],
     chronology: str,
+    agreement_level: str,
     state: Annotated[dict, InjectedState],
     tool_call_id: Annotated[str, InjectedToolCallId]) -> Command:
     """
     Tool for logging evidence found during text analysis.
+    This tool must be used everytime a separate piece of evidence is found during text analysis.
     
     Args:
-        quote: The text passage extracted as evidence
-        reasoning: Explanation of why this quote is evidence
-        aspect: List of aspects this quote relates to
+        doc_name: Source document name (the exact name of the document)
+        quote: The text passage extracted as evidence (the exact unaltered and unabbreviated quote)
+        reasoning: Explanation of why this quote is evidence (the exact unaltered and unabbreviated reasoning)
         chronology: Timing relative to intervention (before/during/after/unclear)
+        agreement_level: How strongly this evidence supports the insight 
+                        ('strongly_agrees', 'agrees', 'disagrees', 'strongly_disagrees')
         tool_call_id: Injected tool call ID
-        code_description: The code this evidence relates to
-        doc_name: Source document name
     """
     # Input validation
     if not quote or not isinstance(quote, str):
+        logging.info(f"[log_quote_reasoning] quote: {quote}")
         raise ToolException("Quote must be a non-empty string")
     if not reasoning or not isinstance(reasoning, str):
+        logging.info(f"[log_quote_reasoning] reasoning: {reasoning}")
         raise ToolException("Reasoning must be a non-empty string")
-    if not aspect or not isinstance(aspect, list):
-        raise ToolException("Aspect must be a non-empty list")
     if not chronology or chronology not in ["before", "during", "after", "unclear"]:
+        logging.info(f"[log_quote_reasoning] chronology: {chronology}")
         raise ToolException("Chronology must be one of: before, during, after, unclear")
     
     # Get the current state dictionary
@@ -47,12 +64,11 @@ def log_quote_reasoning(
     
     # Create evidence item
     new_evidence = cast(Evidence, {
+        "doc_name": doc_name,
         "quote": quote,
-        "reasoning": reasoning,
-        "aspect": aspect,
         "chronology": chronology,
-        "code_description": code_description,
-        "doc_name": doc_name
+        "agreement_level": agreement_level,
+        "code_description": code_description
     })
 
     # Create tool message
@@ -158,10 +174,10 @@ def log_evidence_relationship(
     # Create final evidence item
     new_evidence = cast(FinalEvidence, {
         "insight_label": insight_label,
-        "quote": quote,
-        "reasoning": reasoning,
-        "doc_name": doc_name,
-        "chronology": chronology,
+        "evidence_quote": quote,
+        "original_reasoning_for_quote": reasoning,
+        "evidence_doc_name": doc_name,
+        "evidence_chronology": chronology,
         "agreement_level": agreement_level
     })
 

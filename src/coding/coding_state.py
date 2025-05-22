@@ -166,6 +166,8 @@ def append_evidence(
     current: Optional[List[Any]],
     new: Optional[List[Any]]
 ) -> List[Any]:
+    logging.info(f"REDUCER RECEIVED: current={current}, new={new}")
+    logging.info(f"REDUCER TYPES: current={type(current)}, new={type(new)}")
     """
     Reducer for lists, especially CaseProcessingState.evidence_list and CaseProcessingState.final_insights_list.
     - For FinalInsight objects: Updates existing insight if label matches, otherwise appends.
@@ -278,6 +280,8 @@ def append_evidence(
                 logging.info(f"[append_evidence_reducer] Skipping duplicate other non-dict item: {str(item)[:50]}...")
                 
     logging.info(f"[append_evidence_reducer] Returning merged list of {len(result_list)} items.")
+    logging.info(f"REDUCER RETURNING: {result_list}")
+    logging.info(f"REDUCER RETURN TYPE: {type(result_list)}")
     return result_list
 
 class FinalEvidence(TypedDict):
@@ -302,6 +306,7 @@ class Evidence(TypedDict):
     chronology: str
     code_description: str 
     doc_name: str  
+    agreement_level: str
 
 class CaseInfo(TypedDict):
     directory: str

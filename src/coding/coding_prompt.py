@@ -647,7 +647,7 @@ You will be given a "Corpus of Evidence" in JSON format. This is a collection of
 chronology: The timing of the evidence relative to an intervention ("before", "during", "after", "unclear").
 Doc Name: The name of the source document for the quote.
 Quote: The verbatim text passage extracted as evidence.
-Example Evidence Corpus Format (Illustrative Snippet):
+Example Evidence Corpus Format:
 
 {
   "0": {
@@ -690,10 +690,9 @@ For every piece of evidence for which you can discern a relationship (as defined
 
 Tool Schema: log_evidence_relationship
 {
-  "insight_label": "<string>",
-  "evidence_doc_name": "<string>",
-  "evidence_quote": "<string>",
-  "evidence_chronology": "<string>",
+  "doc_name": "<string>",
+  "quote": "<string>",
+  "chronology": "<string>",
   "agreement_level": "<'strongly_agrees' | 'agrees' | 'disagrees' | 'strongly_disagrees'>",
 }
 
@@ -701,7 +700,7 @@ Tool Input Field Descriptions:
 
 insight_label: The insight_label from the provided Final Insight.
 evidence_doc_name: The Doc Name from the assessed piece of evidence.
-evidence_quote: The exact, unaltered Quote from the assessed piece of evidence.
+quote: The exact, unaltered Quote from the assessed piece of evidence.
 evidence_chronology: The chronology from the assessed piece of evidence.
 agreement_level: Your classification of the evidence's relationship to the insight, chosen from the four defined levels.
 
