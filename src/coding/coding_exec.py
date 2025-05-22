@@ -1376,7 +1376,7 @@ Remember to call the `log_evidence_relationship` tool for EVERY piece of evidenc
                         
                         final_evidence_item = FinalEvidence(
                             insight_label=insight_label,
-                            evidence_doc_name=args.get("doc_name", "Unknown Document"),
+                            evidence_doc_name=doc_name,
                             evidence_quote=args.get("quote", ""),
                             evidence_chronology=args.get("chronology", "unclear"),
                             agreement_level=args.get("agreement_level", "unknown"),
