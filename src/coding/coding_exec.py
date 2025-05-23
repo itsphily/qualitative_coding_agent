@@ -530,8 +530,38 @@ def agent_node(state: CodeProcessingState) -> Dict:
     system_msg = SystemMessage(content=system_content)
     human_msg = HumanMessage(content=f"Text to analyze: {text_content}")
     logging.info(f"[agent_node] Preparing to execute with CONFIGURATION: code_description='{code_description}', doc_name='{doc_name}'")
-    ai_message = llm_with_tools.invoke([system_msg, human_msg])
-    logging.info(f"[agent_node] Completed processing file {doc_name}, tool should have logged evidence")
+    
+    # Add retry logic with exponential backoff for Google API rate limits
+    max_retries = 5
+    base_wait_time = 4  # Start with 4 seconds (15 RPM = 4 seconds between requests)
+    max_wait_time = 60
+    
+    ai_message = None
+    for attempt in range(max_retries):
+        try:
+            ai_message = llm_with_tools.invoke([system_msg, human_msg])
+            logging.info(f"[agent_node] Completed processing file {doc_name}, tool should have logged evidence")
+            break  # Success, exit retry loop
+        except (InternalServerError, ResourceExhausted, ServiceUnavailable) as e:
+            if attempt == max_retries - 1:
+                logging.error(f"[agent_node] Failed after {max_retries} attempts for file {doc_name}: {e}")
+                return {"evidence_list": []}  # Return empty evidence on final failure
+            
+            # Calculate wait time with exponential backoff
+            wait_time = min(base_wait_time * (2 ** attempt), max_wait_time)
+            logging.warning(f"[agent_node] Google API error: {e}. Retry {attempt + 1}/{max_retries} after {wait_time}s")
+            time.sleep(wait_time)
+        except Exception as e:
+            logging.error(f"[agent_node] Unhandled error processing file {doc_name}: {e}")
+            return {"evidence_list": []}  # Return empty evidence on unhandled error
+    
+    # Add a small delay to respect rate limits (15 RPM = 4 seconds between requests)
+    time.sleep(4)
+    
+    # Check if we got a valid response
+    if ai_message is None:
+        logging.error(f"[agent_node] No valid response received for file {doc_name} after all retries")
+        return {"evidence_list": []}
     
     tool_calls = []
     if isinstance(ai_message, AIMessage) and hasattr(ai_message, "tool_calls") and ai_message.tool_calls:
